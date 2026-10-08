@@ -24,8 +24,9 @@ class BenchmarkStatistics(unittest.TestCase):
 103 /bin/zsh -lc 'python3 /repo/tools/bench/run_bench.py'
 104 /usr/bin/python3 /repo/tools/bench/test_run_bench.py
 105 /usr/bin/wwhd --game /game
+106 /Applications/Python.app/Contents/MacOS/Python /other/run_bench.py --runs 10
 """
-        self.assertEqual(benchmark_pids(listing, 101), [102])
+        self.assertEqual(benchmark_pids(listing, 101), [102, 106])
 
     def test_quiet_gate_checks_strict_load_and_disk_reserve(self):
         args = SimpleNamespace(quiet_load_max=12, exclusive_bench=False, min_free_gb=15, out='build')

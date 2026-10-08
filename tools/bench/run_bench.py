@@ -73,7 +73,7 @@ def benchmark_pids(process_listing, own_pid):
             argv = shlex.split(command.strip())
         except ValueError:
             continue
-        if argv and os.path.basename(argv[0]).startswith("python") and any(
+        if argv and os.path.basename(argv[0]).casefold().startswith("python") and any(
                 os.path.basename(arg) == "run_bench.py" for arg in argv[1:]):
             found.append(int(pid))
     return found
