@@ -67,7 +67,8 @@ def save_view(root, revision):
  * Partial status prefix only; no full save-object size is claimed. */
 #pragma once
 #include "../wwhd_guest.h"
-#define WWHD_ADDR_save_info_pointer 0x{pointer[1]}
+#include "data.h"
+#define WWHD_ADDR_save_info_pointer WWHD_ADDR_dComIfG_save_info_pointer
 #define WWHD_OFFSET_save_info {pointer[2]}
 typedef struct dSv_player_status_a_view {{
     u16 max_life;

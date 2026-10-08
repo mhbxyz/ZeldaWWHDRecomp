@@ -279,6 +279,9 @@ The JSON inventory retains their original public declarations for further curati
 These addresses target USA version 0. Functions absent from the public decomp
 remain hookable by address when hook checks are compiled in.
 
+`game/data.h` names the public save/resource pointer slots, matrix stack, zero
+vector and item table bases/strides. It contains no initialized game data.
+
 Curated `actor.h`, `link.h`, `camera.h`, `items.h` and `messages.h` provide partial
 HD views. Named scalar fields have compile-time offset checks; unknown compound
 fields remain accessible through the byte view. Source qualifications about

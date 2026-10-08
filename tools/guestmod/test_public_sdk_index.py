@@ -3,6 +3,7 @@ import unittest
 from public_sdk_index import DECL, VERIFY, symbols_header
 from public_sdk_layouts import layout
 from public_sdk_bindings import bindings, guest_type
+from public_sdk_data import declarations
 
 
 class PublicDeclarations(unittest.TestCase):
@@ -40,6 +41,10 @@ class PublicDeclarations(unittest.TestCase):
         self.assertIn('s32, wwhd_execute_02000000, (void* self, f32 scale)', text)
         self.assertEqual([f['name'] for f in skipped], ['vector'])
         self.assertEqual(guest_type('bool*'), 'u8*')
+
+    def test_missing_data_binding_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, 'public data declaration changed'):
+            declarations(lambda source: '', 'public')
 
     def test_member_declaration(self):
         match = DECL.search('\ns32 Actor::execute() {')

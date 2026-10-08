@@ -2,7 +2,8 @@
  * Partial status prefix only; no full save-object size is claimed. */
 #pragma once
 #include "../wwhd_guest.h"
-#define WWHD_ADDR_save_info_pointer 0x101F84DC
+#include "data.h"
+#define WWHD_ADDR_save_info_pointer WWHD_ADDR_dComIfG_save_info_pointer
 #define WWHD_OFFSET_save_info 0x20
 typedef struct dSv_player_status_a_view {
     u16 max_life;
