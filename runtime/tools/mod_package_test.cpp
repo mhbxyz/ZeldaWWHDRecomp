@@ -64,6 +64,40 @@ int restart_check(const char* storage) {
 int main(int argc, char** argv) {
     namespace fs=std::filesystem;
     using namespace mods::packages;
+    if(argc==2&&std::string(argv[1])=="--guest-startup") {
+        auto root=fs::temp_directory_path()/("wwhd-guest-startup-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+        auto storage=root/"manager";
+        env("WWHD_NO_HOST_INPUT","1");env("WWHD_MOD_MANAGER_DIR",storage.string().c_str());
+        env("WWHD_TEST_TRUST_NATIVE_MODS","guest-a,guest-b,guest-c");
+        for(const auto* id:{"guest-a","guest-b","guest-c"}) {
+            auto source=storage/"Mods"/id;fs::create_directories(source);
+            auto m=mods::json::parse(R"({"format_version":1,"id":"guest-a","name":"Fixture","version":"1.0.0","game_id":"wwhd-usa","kind":"guest","guest":{"api_version":1},"options":[{"id":"amount","name":"Amount","type":"number","min":1,"max":10,"default":3}]})");
+            m["id"]=id;
+            if(std::string(id)=="guest-b")m["dependencies"]=mods::json::parse(R"([{"id":"guest-a"}])");
+            std::ofstream(source/"manifest.json")<<mods::json::dump(m);
+            {std::ofstream elf(source/"mod.elf",std::ios::binary);elf.write("\x7f" "ELF\x01\x02",6);}
+        }
+        std::ofstream(storage/"profiles.json") << R"({"format_version":1,"active":"Default","profiles":{"Default":{"enabled":{"guest-a":true,"guest-b":true,"guest-c":true}}},"guest_regions":{"guest-a":{"base":2130771968,"size":65536},"guest-b":{"base":2130771968,"size":65536}}})";
+        initialize();std::string error;
+        assert(configure("guest-a","amount",5,error));
+        int inspected=0,loaded=0;std::map<std::string,uint32_t> bases;
+        auto inspect=[&](const GuestPackage& pkg){++inspected;assert(pkg.options.get("amount").number==3);return uint32_t(65536);};
+        auto load=[&](const GuestPackage& pkg,uint32_t base){++loaded;bases[pkg.id]=base;
+            if(pkg.id=="guest-c")throw std::runtime_error("synthetic compiler failure");};
+        start_guests(inspect,load);
+        assert(inspected==3&&loaded==3);
+        assert(bases.at("guest-a")==0x7F010000); // valid persisted region retained
+        assert(bases.at("guest-b")==0x7F000000); // duplicate saved reservation repaired
+        assert(bases.at("guest-c")==0x7F020000);
+        assert(view("guest-a").active&&view("guest-b").active&&!view("guest-c").active);
+        assert(view("guest-c").reason=="synthetic compiler failure");
+        assert(view("guest-a").pending_restart); // options changed after startup snapshot
+        assert(enable("guest-b",false,error));
+        frame(1);assert(view("guest-b").active&&view("guest-b").pending_restart);
+        start_guests(inspect,load);assert(inspected==3&&loaded==3); // never live reload
+        assert(!remove("guest-b",error));
+        fs::remove_all(root);std::cout << "guest startup allocation/lifecycle passed\n";return 0;
+    }
     if(argc==2&&std::string(argv[1])=="--guest-metadata") {
         auto root=fs::temp_directory_path()/("wwhd-guest-metadata-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
         fs::create_directories(root/"source");

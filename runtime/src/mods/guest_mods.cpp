@@ -7,11 +7,14 @@
 // any guest code runs. Without it (or with game code built without --mod-hooks) nothing changes.
 #include "guest_mods.h"
 #include "guest_validation.h"
+#include "guest_build.h"
+#include "packages.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -167,6 +170,30 @@ struct Args {
 }  // namespace
 
 void init() {
+    namespace packages=mods::packages;
+    std::unique_ptr<BuildBridge> bridge;
+    auto tools=[&]() -> BuildBridge& {
+        if(!g_mod_hook_count)throw std::runtime_error("Guest mods require game code built with --mod-hooks; run setup with guest hooks enabled");
+        if(!bridge){
+            const char* path=std::getenv("WWHD_GUEST_BUILD_CONFIG");
+            bridge=std::make_unique<BuildBridge>(BuildBridge::read(path?path:"guest-sdk.json",
+                (std::filesystem::path(packages::directory()).parent_path()/"GuestBuild").string()));
+        }
+        return *bridge;
+    };
+    packages::start_guests([&](const packages::GuestPackage& pkg) {
+        auto result=tools().run(pkg.path,0x7F000000,true);
+        if(result.get("elf_sha256").string()!=pkg.fingerprint)throw std::runtime_error("Guest ELF changed; review its trust confirmation again");
+        const auto& size=result.get("allocation_size");
+        if(size.type!=mods::json::Value::Number||size.number<=0||size.number>0x1000000||std::floor(size.number)!=size.number)
+            throw std::runtime_error("Invalid guest module memory requirement");
+        return uint32_t(size.number);
+    },[&](const packages::GuestPackage& pkg,uint32_t base) {
+        auto result=tools().run(pkg.path,base,false);
+        if(result.get("elf_sha256").string()!=pkg.fingerprint)throw std::runtime_error("Guest ELF changed; review its trust confirmation again");
+        auto module=result.get("module").string();std::string error;
+        if(module.empty()||!load_one(module,error))throw std::runtime_error(error.empty()?"Guest builder returned no module":error);
+    });
     const char* list = getenv("WWHD_GUEST_MODS");
     if (!list || !*list) return;
     if (g_mod_hook_count == 0) {

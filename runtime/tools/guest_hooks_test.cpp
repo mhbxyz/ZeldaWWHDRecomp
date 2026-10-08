@@ -40,6 +40,10 @@ void ppc_preempt(Cpu*) {}
 }
 namespace mem { std::string read_cstr(uint32_t) { return {}; } }
 namespace dispatch { void set(uint32_t, PpcFunc) {} }
+namespace mods::packages {
+std::string directory() { return {}; }
+void start_guests(const GuestInspect&, const GuestLoad&) {}
+}
 void log_msg(const char*, ...) {}
 [[noreturn]] void fatal(const char*, ...) { std::abort(); }
 int main() {

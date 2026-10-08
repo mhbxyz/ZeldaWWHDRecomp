@@ -1331,6 +1331,17 @@ def mac_app(app_path, exe_src, data_dir, version):
     replace_dir(tmp, app_path)
 
 
+def write_guest_build_config(data_dir, tc):
+    """Remember setup's real local toolchain for runtime guest builds (no shell command strings)."""
+    config = {"format_version": 1, "python": [sys.executable], "compiler": tc.cc,
+              "builder": os.path.join(PKG, "tools", "guestmod", "build_guest_mod.py"),
+              "include": os.path.join(PKG, "sdk", "include")}
+    path = os.path.join(data_dir, "guest-sdk.json")
+    with open(path + ".tmp", "w", encoding="utf-8") as f:
+        json.dump(config, f)
+    os.replace(path + ".tmp", path)
+
+
 def game_icon_png(data_dir):
     """The game's own icon (game/meta/iconTex.tga, uncompressed 32-bit) as PNG bytes, or None."""
     try:
@@ -1879,6 +1890,7 @@ def install(ctx, source, keys=None, info=None, ui=None, check_keys=None):
         shutil.rmtree(work, ignore_errors=True)
     if kind != "gen":
         os.makedirs(os.path.join(data_dir, "save"), exist_ok=True)
+    write_guest_build_config(data_dir, tc)
     write_state(data_dir, state)
     return state
 

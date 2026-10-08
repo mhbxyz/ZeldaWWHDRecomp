@@ -197,6 +197,38 @@ translator or the ABI changes the key and the module is rebuilt on the next star
 hundred milliseconds per mod). A game rebuild alone does not invalidate modules; the runtime
 re-validates hook targets on load (every target must be a function entry of this build).
 
+### Manager startup and local tools (phase 1)
+
+Guest packages use the same one-time code trust dialog as native packages. The
+fingerprint is the SHA-256 of `mod.elf`, so rebuilding a module does not ask again.
+The manager freezes the enabled guest set and options during initialization.
+After memory and dispatch initialization, before guest threads start, it inspects,
+allocates, builds and loads that set in dependency order. Failures appear in each
+package's details in the Mods tab. Later enable, disable, profile and option changes
+need a restart; an active guest module remains resident until the process exits.
+
+Memory assignments are 64 KiB aligned and persisted in `profiles.json` under
+`guest_regions`. Valid assignments remain stable, including those of disabled
+installed mods. Growing a mod may move it and rebuild its module; removing a mod
+releases its assignment. Overlapping or invalid saved assignments are repaired.
+A guest startup dependency must already be active (content/another guest mod), or
+be a settings preset; a native plugin loaded later during gameplay cannot supply
+a startup dependency.
+
+Setup writes `guest-sdk.json` in the game data directory with its Python command,
+compiler argument vector, translator path and SDK headers. Keep the release tools
+and local compiler installed. If they are missing, the Mods tab asks you to run
+setup again. Development builds may select an equivalent JSON file with
+`WWHD_GUEST_BUILD_CONFIG`. The bridge runs argument vectors directly, without a
+shell; `--cc-json '["compiler", "arguments"]'` preserves paths containing spaces.
+The original `--cc` interface remains supported for catalogue integrations.
+
+On Windows, the standard LLVM installer and llvm-mingw do not include the PowerPC
+backend. Modders should use the MSYS2 CLANG64 clang/lld packages (an all-target build),
+while players' host modules still compile with setup's pinned llvm-mingw. The
+[MSYS2 LLVM package recipe](https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-llvm/PKGBUILD)
+selects all targets for its clang build. CI verifies the actual PowerPC compilation.
+
 ### Build-step contract additions (phase 1)
 
 `build_guest_mod.py PACKAGE --inspect --base ADDR --json` reports the relocated

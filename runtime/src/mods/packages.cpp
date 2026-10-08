@@ -40,7 +40,8 @@ std::mutex mutex;
 std::map<std::string,Record> records;
 Value database;
 fs::path root;
-bool ready=false;
+bool ready=false,guests_started=false;
+std::vector<std::string> guest_startup_ids;
 std::string last_problem;
 std::atomic<bool> dirty{false},running{false},profile_changed{false};
 ReadMemory read_memory=nullptr;WriteMemory write_memory=nullptr;
@@ -241,6 +242,10 @@ void initialize(){
         const auto& options=profile().get("builtin_options");auto speed=options.get("direct-camera.speed"),sens=options.get("mouse-camera.sensitivity");if(!std::getenv("WWHD_MOD_CAMERA_SPEED")&&speed.type==Value::Number&&speed.number>=.5&&speed.number<=2)set_camera_speed(speed.number);if(!std::getenv("WWHD_MOD_MOUSE_SENS")&&sens.type==Value::Number&&sens.number>=.08&&sens.number<=.3)set_mouse_sensitivity(sens.number);
         // Next-launch (restart_required) settings must be selected before the game starts.
         try { auto enabled=enabled_set();auto sequence=order(enabled);validate_conflicts(enabled);
+            guest_startup_ids.clear();
+            for(const auto& id:sequence)if(records.at(id).manifest.kind=="guest") {
+                guest_startup_ids.push_back(id);records.at(id).startup_config=config(records.at(id).manifest);
+            }
             content::Files files;
             for(const auto& id:sequence){auto& record=records.at(id);if(record.manifest.kind=="content"){
                 files.insert(record.manifest.files.begin(),record.manifest.files.end());record.active=true;
@@ -281,7 +286,7 @@ bool install(const std::string& source,std::string& error){return operation(erro
     }auto m=manifest(stage);require(m.problem.empty()||m.problem.starts_with("No binary for")||m.problem.starts_with("GLSL shader packs require Vulkan"),m.problem);target=root/"Mods"/m.id;auto it=records.find(m.id);require(it==records.end()||(!wanted(m.id)&&!it->second.active&&!it->second.loading),it!=records.end()&&(it->second.manifest.kind=="content"||it->second.manifest.kind=="cemu"||it->second.manifest.kind=="guest")?"Disable this content mod and restart before updating":"Disable this mod and wait for it to unload before updating");fs::create_directories(target.parent_path());if(fs::exists(target)){fs::rename(target,backup);backed=true;}fs::rename(stage,target);moved=true;m=manifest(target);Record r;r.path=target;r.manifest=std::move(m);auto installed_id=r.manifest.id;records[installed_id]=std::move(r);if(backed){std::error_code cleanup;fs::remove_all(backup,cleanup);}dirty=true;
     }catch(...){if(moved)fs::remove_all(target);if(backed)fs::rename(backup,target);if(fs::exists(stage))fs::remove_all(stage);throw;}
 });}
-bool remove(const std::string& id,std::string& error){return operation(error,[&]{auto it=records.find(id);require(it!=records.end(),"Mod not found");require(!wanted(id)&&!it->second.active&&!it->second.loading,(it->second.manifest.kind=="content"||it->second.manifest.kind=="cemu"||it->second.manifest.kind=="guest")?"Disable this content mod and restart before removing":"Disable this mod and wait for it to unload before removing");for(const auto& [other,r]:records)if(wanted(other))for(const auto& d:r.manifest.dependencies)require(d.id!=id,r.manifest.name+" depends on this mod");auto previous=database;for(auto& [name,p]:database["profiles"].object){p["enabled"].object.erase(id);p["config"].object.erase(id);}database["native_trust"].object.erase(id);try{save();}catch(...){database=previous;throw;}fs::remove_all(it->second.path);records.erase(it);dirty=true;});}
+bool remove(const std::string& id,std::string& error){return operation(error,[&]{auto it=records.find(id);require(it!=records.end(),"Mod not found");require(!wanted(id)&&!it->second.active&&!it->second.loading,(it->second.manifest.kind=="content"||it->second.manifest.kind=="cemu"||it->second.manifest.kind=="guest")?"Disable this content mod and restart before removing":"Disable this mod and wait for it to unload before removing");for(const auto& [other,r]:records)if(wanted(other))for(const auto& d:r.manifest.dependencies)require(d.id!=id,r.manifest.name+" depends on this mod");auto previous=database;for(auto& [name,p]:database["profiles"].object){p["enabled"].object.erase(id);p["config"].object.erase(id);}database["native_trust"].object.erase(id);database["guest_regions"].object.erase(id);try{save();}catch(...){database=previous;throw;}fs::remove_all(it->second.path);records.erase(it);dirty=true;});}
 bool enable(const std::string& id,bool on,std::string& error){std::vector<std::string> builtin_dependencies;bool ok=operation(error,[&]{require(records.contains(id),"Mod not found");auto enabled=enabled_set();if(on){
     std::set<std::string> visiting;
     std::function<void(const std::string&)> add=[&](const std::string& current){require(!visiting.contains(current),"Dependency cycle at "+current);require(records.contains(current),"Missing dependency: "+current);const auto& graphics=records.at(current).manifest.graphics;if(graphics&&!graphics->shaders.empty())require(cemu::vulkan(),"GLSL shader packs require Vulkan; choose it in Graphics and restart");if(enabled.contains(current))return;visiting.insert(current);for(const auto& d:records.at(current).manifest.dependencies){if(d.id.starts_with("builtin:"))builtin_dependencies.push_back(d.id.substr(8));else add(d.id);}visiting.erase(current);require(confirmed(records.at(current)),records.at(current).manifest.name+" contains native code that has not been confirmed");enabled.insert(current);};add(id);
@@ -304,6 +309,58 @@ bool delete_profile(const std::string& name,std::string& error){return operation
 void remember_builtin(const std::string& id,bool on){std::string error;operation(error,[&]{profile()["builtins"][id]=on;save();dirty=true;});}
 void remember_option(const std::string& id,double value){std::string error;operation(error,[&]{profile()["builtin_options"][id]=value;save();});}
 bool refresh(std::string& error){return operation(error,[&]{for(const auto& [id,r]:records)require(!r.active&&!r.loading&&!wanted(id),(r.manifest.kind=="content"||r.manifest.kind=="cemu"||r.manifest.kind=="guest")?"Disable content mods and restart before rescanning":"Disable installed mods before rescanning");scan();dirty=true;});}
+void start_guests(const GuestInspect& inspect,const GuestLoad& load) {
+    std::lock_guard guard(mutex);
+    if(!ready||guests_started)return;
+    guests_started=true;
+    constexpr uint32_t start=0x7F000000,end=0x80000000;
+    std::map<std::string,std::pair<uint32_t,uint32_t>> reservations;
+    // Keep valid saved assignments for installed packages, including disabled mods.
+    for(const auto& [id,value]:database.get("guest_regions").object) {
+        auto record=records.find(id);if(record==records.end()||record->second.manifest.kind!="guest")continue;
+        const auto& b=value.get("base");const auto& n=value.get("size");
+        if(b.type!=Value::Number||n.type!=Value::Number||b.number<start||b.number>=end||
+           n.number<=0||n.number>end-start||std::floor(b.number)!=b.number||std::floor(n.number)!=n.number)continue;
+        auto base=uint32_t(b.number),size=uint32_t(n.number);
+        if((base&0xFFFF)||(size&0xFFFF)||size>end-base)continue;
+        bool overlap=false;for(const auto& [other,r]:reservations)if(base<r.first+r.second&&r.first<base+size)overlap=true;
+        if(!overlap)reservations[id]={base,size};
+    }
+    for(const auto& id:guest_startup_ids) {
+        auto it=records.find(id);if(it==records.end())continue;
+        auto& r=it->second;
+        try {
+            require(confirmed(r),kUnconfirmed);
+            for(const auto& dep:r.manifest.dependencies)if(!dep.id.starts_with("builtin:")) {
+                const auto& dependency=records.at(dep.id);
+                require(dependency.active||dependency.manifest.kind=="settings",
+                        "Startup dependency is unavailable: "+dep.id);
+            }
+            GuestPackage pkg{id,r.manifest.version,r.path.string(),(root/"Data"/id).string(),r.manifest.fingerprint,r.startup_config};
+            uint32_t bytes=inspect(pkg);
+            require(bytes&&!(bytes&0xFFFF)&&bytes<=end-start,"Invalid guest mod allocation size");
+            auto found=reservations.find(id);
+            if(found==reservations.end()||found->second.second<bytes) {
+                reservations.erase(id);
+                std::vector<std::pair<uint32_t,uint32_t>> ranges;
+                for(const auto& [other,range]:reservations)ranges.push_back(range);
+                std::sort(ranges.begin(),ranges.end());uint32_t base=start;
+                for(const auto& [address,size]:ranges){if(bytes<=address-base)break;base=address+size;}
+                require(base<end&&bytes<=end-base,"Guest mod memory region is full");
+                reservations[id]={base,bytes};
+            }
+            auto [base,size]=reservations.at(id);
+            database["guest_regions"][id]["base"]=double(base);
+            database["guest_regions"][id]["size"]=double(size);
+            save(); // assignments survive a failed build and remain stable next launch
+            load(pkg,base);
+            r.active=true;r.error.clear();r.status="Guest module loaded";
+        } catch(const std::exception& e) {
+            r.active=false;r.error=e.what();
+            fprintf(stderr,"[mod-manager] %s not loaded: %s\n",id.c_str(),e.what());
+        }
+    }
+}
 void set_memory_access(ReadMemory read,WriteMemory write){read_memory=read;write_memory=write;}
 void frame(uint64_t step){
     if(!dirty.load(std::memory_order_relaxed)&&!running.load(std::memory_order_relaxed))return;

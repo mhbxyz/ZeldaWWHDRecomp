@@ -27,8 +27,8 @@ def main():
     if sys.platform == "win32":
         # llvm-mingw is the native module compiler, not the modder's PowerPC toolchain.
         bin_dir = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "LLVM" / "bin"
-        os.environ["WWHD_PPC_CLANG"] = str(bin_dir / "clang.exe")
-        os.environ["WWHD_PPC_LLD"] = str(bin_dir / "ld.lld.exe")
+        os.environ.setdefault("WWHD_PPC_CLANG", str(bin_dir / "clang.exe"))
+        os.environ.setdefault("WWHD_PPC_LLD", str(bin_dir / "ld.lld.exe"))
     elif sys.platform == "darwin":
         prefix = subprocess.check_output(["brew", "--prefix", "llvm"], text=True).strip()
         lld_prefix = subprocess.check_output(["brew", "--prefix", "lld"], text=True).strip()

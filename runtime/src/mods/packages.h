@@ -45,6 +45,15 @@ void remember_option(const std::string& id,double value);
 using ReadMemory=int(*)(uint32_t,void*,size_t);
 using WriteMemory=int(*)(uint32_t,const void*,size_t);
 void set_memory_access(ReadMemory read,WriteMemory write);
+// Frozen at initialize(): later profile/enable/config changes take effect at the next launch.
+struct GuestPackage {
+    std::string id, version, path, data_path, fingerprint;
+    json::Value options;
+};
+using GuestInspect = std::function<uint32_t(const GuestPackage&)>; // reserved bytes, 64 KiB aligned
+using GuestLoad = std::function<void(const GuestPackage&, uint32_t base)>;
+// After dispatch/memory init, before guest threads. Build/load errors remain visible in list().
+void start_guests(const GuestInspect& inspect, const GuestLoad& load);
 void frame(uint64_t step); // actual load/configure/unload and callbacks: game thread only
 std::string platform_key();
 bool refresh(std::string& error);

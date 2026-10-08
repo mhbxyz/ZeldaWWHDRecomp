@@ -153,7 +153,9 @@ def main():
     ap.add_argument("--inspect", action="store_true", help="report memory layout without compiling")
     ap.add_argument("--base", type=lambda s: int(s, 0), default=guestmod.REGION_START,
                     help="guest address of the mod (the mod manager assigns one per enabled mod)")
-    ap.add_argument("--cc", help="compiler command (default: $CC, xcrun clang on macOS, clang)")
+    compiler_args = ap.add_mutually_exclusive_group()
+    compiler_args.add_argument("--cc-json", help="compiler argument vector as JSON (for setup/manager)")
+    compiler_args.add_argument("--cc", help="compiler command (default: $CC, xcrun clang on macOS, clang)")
     ap.add_argument("--include", default=os.path.join(REPO, "runtime", "include"),
                     help="runtime headers (ppc.h, wwhd_guest_abi.h); sdk/include in a release")
     ap.add_argument("--json", action="store_true")
@@ -164,7 +166,10 @@ def main():
         elif not a.out:
             raise guestmod.ModError("--out is required when building")
         else:
-            r = build(a.package, a.out, a.base, shlex.split(a.cc) if a.cc else default_cc(), a.include)
+            cc = json.loads(a.cc_json) if a.cc_json else shlex.split(a.cc) if a.cc else default_cc()
+            if not isinstance(cc, list) or not cc or any(not isinstance(x, str) or not x or "\0" in x for x in cc):
+                raise guestmod.ModError("invalid compiler argument vector")
+            r = build(a.package, a.out, a.base, cc, a.include)
     except (guestmod.ModError, OSError, ValueError, KeyError) as e:
         r = {"ok": False, "error": str(e)}
     print(json.dumps(r) if a.json else ("inspected %s" % r["id"] if a.inspect and r["ok"] else

@@ -21,8 +21,23 @@ jobs:
       - name: PowerPC clang and lld (macOS)
         if: runner.os == 'macOS'
         run: brew install llvm lld
-      - name: PowerPC clang and lld (Windows)
+      - name: PowerPC clang and lld (Windows, all-target MSYS2 build)
         if: runner.os == 'Windows'
-        run: choco install llvm --yes --no-progress
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          update: true
+          install: >-
+            mingw-w64-clang-x86_64-clang
+            mingw-w64-clang-x86_64-lld
+            mingw-w64-clang-x86_64-python
       - name: Build and test guest modules with setup toolchain
+        if: runner.os != 'Windows'
         run: python tools/guestmod/ci_guestmods.py
+      - name: Build and test guest modules with llvm-mingw host compiler
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          export WWHD_PPC_CLANG="$(cygpath -m /clang64/bin/clang.exe)"
+          export WWHD_PPC_LLD="$(cygpath -m /clang64/bin/ld.lld.exe)"
+          python tools/guestmod/ci_guestmods.py

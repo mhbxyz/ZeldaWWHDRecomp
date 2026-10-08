@@ -13,6 +13,19 @@ import setup  # noqa: E402
 KEY_HEX = "0011223344556677" "8899aabbccddeeff"  # made-up test value
 
 
+class GuestBuildConfig(unittest.TestCase):
+    def test_toolchain_argument_vector(self):
+        with tempfile.TemporaryDirectory() as d:
+            tc = setup.Toolchain(["compiler with spaces", "cc", "-target", "x86_64-linux-gnu.2.35"], [], [])
+            setup.write_guest_build_config(d, tc)
+            with open(os.path.join(d, "guest-sdk.json"), encoding="utf-8") as f:
+                config = json.load(f)
+            self.assertEqual(config["compiler"], tc.cc)
+            self.assertEqual(config["python"], [sys.executable])
+            self.assertTrue(config["builder"].endswith("build_guest_mod.py"))
+            self.assertFalse(os.path.exists(os.path.join(d, "guest-sdk.json.tmp")))
+
+
 class Keys(unittest.TestCase):
     def test_raw_and_hex(self):
         raw = bytes(range(16))
