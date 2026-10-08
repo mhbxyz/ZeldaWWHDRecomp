@@ -124,6 +124,69 @@ WWHD_HOOK(0x02000000, all_services, (void)) {
             result = builder.build(d, str(Path(d, "cache")), 0x7F000000, builder.default_cc(), str(Path(REPO, "runtime/include")))
             self.assertTrue(result["ok"])
 
+    def test_register_pair_module_executes(self):
+        # Leaf guest functions need no guest RAM: this executes the actual translated module.
+        src = r'''
+#include "game/bindings.h"
+WWHD_REPLACE(0x02000000, wwhd_gpr_pair, pair_result, (void)) {
+    return 0x1122334455667788ULL;
+}
+WWHD_REPLACE(0x02000004, u32, pair_low, (wwhd_gpr_pair value)) {
+    return WWHD_RESULT_R4(value);
+}
+'''
+        driver = r'''
+#include "wwhd_guest_abi.h"
+#include <assert.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+int main(int argc, char** argv) {
+    assert(argc == 2);
+#ifdef _WIN32
+    HMODULE library = LoadLibraryA(argv[1]); assert(library);
+    WWHDGuestInitV1 init = (WWHDGuestInitV1)GetProcAddress(library, WWHD_GUEST_INIT_SYMBOL);
+#else
+    void* library = dlopen(argv[1], RTLD_NOW); assert(library);
+    WWHDGuestInitV1 init = (WWHDGuestInitV1)dlsym(library, WWHD_GUEST_INIT_SYMBOL);
+#endif
+    assert(init);
+    volatile int preempt[3] = {0};
+    WWHDGuestHostV1 host = {0}; host.size = sizeof(host);
+    host.abi_version = WWHD_GUEST_ABI_VERSION; host.core_preempt = preempt;
+    const WWHDGuestModuleV1* module = init(&host); assert(module && module->hook_count == 2);
+    Cpu cpu = {0}; int pairs = 0, lows = 0;
+    for (uint32_t i = 0; i < module->hook_count; ++i) if (module->hooks[i].target == 0x02000000) {
+        ++pairs; module->hooks[i].fn(&cpu);
+        assert(cpu.r[3] == 0x11223344 && cpu.r[4] == 0x55667788);
+    }
+    cpu.r[3] = 0xABCDEF01; cpu.r[4] = 0x12345678;
+    for (uint32_t i = 0; i < module->hook_count; ++i) if (module->hooks[i].target == 0x02000004) {
+        ++lows; module->hooks[i].fn(&cpu); assert(cpu.r[3] == 0x12345678);
+    }
+    assert(pairs == 1 && lows == 1);
+#ifdef _WIN32
+    FreeLibrary(library);
+#else
+    dlclose(library);
+#endif
+    return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as d:
+            self.build_elf(src, d)
+            Path(d, 'manifest.json').write_text(json.dumps({'kind': 'guest', 'id': 'register-pair', 'guest': {'api_version': 1}}))
+            result = builder.build(d, str(Path(d, 'cache')), 0x7F000000, builder.default_cc(), str(Path(REPO, 'runtime/include')))
+            source = Path(d, 'driver.c'); source.write_text(driver)
+            executable = Path(d, 'driver.exe' if os.name == 'nt' else 'driver')
+            command = builder.default_cc() + ['-O2', '-I', str(Path(REPO, 'runtime/include')), str(source), '-o', str(executable)]
+            if sys.platform.startswith('linux'):
+                command.append('-ldl')
+            subprocess.run(command, check=True)
+            subprocess.run([str(executable), result['module']], check=True)
+
     def test_errors(self):
         with self.assertRaises(guestmod.ModError):
             guestmod.Elf(b"not an elf at all" * 4)

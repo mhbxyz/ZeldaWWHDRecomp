@@ -1,6 +1,6 @@
 """Parser checks use declarations only, with no game input."""
 import unittest
-from public_sdk_index import DECL, VERIFY, symbols_header
+from public_sdk_index import DECL, VERIFY, mask_declarations, symbols_header
 from public_sdk_layouts import layout
 from public_sdk_bindings import bindings, guest_type
 from public_sdk_data import declarations
@@ -45,6 +45,29 @@ class PublicDeclarations(unittest.TestCase):
     def test_missing_data_binding_fails_closed(self):
         with self.assertRaisesRegex(ValueError, 'public data declaration changed'):
             declarations(lambda source: '', 'public')
+
+    def test_unnamed_parameters_preserve_abi_types(self):
+        index = {'revision': 'public', 'functions': [
+            {'name': 'unused_args', 'address': 0x02000000, 'return': 's32',
+             'parameters': 'void*, int, const cXyz*, f32 rate, unsigned int'}]}
+        text, skipped = bindings(index)
+        self.assertFalse(skipped)
+        self.assertIn('(void* arg0, int arg1, const void* arg2, f32 rate, unsigned int arg4)', text)
+
+    def test_macro_continuation_does_not_pollute_return_type(self):
+        text = '#define ACTIVATE() \\\n    Activation activation\n\nvoid execute(void*) { }'
+        match = DECL.search(mask_declarations(text))
+        self.assertEqual(match[1].strip(), 'void')
+        self.assertEqual(match[2], 'execute')
+
+    def test_verified_register_pair_return_is_not_a_c_struct(self):
+        index = {'revision': 'public', 'abi_aliases': {'Pair32': 'wwhd_gpr_pair'},
+                 'functions': [{'name': 'pair', 'address': 0x02000000,
+                                'return': 'Pair32', 'parameters': 'void*'}]}
+        text, skipped = bindings(index)
+        self.assertFalse(skipped)
+        self.assertIn('wwhd_gpr_pair, wwhd_pair_02000000, (void* arg0)', text)
+        self.assertIn('WWHD_RESULT_R3', text)
 
     def test_member_declaration(self):
         match = DECL.search('\ns32 Actor::execute() {')

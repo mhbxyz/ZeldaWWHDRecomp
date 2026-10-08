@@ -2,11 +2,12 @@
 import re
 
 SCALARS = {'void', 'u8', 's8', 'u16', 's16', 'u32', 's32', 'f32', 'f64',
-           'int', 'unsigned int', 'signed int', 'char', 'unsigned char', 'short', 'unsigned short', 'bool'}
+           'int', 'unsigned int', 'signed int', 'char', 'signed char', 'wwhd_gpr_pair', 'unsigned char', 'short', 'unsigned short', 'bool'}
 
 
-def guest_type(kind):
-    kind = re.sub(r'be<(\w+)>', r'\1', kind.strip())
+def guest_type(kind, aliases=None):
+    kind = (aliases or {}).get(kind.strip(), kind.strip())
+    kind = re.sub(r'be<(\w+)>', r'\1', kind)
     kind = re.sub(r'\bbool\b', 'u8', kind)
     kind = {'BOOL': 's32', 'cPhs_State': 's32', 'fpc_ProcID': 'u32', 'bool': 'u8', 'double': 'f64', 'float': 'f32'}.get(kind, kind)
     if '*' in kind:
@@ -22,7 +23,11 @@ def bindings(index):
     lines = ['/* Generated public HD declarations, CC0-1.0; see public-wwhd-LICENSE.',
              ' * Revision: ' + index['revision'],
              ' * Object pointers are opaque; use the curated views for member access. */',
-             '#pragma once', '#include "functions.h"', '#include "../wwhd_guest.h"', '']
+             '#pragma once', '#include "functions.h"', '#include "../wwhd_guest.h"',
+             '/* Explicit two-register results: high 32 bits are r3, low 32 bits are r4. */',
+             'typedef unsigned long long wwhd_gpr_pair;',
+             '#define WWHD_RESULT_R3(value) ((u32)((wwhd_gpr_pair)(value) >> 32))',
+             '#define WWHD_RESULT_R4(value) ((u32)(value))', '']
     skipped = []
     used = set()
     names = {}
@@ -30,14 +35,24 @@ def bindings(index):
         key = re.sub(r'[^A-Za-z0-9_]', '_', function['name'].lstrip('&'))
         names.setdefault(key, set()).add(function['address'])
     for function in index['functions']:
-        ret = guest_type(function['return'])
+        owner = function['name'].lstrip('&').rsplit('::', 1)[0] if function['name'].startswith('&') else ''
+        aliases = index.get('abi_aliases', {})
+        def signature_type(kind):
+            if owner + '::' + kind.strip() in aliases:
+                kind = owner + '::' + kind.strip()
+            return guest_type(kind, aliases)
+        ret = signature_type(function['return'])
         params = []
         for parameter in function['parameters'].split(','):
             parameter = parameter.strip()
             if not parameter or parameter == 'void':
                 continue
+            unnamed = signature_type(parameter) if '*' not in parameter or parameter.endswith('*') else None
+            if unnamed is not None:
+                params.append(unnamed + ' arg' + str(len(params)))
+                continue
             match = re.fullmatch(r'(.+?[\s*&])([A-Za-z_]\w*)', parameter)
-            kind = guest_type(match[1]) if match else None
+            kind = signature_type(match[1]) if match else None
             if kind is None:
                 ret = None
                 break
@@ -51,6 +66,8 @@ def bindings(index):
         if name in used:
             continue
         used.add(name)
+        if ret == "wwhd_gpr_pair":
+            lines.append(f"/* Public {function['return']} ABI: explicit r3/r4 result, not a C struct return. */")
         lines.append(f"WWHD_GAME_FUNC(0x{function['address']:08X}, {ret}, wwhd_{name}, ({', '.join(params) or 'void'}));")
         if len(names[short_name]) == 1:
             lines.append(f'#define wwhd_{short_name} wwhd_{name}')

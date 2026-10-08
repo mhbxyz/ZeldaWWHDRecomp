@@ -20,6 +20,17 @@ def git(root, *args):
     return subprocess.check_output(['git', '-C', str(root), *args], text=True).strip()
 
 
+
+def mask_declarations(text):
+    masked = re.sub(r'/\*.*?\*/|//[^\n]*', lambda m: ''.join('\n' if c == '\n' else ' ' for c in m[0]), text, flags=re.S)
+    lines, continuation = [], False
+    for line in masked.splitlines(keepends=True):
+        directive = continuation or line.lstrip().startswith('#')
+        continuation = directive and line.rstrip().endswith('\\')
+        lines.append(''.join('\n' if c == '\n' else ' ' for c in line) if directive else line)
+    return ''.join(lines)
+
+
 def inventory(root):
     root = root.resolve()
     remote = git(root, 'remote', 'get-url', 'origin').removesuffix('.git').rstrip('/')
@@ -35,7 +46,7 @@ def inventory(root):
         text = path.read_text()
         relative = path.relative_to(root).as_posix()
         # Preserve positions while masking comments before scanning declarations.
-        masked = re.sub(r'/\*.*?\*/|//[^\n]*', lambda m: ''.join('\n' if c == '\n' else ' ' for c in m[0]), text, flags=re.S)
+        masked = mask_declarations(text)
         declarations = {}
         for match in DECL.finditer(masked):
             declarations.setdefault(match[2], []).append(match)
@@ -61,7 +72,8 @@ def inventory(root):
         for match in LAYOUT.finditer(text):
             layouts.append({'kind': match[1].lower(), 'arguments': match[2], 'source': relative})
     functions.sort(key=lambda f: (f['address'], f['name'], f['source']))
-    return {'public_source': PUBLIC_URL, 'revision': git(root, 'rev-parse', 'HEAD'),
+    from public_sdk_abi import aliases
+    return {'abi_aliases': aliases(root), 'public_source': PUBLIC_URL, 'revision': git(root, 'rev-parse', 'HEAD'),
             'functions': functions, 'layout_assertions': layouts, 'unresolved_declarations': unresolved}
 
 

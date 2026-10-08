@@ -276,6 +276,14 @@ Ambiguous names retain an address suffix. `game/bindings.h` declares callable
 functions with supported signatures; object pointers are opaque `void*`, and
 names use a `wwhd_` prefix. Unsupported signatures are reported rather than guessed.
 The JSON inventory retains their original public declarations for further curation.
+The current public revision resolves every verified declaration (22,853 unique callable
+bindings). Public `Pair32` and six-byte vector returns explicitly use two integer registers;
+the SDK exposes them as `wwhd_gpr_pair`, with `WWHD_RESULT_R3` and `WWHD_RESULT_R4` accessors,
+rather than declaring a C struct return with a hidden result pointer. For `SxyzResult`,
+r3 contains x/y and the upper 16 bits of r4 contain z; its lower 16 bits are not part of
+the value. The generator validates these public ABI adapters and curated enum definitions
+before emitting their declarations. A synthetic translated-module execution test checks
+the PowerPC register order with each desktop host compiler.
 These addresses target USA version 0. Functions absent from the public decomp
 remain hookable by address when hook checks are compiled in.
 

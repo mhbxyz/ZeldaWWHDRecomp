@@ -4,6 +4,10 @@
 #pragma once
 #include "functions.h"
 #include "../wwhd_guest.h"
+/* Explicit two-register results: high 32 bits are r3, low 32 bits are r4. */
+typedef unsigned long long wwhd_gpr_pair;
+#define WWHD_RESULT_R3(value) ((u32)((wwhd_gpr_pair)(value) >> 32))
+#define WWHD_RESULT_R4(value) ((u32)(value))
 
 WWHD_GAME_FUNC(0x02000020, u32, wwhd_Receiver_ct_02000020, (u32 self));
 #define wwhd_Receiver_ct wwhd_Receiver_ct_02000020
@@ -1421,8 +1425,14 @@ WWHD_GAME_FUNC(0x0201A3E4, void, wwhd_hd_static_init_0201A3E4_0201A3E4, (void));
 #define wwhd_hd_static_init_0201A3E4 wwhd_hd_static_init_0201A3E4_0201A3E4
 WWHD_GAME_FUNC(0x0201A478, void*, wwhd_sxyz_construct_0201A478, (void* object, s16 x, s16 y, s16 z));
 #define wwhd_sxyz_construct wwhd_sxyz_construct_0201A478
+/* Public SxyzResult ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x0201A4DC, wwhd_gpr_pair, wwhd_sxyz_add_0201A4DC, (void* left, void* right));
+#define wwhd_sxyz_add wwhd_sxyz_add_0201A4DC
 WWHD_GAME_FUNC(0x0201A554, void, wwhd_sxyz_add_assign_0201A554, (void* left, void* right));
 #define wwhd_sxyz_add_assign wwhd_sxyz_add_assign_0201A554
+/* Public SxyzResult ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x0201A588, wwhd_gpr_pair, wwhd_sxyz_scale_0201A588, (void* object, f32 scale));
+#define wwhd_sxyz_scale wwhd_sxyz_scale_0201A588
 WWHD_GAME_FUNC(0x0201A668, void, wwhd_sxyz_static_init_0201A668, (void));
 #define wwhd_sxyz_static_init wwhd_sxyz_static_init_0201A668
 WWHD_GAME_FUNC(0x0201A71C, u32, wwhd_cTg_IsUse_0201A71C, (void* tag));
@@ -3043,8 +3053,12 @@ WWHD_GAME_FUNC(0x02047EEC, void, wwhd_acorn_leaf_sinit_02047EEC, (void));
 #define wwhd_acorn_leaf_sinit wwhd_acorn_leaf_sinit_02047EEC
 WWHD_GAME_FUNC(0x02047FA0, void, wwhd_acorn_leaf_SafeString_dtor_02047FA0, (void* p, s32 flags));
 #define wwhd_acorn_leaf_SafeString_dtor wwhd_acorn_leaf_SafeString_dtor_02047FA0
+WWHD_GAME_FUNC(0x02047FB4, s32, wwhd_daAleaf_IsDelete_02047FB4, (void* arg0));
+#define wwhd_daAleaf_IsDelete wwhd_daAleaf_IsDelete_02047FB4
 WWHD_GAME_FUNC(0x02047FBC, void, wwhd_daAleaf_dtor_02047FBC, (void* p, s32 flags));
 #define wwhd_daAleaf_dtor wwhd_daAleaf_dtor_02047FBC
+WWHD_GAME_FUNC(0x02048034, void, wwhd_acorn_leaf_SafeString_v14_02048034, (void* arg0));
+#define wwhd_acorn_leaf_SafeString_v14 wwhd_acorn_leaf_SafeString_v14_02048034
 WWHD_GAME_FUNC(0x02048038, u32, wwhd_daObj_PrmAbstract_acorn_02048038, (void* a, s32 width, s32 shift));
 #define wwhd_daObj_PrmAbstract_acorn wwhd_daObj_PrmAbstract_acorn_02048038
 WWHD_GAME_FUNC(0x02048054, s32, wwhd_daAgbsw0_c__execute_02048054, (void* self));
@@ -3073,10 +3087,16 @@ WWHD_GAME_FUNC(0x02048500, s32, wwhd_daAlldie_c__execute_02048500, (void* self))
 #define wwhd_daAlldie_c__execute wwhd_daAlldie_c__execute_02048500
 WWHD_GAME_FUNC(0x0204854C, s32, wwhd_daAlldie_Execute_0204854C, (void* i_this));
 #define wwhd_daAlldie_Execute wwhd_daAlldie_Execute_0204854C
+WWHD_GAME_FUNC(0x02048570, s32, wwhd_daAlldie_IsDelete_02048570, (void* arg0));
+#define wwhd_daAlldie_IsDelete wwhd_daAlldie_IsDelete_02048570
+WWHD_GAME_FUNC(0x02048578, s32, wwhd_daAlldie_Delete_02048578, (void* arg0));
+#define wwhd_daAlldie_Delete wwhd_daAlldie_Delete_02048578
 WWHD_GAME_FUNC(0x02048580, s32, wwhd_daAlldie_Create_02048580, (void* ac));
 #define wwhd_daAlldie_Create wwhd_daAlldie_Create_02048580
 WWHD_GAME_FUNC(0x02048624, void, wwhd___sinit_d_a_alldie_cpp_02048624, (void));
 #define wwhd___sinit_d_a_alldie_cpp wwhd___sinit_d_a_alldie_cpp_02048624
+WWHD_GAME_FUNC(0x020486B8, s32, wwhd_daAlldie_Draw_020486B8, (void* arg0));
+#define wwhd_daAlldie_Draw wwhd_daAlldie_Draw_020486B8
 WWHD_GAME_FUNC(0x020486C0, void, wwhd_daAlldie_c_dt_020486C0, (void* i_this, s32 flags));
 #define wwhd_daAlldie_c_dt wwhd_daAlldie_c_dt_020486C0
 WWHD_GAME_FUNC(0x02048714, s32, wwhd_nodeCallBack_02048714, (void* node, int calcTiming));
@@ -3091,6 +3111,8 @@ WWHD_GAME_FUNC(0x02048FA4, s32, wwhd_bomb_nomi_check_02048FA4, (void* i_this));
 WWHD_GAME_FUNC(0x02049250, s32, wwhd_Line_check_02049250, (void* i_this, void* destPos));
 WWHD_GAME_FUNC(0x0204938C, s32, wwhd_daAM_Execute_0204938C, (void* i_this));
 #define wwhd_daAM_Execute wwhd_daAM_Execute_0204938C
+WWHD_GAME_FUNC(0x0204B428, s32, wwhd_daAM_IsDelete_0204B428, (void* arg0));
+#define wwhd_daAM_IsDelete wwhd_daAM_IsDelete_0204B428
 WWHD_GAME_FUNC(0x0204B430, s32, wwhd_daAM_Delete_0204B430, (void* i_this));
 #define wwhd_daAM_Delete wwhd_daAM_Delete_0204B430
 WWHD_GAME_FUNC(0x0204B500, s32, wwhd_useHeapInit_0204B500, (void* i_this));
@@ -3112,6 +3134,7 @@ WWHD_GAME_FUNC(0x0204C15C, void, wwhd_JPABaseEmitter_onStatus_0204C15C, (void* e
 WWHD_GAME_FUNC(0x0204C16C, void, wwhd_smokeEcallBack_dt_0204C16C, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0204C180, void, wwhd_am_class_dt_0204C180, (void* self, s32 flags));
 #define wwhd_am_class_dt wwhd_am_class_dt_0204C180
+WWHD_GAME_FUNC(0x0204C2C0, void, wwhd_SafeString_assureTermination_0204C2C0, (void* arg0));
 WWHD_GAME_FUNC(0x0204C2C4, s32, wwhd_nodeCallBack_0204C2C4, (void* node, s32 timing));
 WWHD_GAME_FUNC(0x0204C4E4, void, wwhd_draw_SUB_0204C4E4, (void* actor));
 WWHD_GAME_FUNC(0x0204C5F8, s32, wwhd_daAM2_Draw_0204C5F8, (void* actor));
@@ -3172,11 +3195,25 @@ WWHD_GAME_FUNC(0x02050ECC, s32, wwhd_daAmiProp_Execute_02050ECC, (void* i_this))
 WWHD_GAME_FUNC(0x02050ED0, void, wwhd___sinit_d_a_amiprop_cpp_02050ED0, (void));
 #define wwhd___sinit_d_a_amiprop_cpp wwhd___sinit_d_a_amiprop_cpp_02050ED0
 WWHD_GAME_FUNC(0x02050F64, void, wwhd_trivial_dt_02050F64, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02050F78, s32, wwhd_daAmiProp_IsDelete_02050F78, (void* arg0));
+#define wwhd_daAmiProp_IsDelete wwhd_daAmiProp_IsDelete_02050F78
 WWHD_GAME_FUNC(0x02050F80, void, wwhd_daAmiProp_c_dt_02050F80, (void* i_this, s32 flags));
 #define wwhd_daAmiProp_c_dt wwhd_daAmiProp_c_dt_02050F80
 WWHD_GAME_FUNC(0x02050FEC, void, wwhd_empty_virtual_02050FEC, (void* p));
+WWHD_GAME_FUNC(0x02050FF0, s32, wwhd_daAndsw0_Draw_02050FF0, (void* arg0));
+#define wwhd_daAndsw0_Draw wwhd_daAndsw0_Draw_02050FF0
+WWHD_GAME_FUNC(0x02050FF8, void*, wwhd_bk_s_sub1_02050FF8, (void* i_this, void* arg1));
+#define wwhd_bk_s_sub1 wwhd_bk_s_sub1_02050FF8
+WWHD_GAME_FUNC(0x02051078, void*, wwhd_bk_s_sub2_02051078, (void* i_this, void* arg1));
+#define wwhd_bk_s_sub2 wwhd_bk_s_sub2_02051078
+WWHD_GAME_FUNC(0x020510F4, void*, wwhd_bk_s_sub3_020510F4, (void* i_this, void* arg1));
+#define wwhd_bk_s_sub3 wwhd_bk_s_sub3_020510F4
+WWHD_GAME_FUNC(0x02051174, void*, wwhd_bb_s_sub_02051174, (void* search, void* arg1));
+#define wwhd_bb_s_sub wwhd_bb_s_sub_02051174
 WWHD_GAME_FUNC(0x020511E4, s32, wwhd_daAndsw0_Execute_020511E4, (void* i_this));
 #define wwhd_daAndsw0_Execute wwhd_daAndsw0_Execute_020511E4
+WWHD_GAME_FUNC(0x020517F0, s32, wwhd_daAndsw0_IsDelete_020517F0, (void* arg0));
+#define wwhd_daAndsw0_IsDelete wwhd_daAndsw0_IsDelete_020517F0
 WWHD_GAME_FUNC(0x020517F8, s32, wwhd_daAndsw0_Delete_020517F8, (void* i_this));
 #define wwhd_daAndsw0_Delete wwhd_daAndsw0_Delete_020517F8
 WWHD_GAME_FUNC(0x02051800, s32, wwhd_daAndsw0_Create_02051800, (void* a));
@@ -3304,6 +3341,8 @@ WWHD_GAME_FUNC(0x020559B8, void, wwhd_sinit_d_a_arrow_020559B8, (void));
 #define wwhd_sinit_d_a_arrow wwhd_sinit_d_a_arrow_020559B8
 WWHD_GAME_FUNC(0x02055A6C, void, wwhd_emptyClass_dt_02055A6C, (void* p, s32 flags));
 #define wwhd_emptyClass_dt wwhd_emptyClass_dt_02055A6C
+WWHD_GAME_FUNC(0x02055A80, s32, wwhd_daArrowIsDelete_02055A80, (void* arg0));
+#define wwhd_daArrowIsDelete wwhd_daArrowIsDelete_02055A80
 WWHD_GAME_FUNC(0x02055A88, void, wwhd_daArrow_dt_02055A88, (void* p, s32 flags));
 #define wwhd_daArrow_dt wwhd_daArrow_dt_02055A88
 WWHD_GAME_FUNC(0x02055B60, void, wwhd_emptyFunc_02055B60, (void));
@@ -3328,6 +3367,8 @@ WWHD_GAME_FUNC(0x020564D0, u8, wwhd_daArrow_Iceeff_c___execute_020564D0, (void* 
 WWHD_GAME_FUNC(0x02056A40, void, wwhd___sinit_d_a_arrow_iceeff_cpp_02056A40, (void));
 #define wwhd___sinit_d_a_arrow_iceeff_cpp wwhd___sinit_d_a_arrow_iceeff_cpp_02056A40
 WWHD_GAME_FUNC(0x02056AD4, void, wwhd_trivial_dt_02056AD4, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02056AE8, s32, wwhd_daArrow_Iceeff_IsDelete_02056AE8, (void* arg0));
+#define wwhd_daArrow_Iceeff_IsDelete wwhd_daArrow_Iceeff_IsDelete_02056AE8
 WWHD_GAME_FUNC(0x02056AF0, void, wwhd_daArrow_Iceeff_c_dt_02056AF0, (void* i_this, s32 flags));
 #define wwhd_daArrow_Iceeff_c_dt wwhd_daArrow_Iceeff_c_dt_02056AF0
 WWHD_GAME_FUNC(0x02056B50, void, wwhd_empty_virtual_02056B50, (void* p));
@@ -3357,6 +3398,8 @@ WWHD_GAME_FUNC(0x02057930, u8, wwhd_daArrow_Lighteff_c___execute_02057930, (void
 WWHD_GAME_FUNC(0x02057E48, void, wwhd___sinit_d_a_arrow_lighteff_cpp_02057E48, (void));
 #define wwhd___sinit_d_a_arrow_lighteff_cpp wwhd___sinit_d_a_arrow_lighteff_cpp_02057E48
 WWHD_GAME_FUNC(0x02057EDC, void, wwhd_trivial_dt_02057EDC, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02057EF0, s32, wwhd_daArrow_Lighteff_IsDelete_02057EF0, (void* arg0));
+#define wwhd_daArrow_Lighteff_IsDelete wwhd_daArrow_Lighteff_IsDelete_02057EF0
 WWHD_GAME_FUNC(0x02057EF8, void, wwhd_daArrow_Lighteff_c_dt_02057EF8, (void* self, s32 flags));
 #define wwhd_daArrow_Lighteff_c_dt wwhd_daArrow_Lighteff_c_dt_02057EF8
 WWHD_GAME_FUNC(0x02057F4C, void, wwhd_empty_virtual_02057F4C, (void* p));
@@ -3381,6 +3424,8 @@ WWHD_GAME_FUNC(0x020582F0, s32, wwhd_daAtdoor_Draw_020582F0, (void* i_this));
 #define wwhd_daAtdoor_Draw wwhd_daAtdoor_Draw_020582F0
 WWHD_GAME_FUNC(0x0205834C, s32, wwhd_daAtdoor_Execute_0205834C, (void* i_this));
 #define wwhd_daAtdoor_Execute wwhd_daAtdoor_Execute_0205834C
+WWHD_GAME_FUNC(0x020583CC, s32, wwhd_daAtdoor_IsDelete_020583CC, (void* arg0));
+#define wwhd_daAtdoor_IsDelete wwhd_daAtdoor_IsDelete_020583CC
 WWHD_GAME_FUNC(0x020583D4, s32, wwhd_daAtdoor_Delete_020583D4, (void* i_this));
 #define wwhd_daAtdoor_Delete wwhd_daAtdoor_Delete_020583D4
 WWHD_GAME_FUNC(0x0205842C, u8, wwhd_daAtdoor_c__CreateInit_0205842C, (void* self));
@@ -3545,8 +3590,12 @@ WWHD_GAME_FUNC(0x0205E638, void, wwhd_bb_pos_move_0205E638, (void* i_this));
 #define wwhd_bb_pos_move wwhd_bb_pos_move_0205E638
 WWHD_GAME_FUNC(0x0205E8AC, void, wwhd_bb_ground_pos_move_0205E8AC, (void* i_this));
 #define wwhd_bb_ground_pos_move wwhd_bb_ground_pos_move_0205E8AC
+WWHD_GAME_FUNC(0x0205EA08, void*, wwhd_pl_name_check_0205EA08, (void* ac, void* arg1));
+#define wwhd_pl_name_check wwhd_pl_name_check_0205EA08
 WWHD_GAME_FUNC(0x0205EA58, s32, wwhd_daBb_Execute_0205EA58, (void* i_this));
 #define wwhd_daBb_Execute wwhd_daBb_Execute_0205EA58
+WWHD_GAME_FUNC(0x0206195C, s32, wwhd_daBb_IsDelete_0206195C, (void* arg0));
+#define wwhd_daBb_IsDelete wwhd_daBb_IsDelete_0206195C
 WWHD_GAME_FUNC(0x02061964, s32, wwhd_daBb_Delete_02061964, (void* i_this));
 #define wwhd_daBb_Delete wwhd_daBb_Delete_02061964
 WWHD_GAME_FUNC(0x020619D0, s32, wwhd_useHeapInit_020619D0, (void* ac));
@@ -3575,8 +3624,29 @@ WWHD_GAME_FUNC(0x02063BDC, void, wwhd_bb_su_wait_move_02063BDC, (void* i_this));
 WWHD_GAME_FUNC(0x0206432C, void, wwhd_damage_check_0206432C, (void* i_this));
 WWHD_GAME_FUNC(0x02064BD0, void, wwhd_bb_class_dt_02064BD0, (void* i_this, s32 flags));
 #define wwhd_bb_class_dt wwhd_bb_class_dt_02064BD0
+WWHD_GAME_FUNC(0x02064CF0, void, wwhd_SafeString_assureTerminationImpl_02064CF0, (void* arg0));
+WWHD_GAME_FUNC(0x02064CF4, void*, wwhd_kamome_delete_sub_02064CF4, (void* param_1, void* arg1));
+#define wwhd_kamome_delete_sub wwhd_kamome_delete_sub_02064CF4
+WWHD_GAME_FUNC(0x02064D48, void*, wwhd_kui_delete_sub_02064D48, (void* param_1, void* arg1));
+#define wwhd_kui_delete_sub wwhd_kui_delete_sub_02064D48
+WWHD_GAME_FUNC(0x02064D9C, void*, wwhd_ep_delete_sub_02064D9C, (void* param_1, void* arg1));
+#define wwhd_ep_delete_sub wwhd_ep_delete_sub_02064D9C
+WWHD_GAME_FUNC(0x02064DF0, void*, wwhd_dk_delete_sub_02064DF0, (void* param_1, void* arg1));
+#define wwhd_dk_delete_sub wwhd_dk_delete_sub_02064DF0
+WWHD_GAME_FUNC(0x02064E44, void*, wwhd_obj_delete_sub_02064E44, (void* param_1, void* arg1));
+#define wwhd_obj_delete_sub wwhd_obj_delete_sub_02064E44
 WWHD_GAME_FUNC(0x02064EA8, void*, wwhd_obj_hahen_sub_02064EA8, (void* param_1, void* param_2));
 #define wwhd_obj_hahen_sub wwhd_obj_hahen_sub_02064EA8
+WWHD_GAME_FUNC(0x0206505C, void*, wwhd_sea_delete_sub_0206505C, (void* param_1, void* arg1));
+#define wwhd_sea_delete_sub wwhd_sea_delete_sub_0206505C
+WWHD_GAME_FUNC(0x020650B0, void*, wwhd_bk_delete_sub_020650B0, (void* param_1, void* arg1));
+#define wwhd_bk_delete_sub wwhd_bk_delete_sub_020650B0
+WWHD_GAME_FUNC(0x02065104, void*, wwhd_boko_delete_sub_02065104, (void* param_1, void* arg1));
+#define wwhd_boko_delete_sub wwhd_boko_delete_sub_02065104
+WWHD_GAME_FUNC(0x02065158, void*, wwhd_obj2_delete_sub_02065158, (void* param_1, void* arg1));
+#define wwhd_obj2_delete_sub wwhd_obj2_delete_sub_02065158
+WWHD_GAME_FUNC(0x020651B8, void*, wwhd_s_1BE_sub_020651B8, (void* param_1, void* arg1));
+#define wwhd_s_1BE_sub wwhd_s_1BE_sub_020651B8
 WWHD_GAME_FUNC(0x02065208, s32, wwhd_land_area_check_02065208, (void* param_1, f32 param_2));
 #define wwhd_land_area_check wwhd_land_area_check_02065208
 WWHD_GAME_FUNC(0x02065278, void, wwhd_eff_hane_set_02065278, (void* i_this, void* offset, int param_3, s8 param_4));
@@ -3590,8 +3660,12 @@ WWHD_GAME_FUNC(0x02066634, void, wwhd_ground_move_02066634, (void* i_this));
 #define wwhd_ground_move wwhd_ground_move_02066634
 WWHD_GAME_FUNC(0x02066798, void, wwhd_wind_set_02066798, (void* i_this, void* param2));
 #define wwhd_wind_set wwhd_wind_set_02066798
+WWHD_GAME_FUNC(0x020669B8, void*, wwhd_obj_s_sub_020669B8, (void* param_1, void* arg1));
+#define wwhd_obj_s_sub wwhd_obj_s_sub_020669B8
 WWHD_GAME_FUNC(0x02066A38, s32, wwhd_daBdk_Execute_02066A38, (void* i_this));
 #define wwhd_daBdk_Execute wwhd_daBdk_Execute_02066A38
+WWHD_GAME_FUNC(0x020692D8, s32, wwhd_daBdk_IsDelete_020692D8, (void* arg0));
+#define wwhd_daBdk_IsDelete wwhd_daBdk_IsDelete_020692D8
 WWHD_GAME_FUNC(0x020692E0, s32, wwhd_daBdk_Delete_020692E0, (void* i_this));
 #define wwhd_daBdk_Delete wwhd_daBdk_Delete_020692E0
 WWHD_GAME_FUNC(0x02069428, s32, wwhd_useHeapInit_02069428, (void* i_actor));
@@ -3647,11 +3721,14 @@ WWHD_GAME_FUNC(0x0207267C, void, wwhd_bdk_eff_s_dt_0207267C, (void* self, s32 fl
 #define wwhd_bdk_eff_s_dt wwhd_bdk_eff_s_dt_0207267C
 WWHD_GAME_FUNC(0x020726D0, void, wwhd_bdk_class_dt_020726D0, (void* self, s32 flags));
 #define wwhd_bdk_class_dt wwhd_bdk_class_dt_020726D0
+WWHD_GAME_FUNC(0x02072884, void, wwhd_SafeString_assureTermination_02072884, (void* arg0));
 WWHD_GAME_FUNC(0x02072888, void, wwhd_ride_call_back_02072888, (void* param1, void* param2, void* param3));
 WWHD_GAME_FUNC(0x020728A8, s32, wwhd_daBdkobj_Draw_020728A8, (void* i_this));
 #define wwhd_daBdkobj_Draw wwhd_daBdkobj_Draw_020728A8
 WWHD_GAME_FUNC(0x020729A8, s32, wwhd_daBdkobj_Execute_020729A8, (void* i_this));
 #define wwhd_daBdkobj_Execute wwhd_daBdkobj_Execute_020729A8
+WWHD_GAME_FUNC(0x020742BC, s32, wwhd_daBdkobj_IsDelete_020742BC, (void* arg0));
+#define wwhd_daBdkobj_IsDelete wwhd_daBdkobj_IsDelete_020742BC
 WWHD_GAME_FUNC(0x020742C4, s32, wwhd_daBdkobj_Delete_020742C4, (void* i_this));
 #define wwhd_daBdkobj_Delete wwhd_daBdkobj_Delete_020742C4
 WWHD_GAME_FUNC(0x02074330, s32, wwhd_useHeapInit_02074330, (void* a_this));
@@ -3668,6 +3745,7 @@ WWHD_GAME_FUNC(0x0207495C, void, wwhd_bdo_eff_s_dt_0207495C, (void* e, s32 flags
 #define wwhd_bdo_eff_s_dt wwhd_bdo_eff_s_dt_0207495C
 WWHD_GAME_FUNC(0x020749BC, void, wwhd_bdkobj_class_dt_020749BC, (void* i_this, s32 flags));
 #define wwhd_bdkobj_class_dt wwhd_bdkobj_class_dt_020749BC
+WWHD_GAME_FUNC(0x02074A48, void, wwhd_SafeString_assureTermination_02074A48, (void* arg0));
 WWHD_GAME_FUNC(0x02074A4C, s32, wwhd_daBeam_CreateHeap_02074A4C, (void* b));
 #define wwhd_daBeam_CreateHeap wwhd_daBeam_CreateHeap_02074A4C
 WWHD_GAME_FUNC(0x02074C94, s32, wwhd_daBeam_CheckCreateHeap_02074C94, (void* b));
@@ -3804,8 +3882,23 @@ WWHD_GAME_FUNC(0x0207AB2C, void, wwhd_mDoExt_J3DModelPacketS_update_0207AB2C, (v
 WWHD_GAME_FUNC(0x0207ACD0, void, wwhd_part_draw_0207ACD0, (void* i_this, void* param_2));
 WWHD_GAME_FUNC(0x0207AF8C, void, wwhd_bgn_color_to_f_0207AF8C, (f32* dst, u8* src));
 #define wwhd_bgn_color_to_f wwhd_bgn_color_to_f_0207AF8C
+WWHD_GAME_FUNC(0x0207B040, void*, wwhd_ten_a_d_sub_0207B040, (void* param_1, void* arg1));
+#define wwhd_ten_a_d_sub wwhd_ten_a_d_sub_0207B040
+WWHD_GAME_FUNC(0x0207B0D8, void*, wwhd_ki_a_d_sub_0207B0D8, (void* param_1, void* arg1));
+WWHD_GAME_FUNC(0x0207B13C, void*, wwhd_ks_a_d_sub_0207B13C, (void* param_1, void* arg1));
+#define wwhd_ks_a_d_sub wwhd_ks_a_d_sub_0207B13C
+WWHD_GAME_FUNC(0x0207B1C8, void*, wwhd_himo3_a_d_sub_0207B1C8, (void* param_1, void* arg1));
+#define wwhd_himo3_a_d_sub wwhd_himo3_a_d_sub_0207B1C8
+WWHD_GAME_FUNC(0x0207B22C, void*, wwhd_bgn2_s_sub_0207B22C, (void* param_1, void* arg1));
+#define wwhd_bgn2_s_sub wwhd_bgn2_s_sub_0207B22C
+WWHD_GAME_FUNC(0x0207B27C, void*, wwhd_bgn3_s_sub_0207B27C, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x0207B2CC, s32, wwhd_daBgn_Draw_0207B2CC, (void* i_this));
 #define wwhd_daBgn_Draw wwhd_daBgn_Draw_0207B2CC
+WWHD_GAME_FUNC(0x0207CF04, void*, wwhd_ki_del_sub_0207CF04, (void* param_1, void* arg1));
+#define wwhd_ki_del_sub wwhd_ki_del_sub_0207CF04
+WWHD_GAME_FUNC(0x0207CF58, void*, wwhd_ks_del_sub_0207CF58, (void* param_1, void* arg1));
+#define wwhd_ks_del_sub wwhd_ks_del_sub_0207CF58
+WWHD_GAME_FUNC(0x0207CFAC, void*, wwhd_ki_c_sub_0207CFAC, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x0207D008, s32, wwhd_ki_check_0207D008, (void* i_this));
 WWHD_GAME_FUNC(0x0207D04C, void, wwhd_move_se_set_0207D04C, (void* i_this));
 WWHD_GAME_FUNC(0x0207D204, s32, wwhd_gr_check_0207D204, (void* i_this, void* param_2));
@@ -3820,6 +3913,8 @@ WWHD_GAME_FUNC(0x0207DE64, void, wwhd_part_mtx_set_0207DE64, (void* i_this, int 
 #define wwhd_part_mtx_set wwhd_part_mtx_set_0207DE64
 WWHD_GAME_FUNC(0x0207E7B4, s32, wwhd_daBgn_Execute_0207E7B4, (void* i_this));
 #define wwhd_daBgn_Execute wwhd_daBgn_Execute_0207E7B4
+WWHD_GAME_FUNC(0x0207FC5C, s32, wwhd_daBgn_IsDelete_0207FC5C, (void* arg0));
+#define wwhd_daBgn_IsDelete wwhd_daBgn_IsDelete_0207FC5C
 WWHD_GAME_FUNC(0x0207FC64, s32, wwhd_daBgn_Delete_0207FC64, (void* i_this));
 #define wwhd_daBgn_Delete wwhd_daBgn_Delete_0207FC64
 WWHD_GAME_FUNC(0x0207FD38, void, wwhd_mDoExt_J3DModelPacketS_setup_0207FD38, (void* p, u32 heap));
@@ -3870,14 +3965,20 @@ WWHD_GAME_FUNC(0x0208ACD8, void, wwhd_bgn_class_dt_0208ACD8, (void* p, s32 flags
 #define wwhd_bgn_class_dt wwhd_bgn_class_dt_0208ACD8
 WWHD_GAME_FUNC(0x0208AEF4, void, wwhd_SafeString_assureTermination_0208AEF4, (void* s));
 WWHD_GAME_FUNC(0x0208AEF8, void, wwhd_anm_init_0208AEF8, (void* i_this, int bckFileIdx, f32 morf, u8 loopMode, f32 speed, int soundFileIdx));
+WWHD_GAME_FUNC(0x0208B020, void*, wwhd_bgn_s_sub_0208B020, (void* param_1, void* arg1));
+#define wwhd_bgn_s_sub wwhd_bgn_s_sub_0208B020
+WWHD_GAME_FUNC(0x0208B070, void*, wwhd_bgn3_s_sub_0208B070, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x0208B0C0, int, wwhd_gr_check_0208B0C0, (void* i_this, void* param_2));
 WWHD_GAME_FUNC(0x0208B268, void, wwhd_asi_hamon_set_0208B268, (void* i_this));
 #define wwhd_asi_hamon_set wwhd_asi_hamon_set_0208B268
 WWHD_GAME_FUNC(0x0208B340, int, wwhd_checkGround_0208B340, (void* i_this));
 WWHD_GAME_FUNC(0x0208B378, void, wwhd_move_se_set_0208B378, (void* i_this));
 WWHD_GAME_FUNC(0x0208B530, int, wwhd_pos_move_0208B530, (void* i_this));
+WWHD_GAME_FUNC(0x0208B648, void*, wwhd_ki_c_sub_0208B648, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x0208B6A4, s32, wwhd_daBgn2_Execute_0208B6A4, (void* i_this));
 #define wwhd_daBgn2_Execute wwhd_daBgn2_Execute_0208B6A4
+WWHD_GAME_FUNC(0x0208EE38, s32, wwhd_daBgn2_IsDelete_0208EE38, (void* arg0));
+#define wwhd_daBgn2_IsDelete wwhd_daBgn2_IsDelete_0208EE38
 WWHD_GAME_FUNC(0x0208EE40, s32, wwhd_daBgn2_Delete_0208EE40, (void* i_this));
 #define wwhd_daBgn2_Delete wwhd_daBgn2_Delete_0208EE40
 WWHD_GAME_FUNC(0x0208EEA4, s32, wwhd_useHeapInit_0208EEA4, (void* a_this));
@@ -3888,8 +3989,11 @@ WWHD_GAME_FUNC(0x0208F7C8, void*, wwhd_daBgn2_HIO_c_ct_0208F7C8, (void* p));
 WWHD_GAME_FUNC(0x0208F8A8, void, wwhd___sinit_d_a_bgn2_cpp_0208F8A8, (void));
 #define wwhd___sinit_d_a_bgn2_cpp wwhd___sinit_d_a_bgn2_cpp_0208F8A8
 WWHD_GAME_FUNC(0x0208FACC, void, wwhd_SafeString_dt_0208FACC, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0208FAE0, s32, wwhd_daBgn2_Draw_0208FAE0, (void* arg0));
+#define wwhd_daBgn2_Draw wwhd_daBgn2_Draw_0208FAE0
 WWHD_GAME_FUNC(0x0208FAE8, void, wwhd_bgn2_class_dt_0208FAE8, (void* p, s32 flags));
 #define wwhd_bgn2_class_dt wwhd_bgn2_class_dt_0208FAE8
+WWHD_GAME_FUNC(0x0208FC10, void, wwhd_SafeString_assureTermination_0208FC10, (void* arg0));
 WWHD_GAME_FUNC(0x0208FC14, u32, wwhd_bossSearch_0208FC14, (u32 a, u32 ignored));
 #define wwhd_bossSearch wwhd_bossSearch_0208FC14
 WWHD_GAME_FUNC(0x0208FC64, u8, wwhd_draw_0208FC64, (u32 a));
@@ -4058,6 +4162,8 @@ WWHD_GAME_FUNC(0x02098150, void, wwhd_base_mtx_set_02098150, (void* i_this));
 #define wwhd_base_mtx_set wwhd_base_mtx_set_02098150
 WWHD_GAME_FUNC(0x020982D8, s32, wwhd_daBita_Execute_020982D8, (void* i_this));
 #define wwhd_daBita_Execute wwhd_daBita_Execute_020982D8
+WWHD_GAME_FUNC(0x02098720, s32, wwhd_daBita_IsDelete_02098720, (void* arg0));
+#define wwhd_daBita_IsDelete wwhd_daBita_IsDelete_02098720
 WWHD_GAME_FUNC(0x02098728, s32, wwhd_daBita_Delete_02098728, (void* i_this));
 #define wwhd_daBita_Delete wwhd_daBita_Delete_02098728
 WWHD_GAME_FUNC(0x02098780, s32, wwhd_useHeapInit_02098780, (void* i_ac));
@@ -4079,6 +4185,8 @@ WWHD_GAME_FUNC(0x02099FF0, void, wwhd_way_pos_check_02099FF0, (void* i_this, voi
 WWHD_GAME_FUNC(0x0209A29C, u8, wwhd_ground_4_check_0209A29C, (void* i_this, int r18, s16 r20, f32 f29));
 WWHD_GAME_FUNC(0x0209A4BC, s32, wwhd_daBk_other_bg_check_0209A4BC, (void* i_this, void* r23));
 #define wwhd_daBk_other_bg_check wwhd_daBk_other_bg_check_0209A4BC
+WWHD_GAME_FUNC(0x0209A624, void*, wwhd_s_w_sub_0209A624, (void* param_1, void* arg1));
+WWHD_GAME_FUNC(0x0209A6AC, void*, wwhd_s_b_sub_0209A6AC, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x0209A728, void*, wwhd_search_bomb_0209A728, (void* i_this, s32 r26));
 WWHD_GAME_FUNC(0x0209AB64, s32, wwhd_daBk_wepon_view_check_0209AB64, (void* i_this));
 #define wwhd_daBk_wepon_view_check wwhd_daBk_wepon_view_check_0209AB64
@@ -4092,9 +4200,14 @@ WWHD_GAME_FUNC(0x0209B208, s32, wwhd_daBk_player_way_check_0209B208, (void* i_th
 #define wwhd_daBk_player_way_check wwhd_daBk_player_way_check_0209B208
 WWHD_GAME_FUNC(0x0209B264, void, wwhd_wait_set_0209B264, (void* i_this));
 WWHD_GAME_FUNC(0x0209B354, void, wwhd_path_check_0209B354, (void* i_this, u8 r19));
+WWHD_GAME_FUNC(0x0209B67C, void*, wwhd_ken_s_sub_0209B67C, (void* param_1, void* arg1));
+#define wwhd_ken_s_sub wwhd_ken_s_sub_0209B67C
 WWHD_GAME_FUNC(0x0209B6D8, void*, wwhd_s_s_sub_0209B6D8, (void* r29, void* r30));
 #define wwhd_s_s_sub wwhd_s_s_sub_0209B6D8
 WWHD_GAME_FUNC(0x0209B760, void, wwhd_attack_set_0209B760, (void* i_this, u8 r28));
+WWHD_GAME_FUNC(0x0209BA18, void*, wwhd_shot_s_sub_0209BA18, (void* param_1, void* arg1));
+WWHD_GAME_FUNC(0x0209BA78, void*, wwhd_s_s2_sub_0209BA78, (void* param_1, void* arg1));
+#define wwhd_s_s2_sub wwhd_s_s2_sub_0209BA78
 WWHD_GAME_FUNC(0x0209BAD8, void, wwhd_tate_mtx_set_0209BAD8, (void* i_this));
 #define wwhd_tate_mtx_set wwhd_tate_mtx_set_0209BAD8
 WWHD_GAME_FUNC(0x0209BBD4, void, wwhd_bou_mtx_set_0209BBD4, (void* i_this));
@@ -4209,6 +4322,8 @@ WWHD_GAME_FUNC(0x020AEA40, void, wwhd_mk_voice_set_020AEA40, (void* i_this, u32 
 WWHD_GAME_FUNC(0x020AEA94, void, wwhd_ride_call_back_020AEA94, (void* bgw, void* i_ac, void* i_pt));
 WWHD_GAME_FUNC(0x020AEBCC, s32, wwhd_daBmd_Execute_020AEBCC, (void* i_this));
 #define wwhd_daBmd_Execute wwhd_daBmd_Execute_020AEBCC
+WWHD_GAME_FUNC(0x020B1104, s32, wwhd_daBmd_IsDelete_020B1104, (void* arg0));
+#define wwhd_daBmd_IsDelete wwhd_daBmd_IsDelete_020B1104
 WWHD_GAME_FUNC(0x020B110C, s32, wwhd_daBmd_Delete_020B110C, (void* i_this));
 #define wwhd_daBmd_Delete wwhd_daBmd_Delete_020B110C
 WWHD_GAME_FUNC(0x020B11E4, s32, wwhd_useHeapInit_020B11E4, (void* i_this));
@@ -4240,6 +4355,8 @@ WWHD_GAME_FUNC(0x020B5904, int, wwhd_ug_move_020B5904, (void* i_this));
 WWHD_GAME_FUNC(0x020B5D74, void*, wwhd_s_a_d_sub_020B5D74, (void* search, void* param_2));
 WWHD_GAME_FUNC(0x020B5DC4, s32, wwhd_daBmdfoot_Execute_020B5DC4, (void* i_this));
 #define wwhd_daBmdfoot_Execute wwhd_daBmdfoot_Execute_020B5DC4
+WWHD_GAME_FUNC(0x020B79BC, s32, wwhd_daBmdfoot_IsDelete_020B79BC, (void* arg0));
+#define wwhd_daBmdfoot_IsDelete wwhd_daBmdfoot_IsDelete_020B79BC
 WWHD_GAME_FUNC(0x020B79C4, s32, wwhd_daBmdfoot_Delete_020B79C4, (void* i_this));
 #define wwhd_daBmdfoot_Delete wwhd_daBmdfoot_Delete_020B79C4
 WWHD_GAME_FUNC(0x020B7AB8, s32, wwhd_useHeapInit_020B7AB8, (void* i_this));
@@ -4998,6 +5115,10 @@ WWHD_GAME_FUNC(0x020DF054, void, wwhd_daBranch_c__set_mtx_020DF054, (void* self)
 #define wwhd_daBranch_c__set_mtx wwhd_daBranch_c__set_mtx_020DF054
 WWHD_GAME_FUNC(0x020DF140, s32, wwhd_daBranch_Execute_020DF140, (void* i_this));
 #define wwhd_daBranch_Execute wwhd_daBranch_Execute_020DF140
+WWHD_GAME_FUNC(0x020DF280, s32, wwhd_daBranch_IsDelete_020DF280, (void* arg0));
+#define wwhd_daBranch_IsDelete wwhd_daBranch_IsDelete_020DF280
+WWHD_GAME_FUNC(0x020DF288, s32, wwhd_daBranch_Delete_020DF288, (void* arg0));
+#define wwhd_daBranch_Delete wwhd_daBranch_Delete_020DF288
 WWHD_GAME_FUNC(0x020DF290, void, wwhd_daBranch_c__set_anim_020DF290, (void* self, int i_animIdx, int i_bckId, int i_basId));
 #define wwhd_daBranch_c__set_anim wwhd_daBranch_c__set_anim_020DF290
 WWHD_GAME_FUNC(0x020DF34C, s32, wwhd_daBranch_c__CreateHeap_020DF34C, (void* self));
@@ -5011,6 +5132,7 @@ WWHD_GAME_FUNC(0x020DF66C, void, wwhd___sinit_d_a_branch_cpp_020DF66C, (void));
 WWHD_GAME_FUNC(0x020DF700, void, wwhd_SafeString_dt_020DF700, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x020DF714, void, wwhd_daBranch_c_dt_020DF714, (void* i_this, s32 flags));
 #define wwhd_daBranch_c_dt wwhd_daBranch_c_dt_020DF714
+WWHD_GAME_FUNC(0x020DF7A4, void, wwhd_SafeString_assureTermination_020DF7A4, (void* arg0));
 WWHD_GAME_FUNC(0x020DF7A8, void*, wwhd_daBranch_c__getJointMtx_020DF7A8, (void* self, const char* name));
 #define wwhd_daBranch_c__getJointMtx wwhd_daBranch_c__getJointMtx_020DF7A8
 WWHD_GAME_FUNC(0x020DF874, void, wwhd___sinit_d_a_branch_static_cpp_020DF874, (void));
@@ -5172,6 +5294,9 @@ WWHD_GAME_FUNC(0x020F99F8, void, wwhd_g_eff_on_020F99F8, (void* i_this));
 #define wwhd_g_eff_on wwhd_g_eff_on_020F99F8
 WWHD_GAME_FUNC(0x020F9A10, void, wwhd_g_eff_off_020F9A10, (void* i_this));
 #define wwhd_g_eff_off wwhd_g_eff_off_020F9A10
+WWHD_GAME_FUNC(0x020F9A28, void*, wwhd_ko_s_sub_020F9A28, (void* param_1, void* arg1));
+WWHD_GAME_FUNC(0x020F9AA0, void*, wwhd_ko_delete_sub_020F9AA0, (void* param_1, void* arg1));
+#define wwhd_ko_delete_sub wwhd_ko_delete_sub_020F9AA0
 WWHD_GAME_FUNC(0x020F9AF4, void, wwhd_anm_init_020F9AF4, (void* i_this, int bckFileIdx, f32 morf, u8 loopMode, f32 speed, int soundFileIdx));
 WWHD_GAME_FUNC(0x020F9C1C, s32, wwhd_daBwd_Draw_020F9C1C, (void* i_this));
 #define wwhd_daBwd_Draw wwhd_daBwd_Draw_020F9C1C
@@ -5179,6 +5304,8 @@ WWHD_GAME_FUNC(0x020F9F80, void, wwhd_fly_pos_move_020F9F80, (void* i_this, s16 
 #define wwhd_fly_pos_move wwhd_fly_pos_move_020F9F80
 WWHD_GAME_FUNC(0x020FA614, s32, wwhd_bwd_execute_020FA614, (void* i_this));
 #define wwhd_bwd_execute wwhd_bwd_execute_020FA614
+WWHD_GAME_FUNC(0x020FD570, s32, wwhd_daBwd_IsDelete_020FD570, (void* arg0));
+#define wwhd_daBwd_IsDelete wwhd_daBwd_IsDelete_020FD570
 WWHD_GAME_FUNC(0x020FD578, s32, wwhd_daBwd_Delete_020FD578, (void* i_this));
 #define wwhd_daBwd_Delete wwhd_daBwd_Delete_020FD578
 WWHD_GAME_FUNC(0x020FD6F8, s32, wwhd_useHeapInit_020FD6F8, (void* a_this));
@@ -5245,13 +5372,18 @@ WWHD_GAME_FUNC(0x021055A8, void, wwhd_packet_buf_dt_021055A8, (void* p, s32 flag
 #define wwhd_packet_buf_dt wwhd_packet_buf_dt_021055A8
 WWHD_GAME_FUNC(0x02105608, void, wwhd_bwdg_packet_dt_02105608, (void* p, s32 flags));
 #define wwhd_bwdg_packet_dt wwhd_bwdg_packet_dt_02105608
+WWHD_GAME_FUNC(0x021059E4, void, wwhd_packet_empty_021059E4, (void* arg0));
+#define wwhd_packet_empty wwhd_packet_empty_021059E4
 WWHD_GAME_FUNC(0x021059E8, void, wwhd_bwdg_class_dt_021059E8, (void* i_this, s32 flags));
 #define wwhd_bwdg_class_dt wwhd_bwdg_class_dt_021059E8
+WWHD_GAME_FUNC(0x02105DD4, void, wwhd_SafeString_assureTerminationImpl_02105DD4, (void* arg0));
 WWHD_GAME_FUNC(0x02105DD8, void, wwhd_anm_init_02105DD8, (void* i_this, int bckFileIdx, f32 morf, u8 loopMode, f32 speed, int soundFileIdx));
 WWHD_GAME_FUNC(0x02105F00, s32, wwhd_daBwds_Draw_02105F00, (void* i_this));
 #define wwhd_daBwds_Draw wwhd_daBwds_Draw_02105F00
 WWHD_GAME_FUNC(0x0210602C, s32, wwhd_daBwds_Execute_0210602C, (void* i_this));
 #define wwhd_daBwds_Execute wwhd_daBwds_Execute_0210602C
+WWHD_GAME_FUNC(0x02108748, s32, wwhd_daBwds_IsDelete_02108748, (void* arg0));
+#define wwhd_daBwds_IsDelete wwhd_daBwds_IsDelete_02108748
 WWHD_GAME_FUNC(0x02108750, s32, wwhd_daBwds_Delete_02108750, (void* i_this));
 #define wwhd_daBwds_Delete wwhd_daBwds_Delete_02108750
 WWHD_GAME_FUNC(0x021087FC, s32, wwhd_useHeapInit_021087FC, (void* i_actor));
@@ -5306,6 +5438,9 @@ WWHD_GAME_FUNC(0x0210A31C, s32, wwhd_canon_create_check_0210A31C, (void* a, s32 
 #define wwhd_canon_create_check wwhd_canon_create_check_0210A31C
 WWHD_GAME_FUNC(0x0210A380, void, wwhd_canon_create_targets_0210A380, (void* a));
 #define wwhd_canon_create_targets wwhd_canon_create_targets_0210A380
+/* Public Pair32 ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x0210A494, wwhd_gpr_pair, wwhd_canon_break_all_0210A494, (void* a));
+#define wwhd_canon_break_all wwhd_canon_break_all_0210A494
 WWHD_GAME_FUNC(0x0210A4A4, void, wwhd_canon_pad_move_0210A4A4, (void* a));
 #define wwhd_canon_pad_move wwhd_canon_pad_move_0210A4A4
 WWHD_GAME_FUNC(0x0210A7A4, void, wwhd_canon_make_effect_0210A7A4, (void* a, void* position, void* rotation, s32 kind));
@@ -5351,6 +5486,7 @@ WWHD_GAME_FUNC(0x0210C364, void, wwhd_cc_eff_set_0210C364, (void* i_this, unsign
 WWHD_GAME_FUNC(0x0210C5C8, void, wwhd_anm_init_0210C5C8, (void* i_this, int transformResIdx, f32 morf, unsigned char loopMode, f32 speed, int soundResIdx));
 WWHD_GAME_FUNC(0x0210C6F4, void, wwhd_damage_mode_move_0210C6F4, (void* i_this));
 #define wwhd_damage_mode_move wwhd_damage_mode_move_0210C6F4
+WWHD_GAME_FUNC(0x0210C788, void*, wwhd_s_b_sub_0210C788, (void* arg0, void* arg1));
 WWHD_GAME_FUNC(0x0210C828, void, wwhd_naraku_check_0210C828, (void* i_this));
 WWHD_GAME_FUNC(0x0210CBC0, void, wwhd_denki_start_0210CBC0, (void* i_this));
 #define wwhd_denki_start wwhd_denki_start_0210CBC0
@@ -5366,6 +5502,8 @@ WWHD_GAME_FUNC(0x0210DBE0, void*, wwhd_tsubo_search_0210DBE0, (void* arg1, void*
 WWHD_GAME_FUNC(0x0210DC8C, void, wwhd_BG_check_0210DC8C, (void* i_this));
 WWHD_GAME_FUNC(0x0210DD3C, s32, wwhd_daCC_Execute_0210DD3C, (void* i_this));
 #define wwhd_daCC_Execute wwhd_daCC_Execute_0210DD3C
+WWHD_GAME_FUNC(0x021104AC, s32, wwhd_daCC_IsDelete_021104AC, (void* arg0));
+#define wwhd_daCC_IsDelete wwhd_daCC_IsDelete_021104AC
 WWHD_GAME_FUNC(0x021104B4, s32, wwhd_daCC_Delete_021104B4, (void* i_this));
 #define wwhd_daCC_Delete wwhd_daCC_Delete_021104B4
 WWHD_GAME_FUNC(0x02110528, s32, wwhd_useHeapInit_02110528, (void* a_this));
@@ -5391,6 +5529,7 @@ WWHD_GAME_FUNC(0x0211310C, void, wwhd_cc_empty_0211310C_0211310C, (void));
 #define wwhd_cc_empty_0211310C wwhd_cc_empty_0211310C_0211310C
 WWHD_GAME_FUNC(0x02113110, void, wwhd_cc_class_dt_02113110, (void* p, s32 flags));
 #define wwhd_cc_class_dt wwhd_cc_class_dt_02113110
+WWHD_GAME_FUNC(0x02113218, void, wwhd_SafeString_assureTerminationImpl_02113218, (void* arg0));
 WWHD_GAME_FUNC(0x0211321C, void, wwhd_coming2_initBarrel_0211321C, (void* actor, s32 index));
 #define wwhd_coming2_initBarrel wwhd_coming2_initBarrel_0211321C
 WWHD_GAME_FUNC(0x02113254, void, wwhd_coming2_initBarrels_02113254, (void* actor));
@@ -5721,10 +5860,13 @@ WWHD_GAME_FUNC(0x0211D08C, u32, wwhd_dCcD_Cps_ct_0211D08C, (u32 self));
 #define wwhd_dCcD_Cps_ct wwhd_dCcD_Cps_ct_0211D08C
 WWHD_GAME_FUNC(0x0211D118, u32, wwhd_mDoExt_bckAnm_ct_0211D118, (u32 self));
 #define wwhd_mDoExt_bckAnm_ct wwhd_mDoExt_bckAnm_ct_0211D118
+WWHD_GAME_FUNC(0x0211D1A8, s32, wwhd_daDaioctaIsDelete_0211D1A8, (void* arg0));
+#define wwhd_daDaioctaIsDelete wwhd_daDaioctaIsDelete_0211D1A8
 WWHD_GAME_FUNC(0x0211D1B0, void, wwhd_mDoExt_bckAnm_dtor_0211D1B0, (u32 self, u32 flags));
 #define wwhd_mDoExt_bckAnm_dtor wwhd_mDoExt_bckAnm_dtor_0211D1B0
 WWHD_GAME_FUNC(0x0211D204, void, wwhd_daDaiocta_dtor_0211D204, (u32 self, u32 flags));
 #define wwhd_daDaiocta_dtor wwhd_daDaiocta_dtor_0211D204
+WWHD_GAME_FUNC(0x0211D2F4, void, wwhd_SafeString_assureTermination_0211D2F4, (void* arg0));
 WWHD_GAME_FUNC(0x0211D2F8, s32, wwhd_cLib_calcTimer_i_0211D2F8, (s32* timer));
 #define wwhd_cLib_calcTimer_i wwhd_cLib_calcTimer_i_0211D2F8
 WWHD_GAME_FUNC(0x0211D314, void, wwhd_NodeControl_0211D314, (void* a, void * node, void * model));
@@ -5854,6 +5996,8 @@ WWHD_GAME_FUNC(0x02122918, s32, wwhd_daDEMO_DK_Draw_02122918, (void* i_this));
 WWHD_GAME_FUNC(0x02122980, void, wwhd_anm_init_02122980, (void* i_this, s32 bckAnmIdx, f32 morf, u8 loopMode, f32 playSpeed, s32 soundIdx));
 WWHD_GAME_FUNC(0x02122AA8, s32, wwhd_daDEMO_DK_Execute_02122AA8, (void* i_this));
 #define wwhd_daDEMO_DK_Execute wwhd_daDEMO_DK_Execute_02122AA8
+WWHD_GAME_FUNC(0x02122D54, s32, wwhd_daDEMO_DK_IsDelete_02122D54, (void* arg0));
+#define wwhd_daDEMO_DK_IsDelete wwhd_daDEMO_DK_IsDelete_02122D54
 WWHD_GAME_FUNC(0x02122D5C, s32, wwhd_daDEMO_DK_Delete_02122D5C, (void* i_this));
 #define wwhd_daDEMO_DK_Delete wwhd_daDEMO_DK_Delete_02122D5C
 WWHD_GAME_FUNC(0x02122D8C, s32, wwhd_useHeapInit_02122D8C, (void* a_this));
@@ -5864,6 +6008,7 @@ WWHD_GAME_FUNC(0x02122FC8, void, wwhd___sinit_d_a_demo_dk_cpp_02122FC8, (void));
 WWHD_GAME_FUNC(0x0212305C, void, wwhd_SafeString_dt_0212305C, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x02123070, void, wwhd_demo_dk_class_dt_02123070, (void* i_this, s32 flags));
 #define wwhd_demo_dk_class_dt wwhd_demo_dk_class_dt_02123070
+WWHD_GAME_FUNC(0x021230C4, void, wwhd_SafeString_assureTermination_021230C4, (void* arg0));
 WWHD_GAME_FUNC(0x021230C8, s32, wwhd_daDitem_c__Delete_021230C8, (void* self));
 #define wwhd_daDitem_c__Delete wwhd_daDitem_c__Delete_021230C8
 WWHD_GAME_FUNC(0x02123164, u8, wwhd_daDitem_c__CreateInit_02123164, (void* self));
@@ -5923,10 +6068,16 @@ WWHD_GAME_FUNC(0x021244A8, void, wwhd_trivial_dt_021244A8, (void* p, s32 flags))
 WWHD_GAME_FUNC(0x021244BC, void, wwhd_daDemo_Kmm_c_dt_021244BC, (void* i_this, s32 flags));
 #define wwhd_daDemo_Kmm_c_dt wwhd_daDemo_Kmm_c_dt_021244BC
 WWHD_GAME_FUNC(0x02124510, void, wwhd_SafeString_assureTerminationImpl_02124510, (void* s));
+WWHD_GAME_FUNC(0x02124514, s32, wwhd_daDisappear_Draw_02124514, (void* arg0));
+#define wwhd_daDisappear_Draw wwhd_daDisappear_Draw_02124514
 WWHD_GAME_FUNC(0x02124514, s32, wwhd_virtual_true_02124514, (void* p));
 #define wwhd_virtual_true wwhd_virtual_true_02124514
 WWHD_GAME_FUNC(0x0212451C, s32, wwhd_daDisappear_Execute_0212451C, (void* i_this));
 #define wwhd_daDisappear_Execute wwhd_daDisappear_Execute_0212451C
+WWHD_GAME_FUNC(0x0212461C, s32, wwhd_daDisappear_IsDelete_0212461C, (void* arg0));
+#define wwhd_daDisappear_IsDelete wwhd_daDisappear_IsDelete_0212461C
+WWHD_GAME_FUNC(0x02124624, s32, wwhd_daDisappear_Delete_02124624, (void* arg0));
+#define wwhd_daDisappear_Delete wwhd_daDisappear_Delete_02124624
 WWHD_GAME_FUNC(0x0212462C, s32, wwhd_daDisappear_Create_0212462C, (void* i_ac));
 #define wwhd_daDisappear_Create wwhd_daDisappear_Create_0212462C
 WWHD_GAME_FUNC(0x02124A84, void, wwhd___sinit_d_a_disappear_cpp_02124A84, (void));
@@ -5938,6 +6089,8 @@ WWHD_GAME_FUNC(0x02124C44, s32, wwhd_daDk_Draw_02124C44, (void* a_this));
 #define wwhd_daDk_Draw wwhd_daDk_Draw_02124C44
 WWHD_GAME_FUNC(0x02124F00, s32, wwhd_daDk_Execute_02124F00, (void* a_this));
 #define wwhd_daDk_Execute wwhd_daDk_Execute_02124F00
+WWHD_GAME_FUNC(0x02125800, s32, wwhd_daDk_IsDelete_02125800, (void* arg0));
+#define wwhd_daDk_IsDelete wwhd_daDk_IsDelete_02125800
 WWHD_GAME_FUNC(0x02125808, s32, wwhd_daDk_Delete_02125808, (void* a_this));
 #define wwhd_daDk_Delete wwhd_daDk_Delete_02125808
 WWHD_GAME_FUNC(0x02125858, s32, wwhd_useHeapInit_02125858, (void* i_this));
@@ -5948,6 +6101,7 @@ WWHD_GAME_FUNC(0x02125CDC, void, wwhd___sinit_d_a_dk_cpp_02125CDC, (void));
 WWHD_GAME_FUNC(0x02125D8C, void, wwhd_SafeString_dt_02125D8C, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x02125DA0, void, wwhd_dk_class_dt_02125DA0, (void* i_this, s32 flags));
 #define wwhd_dk_class_dt wwhd_dk_class_dt_02125DA0
+WWHD_GAME_FUNC(0x02125E24, void, wwhd_SafeString_assureTermination_02125E24, (void* arg0));
 WWHD_GAME_FUNC(0x02125E28, const char *, wwhd_daDoor10_c__getBdlName_02125E28, (void* self));
 #define wwhd_daDoor10_c__getBdlName wwhd_daDoor10_c__getBdlName_02125E28
 WWHD_GAME_FUNC(0x02125E84, s32, wwhd_daDoor10_c__chkMakeKey_02125E84, (void* self));
@@ -6115,6 +6269,8 @@ WWHD_GAME_FUNC(0x02129F0C, void, wwhd_daDr_setMtx_02129F0C, (void* i_this));
 #define wwhd_daDr_setMtx wwhd_daDr_setMtx_02129F0C
 WWHD_GAME_FUNC(0x0212A00C, s32, wwhd_daDr_Execute_0212A00C, (void* i_this));
 #define wwhd_daDr_Execute wwhd_daDr_Execute_0212A00C
+WWHD_GAME_FUNC(0x0212A6DC, s32, wwhd_daDr_IsDelete_0212A6DC, (void* arg0));
+#define wwhd_daDr_IsDelete wwhd_daDr_IsDelete_0212A6DC
 WWHD_GAME_FUNC(0x0212A6E4, s32, wwhd_daDr_Delete_0212A6E4, (void* i_this));
 #define wwhd_daDr_Delete wwhd_daDr_Delete_0212A6E4
 WWHD_GAME_FUNC(0x0212A728, s32, wwhd_createHeap_0212A728, (void* i_actor));
@@ -6134,6 +6290,8 @@ WWHD_GAME_FUNC(0x0212AEEC, s32, wwhd_daDr2_Draw_0212AEEC, (void* i_this));
 WWHD_GAME_FUNC(0x0212B380, void*, wwhd_s_a_d_sub_0212B380, (void* ac1, void* ac2));
 WWHD_GAME_FUNC(0x0212B3D0, s32, wwhd_daDr2_Execute_0212B3D0, (void* i_this));
 #define wwhd_daDr2_Execute wwhd_daDr2_Execute_0212B3D0
+WWHD_GAME_FUNC(0x0212CD08, s32, wwhd_daDr2_IsDelete_0212CD08, (void* arg0));
+#define wwhd_daDr2_IsDelete wwhd_daDr2_IsDelete_0212CD08
 WWHD_GAME_FUNC(0x0212CD10, s32, wwhd_daDr2_Delete_0212CD10, (void* i_this));
 #define wwhd_daDr2_Delete wwhd_daDr2_Delete_0212CD10
 WWHD_GAME_FUNC(0x0212CDAC, s32, wwhd_useHeapInit_0212CDAC, (void* a_this));
@@ -6157,6 +6315,7 @@ WWHD_GAME_FUNC(0x0212D7E4, s32, wwhd_Mthd_Draw_0212D7E4, (void* i_this));
 WWHD_GAME_FUNC(0x0212D7EC, void, wwhd___sinit_d_a_dummy_cpp_0212D7EC, (void));
 #define wwhd___sinit_d_a_dummy_cpp wwhd___sinit_d_a_dummy_cpp_0212D7EC
 WWHD_GAME_FUNC(0x0212D880, void, wwhd_Act_c_dt_0212D880, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0212D8D4, s32, wwhd_Mthd_IsDelete_0212D8D4, (void* arg0));
 WWHD_GAME_FUNC(0x0212D8DC, s32, wwhd_daEp_Draw_0212D8DC, (void* i_this));
 #define wwhd_daEp_Draw wwhd_daEp_Draw_0212D8DC
 WWHD_GAME_FUNC(0x0212DAE8, s32, wwhd_ep_switch_event_end_0212DAE8, (void* i_this));
@@ -6165,6 +6324,8 @@ WWHD_GAME_FUNC(0x0212DB44, s32, wwhd_ep_switch_event_move_0212DB44, (void* i_thi
 #define wwhd_ep_switch_event_move wwhd_ep_switch_event_move_0212DB44
 WWHD_GAME_FUNC(0x0212DBFC, s32, wwhd_daEp_Execute_0212DBFC, (void* i_this));
 #define wwhd_daEp_Execute wwhd_daEp_Execute_0212DBFC
+WWHD_GAME_FUNC(0x0212F578, s32, wwhd_daEp_IsDelete_0212F578, (void* arg0));
+#define wwhd_daEp_IsDelete wwhd_daEp_IsDelete_0212F578
 WWHD_GAME_FUNC(0x0212F580, s32, wwhd_daEp_Delete_0212F580, (void* i_this));
 #define wwhd_daEp_Delete wwhd_daEp_Delete_0212F580
 WWHD_GAME_FUNC(0x0212F5CC, s32, wwhd_daEp_CreateHeap_0212F5CC, (void* a_this));
@@ -6196,6 +6357,7 @@ WWHD_GAME_FUNC(0x02131014, void, wwhd___sinit_d_a_esa_cpp_02131014, (void));
 WWHD_GAME_FUNC(0x021310A8, void, wwhd_SafeString_dt_021310A8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021310BC, void, wwhd_esa_class_dt_021310BC, (void* i_this, s32 flags));
 #define wwhd_esa_class_dt wwhd_esa_class_dt_021310BC
+WWHD_GAME_FUNC(0x02131110, void, wwhd_SafeString_assureTerminationImpl_02131110, (void* arg0));
 WWHD_GAME_FUNC(0x02131114, s32, wwhd_daFallRock_c__CreateHeap_02131114, (void* self));
 #define wwhd_daFallRock_c__CreateHeap wwhd_daFallRock_c__CreateHeap_02131114
 WWHD_GAME_FUNC(0x021311AC, s32, wwhd_CheckCreateHeap_021311AC, (void* i_this));
@@ -6207,6 +6369,10 @@ WWHD_GAME_FUNC(0x02131418, void, wwhd_daFallRock_c__set_mtx_02131418, (void* sel
 #define wwhd_daFallRock_c__set_mtx wwhd_daFallRock_c__set_mtx_02131418
 WWHD_GAME_FUNC(0x02131520, s32, wwhd_daFallRock_Execute_02131520, (void* i_this));
 #define wwhd_daFallRock_Execute wwhd_daFallRock_Execute_02131520
+WWHD_GAME_FUNC(0x0213184C, s32, wwhd_daFallRock_IsDelete_0213184C, (void* arg0));
+#define wwhd_daFallRock_IsDelete wwhd_daFallRock_IsDelete_0213184C
+WWHD_GAME_FUNC(0x02131854, s32, wwhd_daFallRock_Delete_02131854, (void* arg0));
+#define wwhd_daFallRock_Delete wwhd_daFallRock_Delete_02131854
 WWHD_GAME_FUNC(0x0213185C, s32, wwhd_daFallRock_c__create_0213185C, (void* self));
 #define wwhd_daFallRock_c__create wwhd_daFallRock_c__create_0213185C
 WWHD_GAME_FUNC(0x02131AB0, void, wwhd___sinit_d_a_fallrock_cpp_02131AB0, (void));
@@ -6214,10 +6380,14 @@ WWHD_GAME_FUNC(0x02131AB0, void, wwhd___sinit_d_a_fallrock_cpp_02131AB0, (void))
 WWHD_GAME_FUNC(0x02131B44, void, wwhd_SafeString_dt_02131B44, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x02131B58, void, wwhd_daFallRock_c_dt_02131B58, (void* i_this, s32 flags));
 #define wwhd_daFallRock_c_dt wwhd_daFallRock_c_dt_02131B58
+WWHD_GAME_FUNC(0x02131C10, void, wwhd_fallrock_empty_02131C10_02131C10, (void* arg0));
+#define wwhd_fallrock_empty_02131C10 wwhd_fallrock_empty_02131C10_02131C10
 WWHD_GAME_FUNC(0x02131C14, void, wwhd_daFallRockTag_c__createRock_02131C14, (void* self, void* i_pos, void* i_scale, void* i_angle, int i_roomNo, u32 i_params));
 #define wwhd_daFallRockTag_c__createRock wwhd_daFallRockTag_c__createRock_02131C14
 WWHD_GAME_FUNC(0x02131C88, s32, wwhd_daFallRockTag_Execute_02131C88, (void* i_this));
 #define wwhd_daFallRockTag_Execute wwhd_daFallRockTag_Execute_02131C88
+WWHD_GAME_FUNC(0x02131E7C, s32, wwhd_daFallRockTag_IsDelete_02131E7C, (void* arg0));
+#define wwhd_daFallRockTag_IsDelete wwhd_daFallRockTag_IsDelete_02131E7C
 WWHD_GAME_FUNC(0x02131E84, s32, wwhd_daFallRockTag_Delete_02131E84, (void* i_this));
 #define wwhd_daFallRockTag_Delete wwhd_daFallRockTag_Delete_02131E84
 WWHD_GAME_FUNC(0x02131E8C, s32, wwhd_daFallRockTag_Create_02131E8C, (void* i_ac));
@@ -6269,6 +6439,8 @@ WWHD_GAME_FUNC(0x02132F3C, s32, wwhd_daFf_Draw_02132F3C, (void* i_this));
 #define wwhd_daFf_Draw wwhd_daFf_Draw_02132F3C
 WWHD_GAME_FUNC(0x02133070, s32, wwhd_daFf_Execute_02133070, (void* i_this));
 #define wwhd_daFf_Execute wwhd_daFf_Execute_02133070
+WWHD_GAME_FUNC(0x02133AB8, s32, wwhd_daFf_IsDelete_02133AB8, (void* arg0));
+#define wwhd_daFf_IsDelete wwhd_daFf_IsDelete_02133AB8
 WWHD_GAME_FUNC(0x02133AC0, s32, wwhd_daFf_Delete_02133AC0, (void* i_this));
 #define wwhd_daFf_Delete wwhd_daFf_Delete_02133AC0
 WWHD_GAME_FUNC(0x02133B10, s32, wwhd_useHeapInit_02133B10, (void* i_ac));
@@ -6281,6 +6453,7 @@ WWHD_GAME_FUNC(0x02133FF0, void, wwhd___sinit_d_a_ff_cpp_02133FF0, (void));
 WWHD_GAME_FUNC(0x02134084, void, wwhd_SafeString_dt_02134084, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x02134098, void, wwhd_ff_class_dt_02134098, (void* i_this, s32 flags));
 #define wwhd_ff_class_dt wwhd_ff_class_dt_02134098
+WWHD_GAME_FUNC(0x02134104, void, wwhd_SafeString_assureTerminationImpl_02134104, (void* arg0));
 WWHD_GAME_FUNC(0x02134108, void, wwhd_anm_init_02134108, (void* actor, s32 index, f32 blend, u8 loop, f32 speed, s32 soundIndex));
 WWHD_GAME_FUNC(0x02134230, s32, wwhd_nodeCallback_02134230, (void* node, s32 timing));
 WWHD_GAME_FUNC(0x02134428, s32, wwhd_daFganon_Draw_02134428, (void* actor));
@@ -6344,6 +6517,7 @@ WWHD_GAME_FUNC(0x0213E76C, void, wwhd___sinit_d_a_fgmahou_cpp_0213E76C, (void));
 WWHD_GAME_FUNC(0x0213E800, void, wwhd_SafeString_dt_0213E800, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0213E814, void, wwhd_fgmahou_class_dt_0213E814, (void* i_this, s32 flags));
 #define wwhd_fgmahou_class_dt wwhd_fgmahou_class_dt_0213E814
+WWHD_GAME_FUNC(0x0213E8BC, void, wwhd_SafeString_assureTerminationImpl_0213E8BC, (void* arg0));
 WWHD_GAME_FUNC(0x0213E8BC, void, wwhd_normal_proc_0213E8BC, (u32 a));
 #define wwhd_normal_proc wwhd_normal_proc_0213E8BC
 WWHD_GAME_FUNC(0x0213E8C0, void, wwhd_stop_0213E8C0, (u32 a));
@@ -6438,6 +6612,8 @@ WWHD_GAME_FUNC(0x02141074, void*, wwhd_daFm_c_ct_02141074, (void* p));
 #define wwhd_daFm_c_ct wwhd_daFm_c_ct_02141074
 WWHD_GAME_FUNC(0x02141280, u8, wwhd_daFm_c__isLink_02141280, (void* self, void* i_actor));
 #define wwhd_daFm_c__isLink wwhd_daFm_c__isLink_02141280
+WWHD_GAME_FUNC(0x021412BC, void, wwhd_daFm_c__modeProc_021412BC, (void* self, s32 proc, int newMode));
+#define wwhd_daFm_c__modeProc wwhd_daFm_c__modeProc_021412BC
 WWHD_GAME_FUNC(0x021413E0, void, wwhd_daFm_c__getArg_021413E0, (void* self));
 #define wwhd_daFm_c__getArg wwhd_daFm_c__getArg_021413E0
 WWHD_GAME_FUNC(0x0214153C, void, wwhd_daFm_c__bodySetMtx_0214153C, (void* self));
@@ -6636,6 +6812,8 @@ WWHD_GAME_FUNC(0x02149D94, void, wwhd_daFm_c__modeDeleteInit_02149D94, (void* se
 #define wwhd_daFm_c__modeDeleteInit wwhd_daFm_c__modeDeleteInit_02149D94
 WWHD_GAME_FUNC(0x02149D98, void, wwhd_daFm_c_dt_02149D98, (void* self, s32 flags));
 #define wwhd_daFm_c_dt wwhd_daFm_c_dt_02149D98
+WWHD_GAME_FUNC(0x02149ED0, void, wwhd_fm_SafeString_assureTermination_02149ED0, (void* arg0));
+#define wwhd_fm_SafeString_assureTermination wwhd_fm_SafeString_assureTermination_02149ED0
 WWHD_GAME_FUNC(0x02149ED4, s32, wwhd_ghostSailFactor_02149ED4, (u8 * cloth, s32 row, s32 column));
 #define wwhd_ghostSailFactor wwhd_ghostSailFactor_02149ED4
 WWHD_GAME_FUNC(0x02149EE0, s32, wwhd_ghostHeap_02149EE0, (void* self));
@@ -6734,6 +6912,8 @@ WWHD_GAME_FUNC(0x0215415C, void, wwhd_splash_set_0215415C, (void* i_this));
 WWHD_GAME_FUNC(0x021541E4, void, wwhd_attack_eff_remove_021541E4, (void* i_this));
 #define wwhd_attack_eff_remove wwhd_attack_eff_remove_021541E4
 WWHD_GAME_FUNC(0x02154228, void, wwhd_anm_init_02154228, (void* i_this, int anm, f32 morf, u8 mode, f32 speed, int bas));
+WWHD_GAME_FUNC(0x0215449C, void*, wwhd_z_s_sub_0215449C, (void* a, void* arg1));
+#define wwhd_z_s_sub wwhd_z_s_sub_0215449C
 WWHD_GAME_FUNC(0x021544EC, s32, wwhd_daGnd_Draw_021544EC, (void* i_this));
 #define wwhd_daGnd_Draw wwhd_daGnd_Draw_021544EC
 WWHD_GAME_FUNC(0x021547B0, s32, wwhd_player_view_check_021547B0, (void* i_this, s16 angle));
@@ -6742,8 +6922,11 @@ WWHD_GAME_FUNC(0x02154810, void, wwhd_ke_move_02154810, (void* i_this));
 #define wwhd_ke_move wwhd_ke_move_02154810
 WWHD_GAME_FUNC(0x02154C34, void, wwhd_pos_move_02154C34, (void* i_this, s8 noTurn));
 WWHD_GAME_FUNC(0x02154D88, void, wwhd_wait_set_02154D88, (void* i_this));
+WWHD_GAME_FUNC(0x02154E4C, void*, wwhd_shot_s_sub_02154E4C, (void* a, void* arg1));
 WWHD_GAME_FUNC(0x02154EE0, s32, wwhd_daGnd_Execute_02154EE0, (void* i_this));
 #define wwhd_daGnd_Execute wwhd_daGnd_Execute_02154EE0
+WWHD_GAME_FUNC(0x0215758C, s32, wwhd_daGnd_IsDelete_0215758C, (void* arg0));
+#define wwhd_daGnd_IsDelete wwhd_daGnd_IsDelete_0215758C
 WWHD_GAME_FUNC(0x02157594, s32, wwhd_daGnd_Delete_02157594, (void* i_this));
 #define wwhd_daGnd_Delete wwhd_daGnd_Delete_02157594
 WWHD_GAME_FUNC(0x02157600, s32, wwhd_useHeapInit_02157600, (void* a_this));
@@ -6774,6 +6957,8 @@ WWHD_GAME_FUNC(0x0215CE60, void, wwhd_body_flash_0215CE60, (void* i_this));
 #define wwhd_body_flash wwhd_body_flash_0215CE60
 WWHD_GAME_FUNC(0x0215D188, void, wwhd_gnd_class_dt_0215D188, (void* i_this, s32 flags));
 #define wwhd_gnd_class_dt wwhd_gnd_class_dt_0215D188
+WWHD_GAME_FUNC(0x0215D268, void, wwhd_gnd_SafeString_assureTermination_0215D268, (void* arg0));
+#define wwhd_gnd_SafeString_assureTermination wwhd_gnd_SafeString_assureTermination_0215D268
 WWHD_GAME_FUNC(0x0215D26C, void, wwhd_Goal_clothSpring_0215D26C, (void* position, void* neighbor, void* correction, f32 idealDistance));
 #define wwhd_Goal_clothSpring wwhd_Goal_clothSpring_0215D26C
 WWHD_GAME_FUNC(0x0215D304, s32, wwhd_Goal_CreateHeap_0215D304, (void* actor));
@@ -6850,6 +7035,10 @@ WWHD_GAME_FUNC(0x021618A4, void, wwhd_Goal_HIODtor_021618A4, (void* hio, s32 fla
 #define wwhd_Goal_HIODtor wwhd_Goal_HIODtor_021618A4
 WWHD_GAME_FUNC(0x021618CC, void, wwhd_Goal_HIOCallback_021618CC, (void* hio));
 #define wwhd_Goal_HIOCallback wwhd_Goal_HIOCallback_021618CC
+WWHD_GAME_FUNC(0x021618D0, s32, wwhd_daGrass_IsDelete_021618D0, (void* arg0));
+#define wwhd_daGrass_IsDelete wwhd_daGrass_IsDelete_021618D0
+WWHD_GAME_FUNC(0x021618D8, s32, wwhd_daGrass_Delete_021618D8, (void* arg0));
+#define wwhd_daGrass_Delete wwhd_daGrass_Delete_021618D8
 WWHD_GAME_FUNC(0x021618E0, s32, wwhd_daGrass_Create_021618E0, (void* i_ac));
 #define wwhd_daGrass_Create wwhd_daGrass_Create_021618E0
 WWHD_GAME_FUNC(0x021622DC, void, wwhd___sinit_d_a_grass_cpp_021622DC, (void));
@@ -7009,8 +7198,11 @@ WWHD_GAME_FUNC(0x0216B100, void*, wwhd_daGy_HIO_ct_0216B100, (void* hio));
 WWHD_GAME_FUNC(0x0216B4F0, void, wwhd___sinit_d_a_gy_cpp_0216B4F0, (void));
 #define wwhd___sinit_d_a_gy_cpp wwhd___sinit_d_a_gy_cpp_0216B4F0
 WWHD_GAME_FUNC(0x0216B590, void, wwhd_SafeString_dt_0216B590, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0216B5A4, s32, wwhd_daGyIsDelete_0216B5A4, (void* arg0));
+#define wwhd_daGyIsDelete wwhd_daGyIsDelete_0216B5A4
 WWHD_GAME_FUNC(0x0216B5AC, void, wwhd_daGy_dt_0216B5AC, (void* i_this, s32 flags));
 #define wwhd_daGy_dt wwhd_daGy_dt_0216B5AC
+WWHD_GAME_FUNC(0x0216B6E4, void, wwhd_SafeString_assureTermination_0216B6E4, (void* arg0));
 WWHD_GAME_FUNC(0x0216B6E8, void*, wwhd_daGyCtrl_SearchNear_0216B6E8, (void* self, void* actor));
 #define wwhd_daGyCtrl_SearchNear wwhd_daGyCtrl_SearchNear_0216B6E8
 WWHD_GAME_FUNC(0x0216B7B4, void*, wwhd_daGyCtrl_SearchCallback_0216B7B4, (void* self, void* actor));
@@ -7091,6 +7283,10 @@ WWHD_GAME_FUNC(0x0216E144, void, wwhd_pl_pos_add_0216E144, (void* i_this));
 #define wwhd_pl_pos_add wwhd_pl_pos_add_0216E144
 WWHD_GAME_FUNC(0x0216E194, s32, wwhd_daHimo2_Execute_0216E194, (void* i_this));
 #define wwhd_daHimo2_Execute wwhd_daHimo2_Execute_0216E194
+WWHD_GAME_FUNC(0x0216E9A8, s32, wwhd_daHimo2_IsDelete_0216E9A8, (void* arg0));
+#define wwhd_daHimo2_IsDelete wwhd_daHimo2_IsDelete_0216E9A8
+WWHD_GAME_FUNC(0x0216E9B0, s32, wwhd_daHimo2_Delete_0216E9B0, (void* arg0));
+#define wwhd_daHimo2_Delete wwhd_daHimo2_Delete_0216E9B0
 WWHD_GAME_FUNC(0x0216E9E0, s32, wwhd_CallbackCreateHeap_0216E9E0, (void* i_this));
 WWHD_GAME_FUNC(0x0216EC18, s32, wwhd_daHimo2_Create_0216EC18, (void* i_this));
 #define wwhd_daHimo2_Create wwhd_daHimo2_Create_0216EC18
@@ -7110,6 +7306,8 @@ WWHD_GAME_FUNC(0x021727D4, s32, wwhd_daHimo3_Draw_021727D4, (void* i_this));
 #define wwhd_daHimo3_Draw wwhd_daHimo3_Draw_021727D4
 WWHD_GAME_FUNC(0x02172A00, s32, wwhd_daHimo3_Execute_02172A00, (void* i_this));
 #define wwhd_daHimo3_Execute wwhd_daHimo3_Execute_02172A00
+WWHD_GAME_FUNC(0x021743E8, s32, wwhd_daHimo3_IsDelete_021743E8, (void* arg0));
+#define wwhd_daHimo3_IsDelete wwhd_daHimo3_IsDelete_021743E8
 WWHD_GAME_FUNC(0x021743F0, s32, wwhd_daHimo3_Delete_021743F0, (void* i_this));
 #define wwhd_daHimo3_Delete wwhd_daHimo3_Delete_021743F0
 WWHD_GAME_FUNC(0x0217447C, void*, wwhd_himo3_class_ct_0217447C, (void* i_this));
@@ -7202,6 +7400,8 @@ WWHD_GAME_FUNC(0x02176C50, s32, wwhd_daHookshot_c__draw_02176C50, (void* self));
 #define wwhd_daHookshot_c__draw wwhd_daHookshot_c__draw_02176C50
 WWHD_GAME_FUNC(0x02176CDC, s32, wwhd_daHookshot_Draw_02176CDC, (void* i_this));
 #define wwhd_daHookshot_Draw wwhd_daHookshot_Draw_02176CDC
+WWHD_GAME_FUNC(0x02176CE0, void, wwhd_daHookshot_rockLineCallback_02176CE0, (void* hookshot_actor, void* objInf, void* collided_actor, void* arg3));
+#define wwhd_daHookshot_rockLineCallback wwhd_daHookshot_rockLineCallback_02176CE0
 WWHD_GAME_FUNC(0x02176D98, s32, wwhd_daHookshot_c__execute_02176D98, (void* self));
 #define wwhd_daHookshot_c__execute wwhd_daHookshot_c__execute_02176D98
 WWHD_GAME_FUNC(0x021770EC, s32, wwhd_daHookshot_Execute_021770EC, (void* i_this));
@@ -7299,9 +7499,13 @@ WWHD_GAME_FUNC(0x0217ADF8, void, wwhd_daHys_c__mode_wait_0217ADF8, (void* self))
 #define wwhd_daHys_c__mode_wait wwhd_daHys_c__mode_wait_0217ADF8
 WWHD_GAME_FUNC(0x0217AE90, void, wwhd___sinit_d_a_hys_cpp_0217AE90, (void));
 #define wwhd___sinit_d_a_hys_cpp wwhd___sinit_d_a_hys_cpp_0217AE90
+WWHD_GAME_FUNC(0x0217AF24, s32, wwhd_daHys_IsDelete_0217AF24, (void* arg0));
+#define wwhd_daHys_IsDelete wwhd_daHys_IsDelete_0217AF24
 WWHD_GAME_FUNC(0x0217AF2C, void, wwhd_SafeString_dt_0217AF2C, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0217AF40, s32, wwhd_MoveBgActor_IsDelete_0217AF40, (void* arg0));
 WWHD_GAME_FUNC(0x0217AF48, void, wwhd_daHys_c_dt_0217AF48, (void* i_this, s32 flags));
 #define wwhd_daHys_c_dt wwhd_daHys_c_dt_0217AF48
+WWHD_GAME_FUNC(0x0217AFB4, void, wwhd_SafeString_assureTerminationImpl_0217AFB4, (void* arg0));
 WWHD_GAME_FUNC(0x0217AFB8, s32, wwhd_ibHeap_0217AFB8, (void* self));
 #define wwhd_ibHeap wwhd_ibHeap_0217AFB8
 WWHD_GAME_FUNC(0x0217B1F4, s32, wwhd_ibHeapCallback_0217B1F4, (void* self));
@@ -7441,6 +7645,8 @@ WWHD_GAME_FUNC(0x0217DDDC, s32, wwhd_daItem_c__checkPlayerGet_0217DDDC, (void* s
 #define wwhd_daItem_c__checkPlayerGet wwhd_daItem_c__checkPlayerGet_0217DDDC
 WWHD_GAME_FUNC(0x0217DE18, void, wwhd_daItem_c__itemGetExecute_0217DE18, (void* self));
 #define wwhd_daItem_c__itemGetExecute wwhd_daItem_c__itemGetExecute_0217DE18
+WWHD_GAME_FUNC(0x0217E50C, void, wwhd_itemGetCallBack_0217E50C, (void* item_actor, void* arg1, void* collided_actor, void* arg3));
+#define wwhd_itemGetCallBack wwhd_itemGetCallBack_0217E50C
 WWHD_GAME_FUNC(0x0217E5A4, s32, wwhd_daItem_c___daItem_draw_0217E5A4, (void* self));
 #define wwhd_daItem_c___daItem_draw wwhd_daItem_c___daItem_draw_0217E5A4
 WWHD_GAME_FUNC(0x0217E604, s32, wwhd_daItem_Draw_0217E604, (void* i_this));
@@ -7612,6 +7818,8 @@ WWHD_GAME_FUNC(0x02184644, s32, wwhd_daJBO_Draw_02184644, (void* i_this));
 #define wwhd_daJBO_Draw wwhd_daJBO_Draw_02184644
 WWHD_GAME_FUNC(0x021846B8, s32, wwhd_daJBO_Execute_021846B8, (void* i_this));
 #define wwhd_daJBO_Execute wwhd_daJBO_Execute_021846B8
+WWHD_GAME_FUNC(0x02184A44, s32, wwhd_daJBO_IsDelete_02184A44, (void* arg0));
+#define wwhd_daJBO_IsDelete wwhd_daJBO_IsDelete_02184A44
 WWHD_GAME_FUNC(0x02184A4C, s32, wwhd_daJBO_Delete_02184A4C, (void* i_this));
 #define wwhd_daJBO_Delete wwhd_daJBO_Delete_02184A4C
 WWHD_GAME_FUNC(0x02184A7C, s32, wwhd_useHeapInit_02184A7C, (void* i_this));
@@ -7662,6 +7870,8 @@ WWHD_GAME_FUNC(0x021860B0, void, wwhd_daKamome_setMtx_021860B0, (void* i_this));
 #define wwhd_daKamome_setMtx wwhd_daKamome_setMtx_021860B0
 WWHD_GAME_FUNC(0x021861D4, s32, wwhd_daKamome_Execute_021861D4, (void* i_this));
 #define wwhd_daKamome_Execute wwhd_daKamome_Execute_021861D4
+WWHD_GAME_FUNC(0x02188C04, s32, wwhd_daKamome_IsDelete_02188C04, (void* arg0));
+#define wwhd_daKamome_IsDelete wwhd_daKamome_IsDelete_02188C04
 WWHD_GAME_FUNC(0x02188C0C, s32, wwhd_daKamome_Delete_02188C0C, (void* i_this));
 #define wwhd_daKamome_Delete wwhd_daKamome_Delete_02188C0C
 WWHD_GAME_FUNC(0x02188C70, s32, wwhd_createHeap_02188C70, (void* a_this));
@@ -7680,6 +7890,8 @@ WWHD_GAME_FUNC(0x0218A544, void, wwhd_kamome_SafeString_assureTermination_0218A5
 WWHD_GAME_FUNC(0x0218A548, s32, wwhd_daKanban_Draw_0218A548, (void* i_this));
 #define wwhd_daKanban_Draw wwhd_daKanban_Draw_0218A548
 WWHD_GAME_FUNC(0x0218A6F8, s32, wwhd_sea_water_check_0218A6F8, (void* i_this));
+WWHD_GAME_FUNC(0x0218AAF4, void*, wwhd_bom_search_sub_0218AAF4, (void* ac, void* arg1));
+#define wwhd_bom_search_sub wwhd_bom_search_sub_0218AAF4
 WWHD_GAME_FUNC(0x0218AB94, s32, wwhd_shock_damage_check_0218AB94, (void* i_this));
 WWHD_GAME_FUNC(0x0218AD44, void, wwhd_cut_point_check_0218AD44, (void* i_this));
 #define wwhd_cut_point_check wwhd_cut_point_check_0218AD44
@@ -7687,6 +7899,8 @@ WWHD_GAME_FUNC(0x0218B00C, s32, wwhd_ret_keisan_move_0218B00C, (void* i_this));
 #define wwhd_ret_keisan_move wwhd_ret_keisan_move_0218B00C
 WWHD_GAME_FUNC(0x0218B234, s32, wwhd_daKanban_Execute_0218B234, (void* i_this));
 #define wwhd_daKanban_Execute wwhd_daKanban_Execute_0218B234
+WWHD_GAME_FUNC(0x0218C81C, s32, wwhd_daKanban_IsDelete_0218C81C, (void* arg0));
+#define wwhd_daKanban_IsDelete wwhd_daKanban_IsDelete_0218C81C
 WWHD_GAME_FUNC(0x0218C824, s32, wwhd_daKanban_Delete_0218C824, (void* i_this));
 #define wwhd_daKanban_Delete wwhd_daKanban_Delete_0218C824
 WWHD_GAME_FUNC(0x0218C874, s32, wwhd_useHeapInit_0218C874, (void* a_this));
@@ -7705,6 +7919,8 @@ WWHD_GAME_FUNC(0x0218D14C, s32, wwhd_daKantera_Draw_0218D14C, (void* i_this));
 #define wwhd_daKantera_Draw wwhd_daKantera_Draw_0218D14C
 WWHD_GAME_FUNC(0x0218D3F8, s32, wwhd_daKantera_Execute_0218D3F8, (void* i_this));
 #define wwhd_daKantera_Execute wwhd_daKantera_Execute_0218D3F8
+WWHD_GAME_FUNC(0x0218E328, s32, wwhd_daKantera_IsDelete_0218E328, (void* arg0));
+#define wwhd_daKantera_IsDelete wwhd_daKantera_IsDelete_0218E328
 WWHD_GAME_FUNC(0x0218E330, s32, wwhd_daKantera_Delete_0218E330, (void* i_this));
 #define wwhd_daKantera_Delete wwhd_daKantera_Delete_0218E330
 WWHD_GAME_FUNC(0x0218E39C, s32, wwhd_daKantera_CreateHeap_0218E39C, (void* a_this));
@@ -7718,6 +7934,7 @@ WWHD_GAME_FUNC(0x0218EA1C, void, wwhd___sinit_d_a_kantera_cpp_0218EA1C, (void));
 WWHD_GAME_FUNC(0x0218EAB0, void, wwhd_SafeString_dt_0218EAB0, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0218EAC4, void, wwhd_kantera_class_dt_0218EAC4, (void* i_this, s32 flags));
 #define wwhd_kantera_class_dt wwhd_kantera_class_dt_0218EAC4
+WWHD_GAME_FUNC(0x0218EB60, void, wwhd_SafeString_assureTerminationImpl_0218EB60, (void* arg0));
 WWHD_GAME_FUNC(0x0218EB64, void, wwhd_anm_init_0218EB64, (void* i_this, int param_1, f32 param_2, u8 param_3, f32 param_4, int param_5));
 WWHD_GAME_FUNC(0x0218EC90, void*, wwhd_esa_search_sub_0218EC90, (void* param_1, void* param_2));
 #define wwhd_esa_search_sub wwhd_esa_search_sub_0218EC90
@@ -7751,6 +7968,8 @@ WWHD_GAME_FUNC(0x021907F4, void, wwhd_money_drop_021907F4, (void* i_this));
 WWHD_GAME_FUNC(0x02190BFC, void, wwhd_BG_check_02190BFC, (void* i_this));
 WWHD_GAME_FUNC(0x02190CE0, s32, wwhd_daKb_Execute_02190CE0, (void* i_this));
 #define wwhd_daKb_Execute wwhd_daKb_Execute_02190CE0
+WWHD_GAME_FUNC(0x02193770, s32, wwhd_daKb_IsDelete_02193770, (void* arg0));
+#define wwhd_daKb_IsDelete wwhd_daKb_IsDelete_02193770
 WWHD_GAME_FUNC(0x02193778, s32, wwhd_daKb_Delete_02193778, (void* i_this));
 #define wwhd_daKb_Delete wwhd_daKb_Delete_02193778
 WWHD_GAME_FUNC(0x0219385C, s32, wwhd_useHeapInit_0219385C, (void* i_actor));
@@ -7777,6 +7996,7 @@ WWHD_GAME_FUNC(0x0219509C, void, wwhd_esa_demo_move_0219509C, (void* i_this));
 WWHD_GAME_FUNC(0x0219615C, void, wwhd_followEcallBack_dt_0219615C, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x02196170, void, wwhd_kb_class_dt_02196170, (void* self, s32 flags));
 #define wwhd_kb_class_dt wwhd_kb_class_dt_02196170
+WWHD_GAME_FUNC(0x02196238, void, wwhd_SafeString_assureTermination_02196238, (void* arg0));
 WWHD_GAME_FUNC(0x0219623C, s32, wwhd_nodeCallback_0219623C, (void* joint, s32 stage));
 WWHD_GAME_FUNC(0x0219641C, s32, wwhd_makeKey_0219641C, (void* a));
 #define wwhd_makeKey wwhd_makeKey_0219641C
@@ -7874,6 +8094,7 @@ WWHD_GAME_FUNC(0x021990C8, void, wwhd_armDtor_021990C8, (void* a, u32 flags));
 WWHD_GAME_FUNC(0x02199128, void, wwhd_actorDtor_02199128, (void* a, u32 flags));
 WWHD_GAME_FUNC(0x021991A8, void, wwhd_stringTerminate_021991A8, (void* self));
 WWHD_GAME_FUNC(0x021991AC, s32, wwhd_nodeCallBack_021991AC, (void* node, int calcTiming));
+WWHD_GAME_FUNC(0x021992DC, void*, wwhd_ki_a_d_sub_021992DC, (void* ac1, void* arg1));
 WWHD_GAME_FUNC(0x02199364, u32, wwhd_ki_check_02199364, (void* i_this));
 WWHD_GAME_FUNC(0x02199388, void, wwhd_anm_init_02199388, (void* i_this, int anmResIdx, f32 morf, unsigned char loopMode, f32 playSpeed, int soundResIdx));
 WWHD_GAME_FUNC(0x021994B0, void, wwhd_tex_anm_set_021994B0, (void* i_this, unsigned short idx));
@@ -7887,6 +8108,8 @@ WWHD_GAME_FUNC(0x02199C48, void, wwhd_ki_atack_move_02199C48, (void* i_this));
 #define wwhd_ki_atack_move wwhd_ki_atack_move_02199C48
 WWHD_GAME_FUNC(0x0219AAE8, s32, wwhd_daKi_Execute_0219AAE8, (void* i_this));
 #define wwhd_daKi_Execute wwhd_daKi_Execute_0219AAE8
+WWHD_GAME_FUNC(0x0219CE90, s32, wwhd_daKi_IsDelete_0219CE90, (void* arg0));
+#define wwhd_daKi_IsDelete wwhd_daKi_IsDelete_0219CE90
 WWHD_GAME_FUNC(0x0219CE98, s32, wwhd_daKi_Delete_0219CE98, (void* i_this));
 #define wwhd_daKi_Delete wwhd_daKi_Delete_0219CE98
 WWHD_GAME_FUNC(0x0219CF38, s32, wwhd_useHeapInit_0219CF38, (void* a_this));
@@ -7900,11 +8123,14 @@ WWHD_GAME_FUNC(0x0219D920, void, wwhd___sinit_d_a_ki_cpp_0219D920, (void));
 WWHD_GAME_FUNC(0x0219DAC4, void, wwhd_SafeString_dt_0219DAC4, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0219DAD8, void, wwhd_ki_class_dt_0219DAD8, (void* p, s32 flags));
 #define wwhd_ki_class_dt wwhd_ki_class_dt_0219DAD8
+WWHD_GAME_FUNC(0x0219DBF8, void, wwhd_SafeString_assureTerminationImpl_0219DBF8, (void* arg0));
 WWHD_GAME_FUNC(0x0219DBFC, void, wwhd_ride_call_back_0219DBFC, (void* bgw, void* i_ac, void* i_pt));
 WWHD_GAME_FUNC(0x0219DEF8, s32, wwhd_daKita_Draw_0219DEF8, (void* i_this));
 #define wwhd_daKita_Draw wwhd_daKita_Draw_0219DEF8
 WWHD_GAME_FUNC(0x0219DF90, s32, wwhd_daKita_Execute_0219DF90, (void* i_this));
 #define wwhd_daKita_Execute wwhd_daKita_Execute_0219DF90
+WWHD_GAME_FUNC(0x0219EEB8, s32, wwhd_daKita_IsDelete_0219EEB8, (void* arg0));
+#define wwhd_daKita_IsDelete wwhd_daKita_IsDelete_0219EEB8
 WWHD_GAME_FUNC(0x0219EEC0, s32, wwhd_daKita_Delete_0219EEC0, (void* i_this));
 #define wwhd_daKita_Delete wwhd_daKita_Delete_0219EEC0
 WWHD_GAME_FUNC(0x0219EF38, s32, wwhd_CallbackCreateHeap_0219EF38, (void* i_this));
@@ -7924,6 +8150,8 @@ WWHD_GAME_FUNC(0x0219FAE4, s32, wwhd_daKlft_Draw_0219FAE4, (void* i_this));
 #define wwhd_daKlft_Draw wwhd_daKlft_Draw_0219FAE4
 WWHD_GAME_FUNC(0x0219FBFC, s32, wwhd_daKlft_Execute_0219FBFC, (void* i_this));
 #define wwhd_daKlft_Execute wwhd_daKlft_Execute_0219FBFC
+WWHD_GAME_FUNC(0x021A0AEC, s32, wwhd_daKlft_IsDelete_021A0AEC, (void* arg0));
+#define wwhd_daKlft_IsDelete wwhd_daKlft_IsDelete_021A0AEC
 WWHD_GAME_FUNC(0x021A0AF4, s32, wwhd_daKlft_Delete_021A0AF4, (void* i_this));
 #define wwhd_daKlft_Delete wwhd_daKlft_Delete_021A0AF4
 WWHD_GAME_FUNC(0x021A0BB0, s32, wwhd_CallbackCreateHeap_021A0BB0, (void* i_actor));
@@ -7935,6 +8163,7 @@ WWHD_GAME_FUNC(0x021A1434, void, wwhd_SafeString_dt_021A1434, (void* p, s32 flag
 WWHD_GAME_FUNC(0x021A1448, void*, wwhd_dCcD_Cyl_ct_tu_021A1448, (void* p));
 WWHD_GAME_FUNC(0x021A14D4, void, wwhd_klft_class_dt_021A14D4, (void* i_this, s32 flags));
 #define wwhd_klft_class_dt wwhd_klft_class_dt_021A14D4
+WWHD_GAME_FUNC(0x021A158C, void, wwhd_SafeString_assureTerminationImpl_021A158C, (void* arg0));
 WWHD_GAME_FUNC(0x021A1590, s32, wwhd_daKmon_c__CreateHeap_021A1590, (void* self));
 #define wwhd_daKmon_c__CreateHeap wwhd_daKmon_c__CreateHeap_021A1590
 WWHD_GAME_FUNC(0x021A1748, s32, wwhd_CheckCreateHeap_021A1748, (void* i_this));
@@ -7967,6 +8196,8 @@ WWHD_GAME_FUNC(0x021A2160, void, wwhd_smoke_set_021A2160, (void* i_this));
 WWHD_GAME_FUNC(0x021A22AC, void, wwhd_shibuki_set_021A22AC, (void* i_this));
 WWHD_GAME_FUNC(0x021A23B8, s32, wwhd_daKN_Execute_021A23B8, (void* i_this));
 #define wwhd_daKN_Execute wwhd_daKN_Execute_021A23B8
+WWHD_GAME_FUNC(0x021A2F78, s32, wwhd_daKN_IsDelete_021A2F78, (void* arg0));
+#define wwhd_daKN_IsDelete wwhd_daKN_IsDelete_021A2F78
 WWHD_GAME_FUNC(0x021A2F80, s32, wwhd_daKN_Delete_021A2F80, (void* i_this));
 #define wwhd_daKN_Delete wwhd_daKN_Delete_021A2F80
 WWHD_GAME_FUNC(0x021A2FD0, s32, wwhd_useHeapInit_021A2FD0, (void* a_this));
@@ -8046,6 +8277,8 @@ WWHD_GAME_FUNC(0x021A5708, s32, wwhd_daKokiie_Draw_021A5708, (void* i_this));
 #define wwhd_daKokiie_Draw wwhd_daKokiie_Draw_021A5708
 WWHD_GAME_FUNC(0x021A57A0, s32, wwhd_daKokiie_Execute_021A57A0, (void* i_this));
 #define wwhd_daKokiie_Execute wwhd_daKokiie_Execute_021A57A0
+WWHD_GAME_FUNC(0x021A63B8, s32, wwhd_daKokiie_IsDelete_021A63B8, (void* arg0));
+#define wwhd_daKokiie_IsDelete wwhd_daKokiie_IsDelete_021A63B8
 WWHD_GAME_FUNC(0x021A63C0, s32, wwhd_daKokiie_Delete_021A63C0, (void* i_this));
 #define wwhd_daKokiie_Delete wwhd_daKokiie_Delete_021A63C0
 WWHD_GAME_FUNC(0x021A6418, s32, wwhd_CallbackCreateHeap_021A6418, (void* a_this));
@@ -8056,6 +8289,7 @@ WWHD_GAME_FUNC(0x021A696C, void, wwhd___sinit_d_a_kokiie_cpp_021A696C, (void));
 WWHD_GAME_FUNC(0x021A6A00, void, wwhd_SafeString_dt_021A6A00, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021A6A14, void, wwhd_kokiie_class_dt_021A6A14, (void* i_this, s32 flags));
 #define wwhd_kokiie_class_dt wwhd_kokiie_class_dt_021A6A14
+WWHD_GAME_FUNC(0x021A6A68, void, wwhd_SafeString_assureTerminationImpl_021A6A68, (void* arg0));
 WWHD_GAME_FUNC(0x021A6A6C, s32, wwhd_Act_c__create_heap_021A6A6C, (void* self));
 WWHD_GAME_FUNC(0x021A6B90, u32, wwhd_solidHeapCB_021A6B90, (void* i_this));
 WWHD_GAME_FUNC(0x021A6B94, void, wwhd_Act_c__set_mtx_021A6B94, (void* self));
@@ -8070,6 +8304,7 @@ WWHD_GAME_FUNC(0x021A6E58, u32, wwhd_Mthd_Draw_021A6E58, (void* i_this));
 WWHD_GAME_FUNC(0x021A6E5C, void, wwhd___sinit_d_a_komore_cpp_021A6E5C, (void));
 #define wwhd___sinit_d_a_komore_cpp wwhd___sinit_d_a_komore_cpp_021A6E5C
 WWHD_GAME_FUNC(0x021A6EF0, void, wwhd_SafeString_dt_021A6EF0, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x021A6F04, void, wwhd_SafeString_assureTerminationImpl_021A6F04, (void* arg0));
 WWHD_GAME_FUNC(0x021A6F08, void, wwhd_Act_c_dt_021A6F08, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x021A6F5C, s32, wwhd_Mthd_IsDelete_021A6F5C, (void* i_this));
 WWHD_GAME_FUNC(0x021A6F64, void, wwhd_draw_SUB_021A6F64, (void* i_this));
@@ -8088,6 +8323,8 @@ WWHD_GAME_FUNC(0x021A7E68, void*, wwhd_tsubo_search_021A7E68, (void* param_1, vo
 WWHD_GAME_FUNC(0x021A7F24, void, wwhd_BG_check_021A7F24, (void* i_this));
 WWHD_GAME_FUNC(0x021A7F94, s32, wwhd_daKS_Execute_021A7F94, (void* i_this));
 #define wwhd_daKS_Execute wwhd_daKS_Execute_021A7F94
+WWHD_GAME_FUNC(0x021A9EC0, s32, wwhd_daKS_IsDelete_021A9EC0, (void* arg0));
+#define wwhd_daKS_IsDelete wwhd_daKS_IsDelete_021A9EC0
 WWHD_GAME_FUNC(0x021A9EC8, s32, wwhd_daKS_Delete_021A9EC8, (void* i_this));
 #define wwhd_daKS_Delete wwhd_daKS_Delete_021A9EC8
 WWHD_GAME_FUNC(0x021A9F48, s32, wwhd_useHeapInit_021A9F48, (void* i_act));
@@ -8101,6 +8338,7 @@ WWHD_GAME_FUNC(0x021AAD90, void, wwhd___sinit_d_a_ks_cpp_021AAD90, (void));
 WWHD_GAME_FUNC(0x021AAE24, void, wwhd_SafeString_dt_021AAE24, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021AAE38, void, wwhd_ks_class_dt_021AAE38, (void* p, s32 flags));
 #define wwhd_ks_class_dt wwhd_ks_class_dt_021AAE38
+WWHD_GAME_FUNC(0x021AAF4C, void, wwhd_SafeString_assureTerminationImpl_021AAF4C, (void* arg0));
 WWHD_GAME_FUNC(0x021AAF50, s32, wwhd_daKt_Draw_021AAF50, (void* i_this));
 #define wwhd_daKt_Draw wwhd_daKt_Draw_021AAF50
 WWHD_GAME_FUNC(0x021AB148, s32, wwhd_daKt_Execute_021AB148, (void* i_this));
@@ -8118,6 +8356,7 @@ WWHD_GAME_FUNC(0x021AC560, void, wwhd___sinit_d_a_kt_cpp_021AC560, (void));
 WWHD_GAME_FUNC(0x021AC5F4, void, wwhd_SafeString_dt_021AC5F4, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021AC608, void, wwhd_kt_class_dt_021AC608, (void* i_this, s32 flags));
 #define wwhd_kt_class_dt wwhd_kt_class_dt_021AC608
+WWHD_GAME_FUNC(0x021AC65C, void, wwhd_SafeString_assureTerminationImpl_021AC65C, (void* arg0));
 WWHD_GAME_FUNC(0x021AC660, void*, wwhd_s_a_i_sub_021AC660, (void* search, void* user));
 WWHD_GAME_FUNC(0x021AC6B0, void*, wwhd_b_a_i_sub_021AC6B0, (void* search, void* user));
 #define wwhd_b_a_i_sub wwhd_b_a_i_sub_021AC6B0
@@ -8127,6 +8366,8 @@ WWHD_GAME_FUNC(0x021AC94C, s32, wwhd_daKui_Draw_021AC94C, (void* i_this));
 #define wwhd_daKui_Draw wwhd_daKui_Draw_021AC94C
 WWHD_GAME_FUNC(0x021ACB0C, s32, wwhd_daKui_Execute_021ACB0C, (void* i_this));
 #define wwhd_daKui_Execute wwhd_daKui_Execute_021ACB0C
+WWHD_GAME_FUNC(0x021ADAF4, s32, wwhd_daKui_IsDelete_021ADAF4, (void* arg0));
+#define wwhd_daKui_IsDelete wwhd_daKui_IsDelete_021ADAF4
 WWHD_GAME_FUNC(0x021ADAFC, s32, wwhd_daKui_Delete_021ADAFC, (void* i_this));
 #define wwhd_daKui_Delete wwhd_daKui_Delete_021ADAFC
 WWHD_GAME_FUNC(0x021ADB48, s32, wwhd_daKui_CreateHeap_021ADB48, (void* a_this));
@@ -8176,8 +8417,15 @@ WWHD_GAME_FUNC(0x021AF87C, void, wwhd___sinit_d_a_kytag01_cpp_021AF87C, (void));
 WWHD_GAME_FUNC(0x021AF910, void, wwhd_SafeString_dt_021AF910, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x021AF924, void, wwhd_kytag01_class_dt_021AF924, (void* i_this, s32 flags));
 #define wwhd_kytag01_class_dt wwhd_kytag01_class_dt_021AF924
+WWHD_GAME_FUNC(0x021AF978, void, wwhd_SafeString_assureTermination_021AF978, (void* arg0));
+WWHD_GAME_FUNC(0x021AF97C, s32, wwhd_daKytag02_Draw_021AF97C, (void* arg0));
+#define wwhd_daKytag02_Draw wwhd_daKytag02_Draw_021AF97C
 WWHD_GAME_FUNC(0x021AF984, s32, wwhd_daKytag02_Execute_021AF984, (void* actor));
 #define wwhd_daKytag02_Execute wwhd_daKytag02_Execute_021AF984
+WWHD_GAME_FUNC(0x021AFB94, s32, wwhd_daKytag02_IsDelete_021AFB94, (void* arg0));
+#define wwhd_daKytag02_IsDelete wwhd_daKytag02_IsDelete_021AFB94
+WWHD_GAME_FUNC(0x021AFB9C, s32, wwhd_daKytag02_Delete_021AFB9C, (void* arg0));
+#define wwhd_daKytag02_Delete wwhd_daKytag02_Delete_021AFB9C
 WWHD_GAME_FUNC(0x021AFBC8, s32, wwhd_daKytag02_Create_021AFBC8, (void* actor));
 #define wwhd_daKytag02_Create wwhd_daKytag02_Create_021AFBC8
 WWHD_GAME_FUNC(0x021AFC60, void, wwhd___sinit_d_a_kytag02_cpp_021AFC60, (void));
@@ -8200,34 +8448,57 @@ WWHD_GAME_FUNC(0x021B0364, void, wwhd___sinit_d_a_kytag03_cpp_021B0364, (void));
 WWHD_GAME_FUNC(0x021B03F8, void, wwhd_SafeString_dt_021B03F8, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x021B040C, void, wwhd_kytag03_class_dt_021B040C, (void* i_this, s32 flags));
 #define wwhd_kytag03_class_dt wwhd_kytag03_class_dt_021B040C
+WWHD_GAME_FUNC(0x021B0460, void, wwhd_SafeString_assureTermination_021B0460, (void* arg0));
+WWHD_GAME_FUNC(0x021B0464, s32, wwhd_daKytag04_Draw_021B0464, (void* arg0));
+#define wwhd_daKytag04_Draw wwhd_daKytag04_Draw_021B0464
 WWHD_GAME_FUNC(0x021B046C, s32, wwhd_daKytag04_Execute_021B046C, (void* i_this));
 #define wwhd_daKytag04_Execute wwhd_daKytag04_Execute_021B046C
 WWHD_GAME_FUNC(0x021B0530, s32, wwhd_daKytag04_IsDelete_021B0530, (void* i_this));
 #define wwhd_daKytag04_IsDelete wwhd_daKytag04_IsDelete_021B0530
+WWHD_GAME_FUNC(0x021B0558, s32, wwhd_daKytag04_Delete_021B0558, (void* arg0));
+#define wwhd_daKytag04_Delete wwhd_daKytag04_Delete_021B0558
 WWHD_GAME_FUNC(0x021B0560, s32, wwhd_daKytag04_Create_021B0560, (void* i_this));
 #define wwhd_daKytag04_Create wwhd_daKytag04_Create_021B0560
 WWHD_GAME_FUNC(0x021B0620, void, wwhd___sinit_d_a_kytag04_cpp_021B0620, (void));
 #define wwhd___sinit_d_a_kytag04_cpp wwhd___sinit_d_a_kytag04_cpp_021B0620
 WWHD_GAME_FUNC(0x021B06B4, void, wwhd_kytag04_class_dt_021B06B4, (void* i_this, s32 flags));
 #define wwhd_kytag04_class_dt wwhd_kytag04_class_dt_021B06B4
+WWHD_GAME_FUNC(0x021B0708, s32, wwhd_daKytag05_Draw_021B0708, (void* arg0));
+#define wwhd_daKytag05_Draw wwhd_daKytag05_Draw_021B0708
 WWHD_GAME_FUNC(0x021B0710, s32, wwhd_daKytag05_Execute_021B0710, (void* a_this));
 #define wwhd_daKytag05_Execute wwhd_daKytag05_Execute_021B0710
+WWHD_GAME_FUNC(0x021B0B4C, s32, wwhd_daKytag05_IsDelete_021B0B4C, (void* arg0));
+#define wwhd_daKytag05_IsDelete wwhd_daKytag05_IsDelete_021B0B4C
+WWHD_GAME_FUNC(0x021B0B54, s32, wwhd_daKytag05_Delete_021B0B54, (void* arg0));
+#define wwhd_daKytag05_Delete wwhd_daKytag05_Delete_021B0B54
 WWHD_GAME_FUNC(0x021B0B5C, s32, wwhd_daKytag05_Create_021B0B5C, (void* i_this));
 #define wwhd_daKytag05_Create wwhd_daKytag05_Create_021B0B5C
 WWHD_GAME_FUNC(0x021B0C54, void, wwhd___sinit_d_a_kytag05_cpp_021B0C54, (void));
 #define wwhd___sinit_d_a_kytag05_cpp wwhd___sinit_d_a_kytag05_cpp_021B0C54
 WWHD_GAME_FUNC(0x021B0CE8, void, wwhd_kytag05_class_dt_021B0CE8, (void* i_this, s32 flags));
 #define wwhd_kytag05_class_dt wwhd_kytag05_class_dt_021B0CE8
+WWHD_GAME_FUNC(0x021B0D3C, s32, wwhd_daKytag06_Draw_021B0D3C, (void* arg0));
+#define wwhd_daKytag06_Draw wwhd_daKytag06_Draw_021B0D3C
 WWHD_GAME_FUNC(0x021B0D44, s32, wwhd_daKytag06_Execute_021B0D44, (void* i_this));
 #define wwhd_daKytag06_Execute wwhd_daKytag06_Execute_021B0D44
+WWHD_GAME_FUNC(0x021B0E68, s32, wwhd_daKytag06_IsDelete_021B0E68, (void* arg0));
+#define wwhd_daKytag06_IsDelete wwhd_daKytag06_IsDelete_021B0E68
+WWHD_GAME_FUNC(0x021B0E70, s32, wwhd_daKytag06_Delete_021B0E70, (void* arg0));
+#define wwhd_daKytag06_Delete wwhd_daKytag06_Delete_021B0E70
 WWHD_GAME_FUNC(0x021B0E78, s32, wwhd_daKytag06_Create_021B0E78, (void* i_this));
 #define wwhd_daKytag06_Create wwhd_daKytag06_Create_021B0E78
 WWHD_GAME_FUNC(0x021B0F1C, void, wwhd___sinit_d_a_kytag06_cpp_021B0F1C, (void));
 #define wwhd___sinit_d_a_kytag06_cpp wwhd___sinit_d_a_kytag06_cpp_021B0F1C
 WWHD_GAME_FUNC(0x021B0FB0, void, wwhd_kytag06_class_dt_021B0FB0, (void* i_this, s32 flags));
 #define wwhd_kytag06_class_dt wwhd_kytag06_class_dt_021B0FB0
+WWHD_GAME_FUNC(0x021B1004, s32, wwhd_daKytag07_Draw_021B1004, (void* arg0));
+#define wwhd_daKytag07_Draw wwhd_daKytag07_Draw_021B1004
 WWHD_GAME_FUNC(0x021B100C, s32, wwhd_daKytag07_Execute_021B100C, (void* i_this));
 #define wwhd_daKytag07_Execute wwhd_daKytag07_Execute_021B100C
+WWHD_GAME_FUNC(0x021B131C, s32, wwhd_daKytag07_IsDelete_021B131C, (void* arg0));
+#define wwhd_daKytag07_IsDelete wwhd_daKytag07_IsDelete_021B131C
+WWHD_GAME_FUNC(0x021B1324, s32, wwhd_daKytag07_Delete_021B1324, (void* arg0));
+#define wwhd_daKytag07_Delete wwhd_daKytag07_Delete_021B1324
 WWHD_GAME_FUNC(0x021B1350, s32, wwhd_daKytag07_Create_021B1350, (void* i_this));
 #define wwhd_daKytag07_Create wwhd_daKytag07_Create_021B1350
 WWHD_GAME_FUNC(0x021B1490, void, wwhd___sinit_d_a_kytag07_cpp_021B1490, (void));
@@ -8235,6 +8506,7 @@ WWHD_GAME_FUNC(0x021B1490, void, wwhd___sinit_d_a_kytag07_cpp_021B1490, (void));
 WWHD_GAME_FUNC(0x021B1524, void, wwhd_SafeString_dt_021B1524, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x021B1538, void, wwhd_kytag07_class_dt_021B1538, (void* i_this, s32 flags));
 #define wwhd_kytag07_class_dt wwhd_kytag07_class_dt_021B1538
+WWHD_GAME_FUNC(0x021B158C, void, wwhd_SafeString_assureTermination_021B158C, (void* arg0));
 WWHD_GAME_FUNC(0x021B1590, s32, wwhd_daLamp_Draw_021B1590, (void* i_this));
 #define wwhd_daLamp_Draw wwhd_daLamp_Draw_021B1590
 WWHD_GAME_FUNC(0x021B15F8, s32, wwhd_daLamp_Execute_021B15F8, (void* i_this));
@@ -8294,6 +8566,8 @@ WWHD_GAME_FUNC(0x021B2F1C, s32, wwhd_daLbridge_Execute_021B2F1C, (void* i_this))
 WWHD_GAME_FUNC(0x021B2F20, void, wwhd___sinit_d_a_lbridge_cpp_021B2F20, (void));
 #define wwhd___sinit_d_a_lbridge_cpp wwhd___sinit_d_a_lbridge_cpp_021B2F20
 WWHD_GAME_FUNC(0x021B2FB4, void, wwhd_deleting_dtor_empty_021B2FB4, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x021B2FC8, s32, wwhd_daLbridge_IsDelete_021B2FC8, (void* arg0));
+#define wwhd_daLbridge_IsDelete wwhd_daLbridge_IsDelete_021B2FC8
 WWHD_GAME_FUNC(0x021B2FD0, void, wwhd_daLbridge_dtor_021B2FD0, (void* p, s32 flags));
 #define wwhd_daLbridge_dtor wwhd_daLbridge_dtor_021B2FD0
 WWHD_GAME_FUNC(0x021B3024, void, wwhd_lbridge_empty_021B3024, (void* p));
@@ -8572,6 +8846,10 @@ WWHD_GAME_FUNC(0x021BC2C8, s32, wwhd_daMant_Draw_021BC2C8, (void* i_this));
 #define wwhd_daMant_Draw wwhd_daMant_Draw_021BC2C8
 WWHD_GAME_FUNC(0x021BC3C4, s32, wwhd_daMant_Execute_021BC3C4, (void* self));
 #define wwhd_daMant_Execute wwhd_daMant_Execute_021BC3C4
+WWHD_GAME_FUNC(0x021BD490, s32, wwhd_daMant_IsDelete_021BD490, (void* arg0));
+#define wwhd_daMant_IsDelete wwhd_daMant_IsDelete_021BD490
+WWHD_GAME_FUNC(0x021BD498, s32, wwhd_daMant_Delete_021BD498, (void* arg0));
+#define wwhd_daMant_Delete wwhd_daMant_Delete_021BD498
 WWHD_GAME_FUNC(0x021BD4A0, void*, wwhd_daMant_packet_c_ct_021BD4A0, (void* self));
 #define wwhd_daMant_packet_c_ct wwhd_daMant_packet_c_ct_021BD4A0
 WWHD_GAME_FUNC(0x021BE134, s32, wwhd_daMant_Create_021BE134, (void* a_this));
@@ -8603,8 +8881,11 @@ WWHD_GAME_FUNC(0x021BEF38, void, wwhd_mant_buf12_dt_021BEF38, (void* self, s32 f
 #define wwhd_mant_buf12_dt wwhd_mant_buf12_dt_021BEF38
 WWHD_GAME_FUNC(0x021BF0D4, void, wwhd_daMant_packet_c_dt_021BF0D4, (void* self, s32 flags));
 #define wwhd_daMant_packet_c_dt wwhd_daMant_packet_c_dt_021BF0D4
+WWHD_GAME_FUNC(0x021BF3C4, void, wwhd_daMant_packet_c_empty_021BF3C4, (void* arg0));
+#define wwhd_daMant_packet_c_empty wwhd_daMant_packet_c_empty_021BF3C4
 WWHD_GAME_FUNC(0x021BF3C8, void, wwhd_mant_class_dt_021BF3C8, (void* i_this, s32 flags));
 #define wwhd_mant_class_dt wwhd_mant_class_dt_021BF3C8
+WWHD_GAME_FUNC(0x021BF708, void, wwhd_SafeString_assureTerminationImpl_021BF708, (void* arg0));
 WWHD_GAME_FUNC(0x021BF70C, u8, wwhd_getShape_021BF70C, (void* a));
 WWHD_GAME_FUNC(0x021BF718, const char*, wwhd_getArc_021BF718, (void* a));
 #define wwhd_getArc wwhd_getArc_021BF718
@@ -8694,12 +8975,15 @@ WWHD_GAME_FUNC(0x021C1F64, void, wwhd_sinit_021C1F64, (void));
 WWHD_GAME_FUNC(0x021C1FF8, void, wwhd_stringDtor_021C1FF8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021C200C, void, wwhd_actorDtor_021C200C, (void* actor, s32 flags));
 WWHD_GAME_FUNC(0x021C2060, void, wwhd_stringTerminate_021C2060, (void* p));
+WWHD_GAME_FUNC(0x021C2064, void, wwhd_ride_call_back_021C2064, (void* arg0, void* arg1, void* arg2));
 WWHD_GAME_FUNC(0x021C2304, s32, wwhd_daMflft_Draw_021C2304, (void* i_this));
 #define wwhd_daMflft_Draw wwhd_daMflft_Draw_021C2304
 WWHD_GAME_FUNC(0x021C23E0, void, wwhd_himo_cut_control_021C23E0, (void* i_this, void* arg1, u8* arg2, u8 arg3));
 #define wwhd_himo_cut_control wwhd_himo_cut_control_021C23E0
 WWHD_GAME_FUNC(0x021C2748, s32, wwhd_daMflft_Execute_021C2748, (void* i_this));
 #define wwhd_daMflft_Execute wwhd_daMflft_Execute_021C2748
+WWHD_GAME_FUNC(0x021C38D4, s32, wwhd_daMflft_IsDelete_021C38D4, (void* arg0));
+#define wwhd_daMflft_IsDelete wwhd_daMflft_IsDelete_021C38D4
 WWHD_GAME_FUNC(0x021C38DC, s32, wwhd_daMflft_Delete_021C38DC, (void* i_this));
 #define wwhd_daMflft_Delete wwhd_daMflft_Delete_021C38DC
 WWHD_GAME_FUNC(0x021C395C, s32, wwhd_CallbackCreateHeap_021C395C, (void* a_this));
@@ -8714,6 +8998,7 @@ WWHD_GAME_FUNC(0x021C4094, void*, wwhd_mCyls_ct_021C4094, (void* c));
 #define wwhd_mCyls_ct wwhd_mCyls_ct_021C4094
 WWHD_GAME_FUNC(0x021C4120, void, wwhd_mflft_class_dt_021C4120, (void* i_this, s32 flags));
 #define wwhd_mflft_class_dt wwhd_mflft_class_dt_021C4120
+WWHD_GAME_FUNC(0x021C41AC, void, wwhd_SafeString_assureTerminationImpl_021C41AC, (void* arg0));
 WWHD_GAME_FUNC(0x021C41B0, s32, wwhd_mgboard_CreateHeap_021C41B0, (void* board));
 #define wwhd_mgboard_CreateHeap wwhd_mgboard_CreateHeap_021C41B0
 WWHD_GAME_FUNC(0x021C44E0, s32, wwhd_mgboard_CheckCreateHeap_021C44E0, (void* board));
@@ -8790,6 +9075,7 @@ WWHD_GAME_FUNC(0x021C6274, s32, wwhd_Mthd_Draw_021C6274, (void* i_this));
 WWHD_GAME_FUNC(0x021C6278, void, wwhd___sinit_d_a_mmusic_cpp_021C6278, (void));
 #define wwhd___sinit_d_a_mmusic_cpp wwhd___sinit_d_a_mmusic_cpp_021C6278
 WWHD_GAME_FUNC(0x021C630C, void, wwhd_Act_c_dt_021C630C, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x021C6360, s32, wwhd_Mthd_IsDelete_021C6360, (void* arg0));
 WWHD_GAME_FUNC(0x021C6368, void, wwhd_tex_anm_set_021C6368, (void* i_this, u16 idx));
 WWHD_GAME_FUNC(0x021C6440, void, wwhd_anm_init_021C6440, (void* i_this, int bckFileIdx, f32 morf, u8 loopMode, f32 speed, int soundFileIdx));
 WWHD_GAME_FUNC(0x021C6578, void, wwhd_smoke_set_s_021C6578, (void* i_this, f32 rate));
@@ -8802,6 +9088,8 @@ WWHD_GAME_FUNC(0x021C7C30, void, wwhd_way_pos_check_021C7C30, (void* i_this, voi
 WWHD_GAME_FUNC(0x021C7EDC, u32, wwhd_ground_4_check_021C7EDC, (void* i_this, int r18, s16 r20, f32 f29));
 WWHD_GAME_FUNC(0x021C80FC, s32, wwhd_daMo2_other_bg_check_021C80FC, (void* i_this, void* r23));
 #define wwhd_daMo2_other_bg_check wwhd_daMo2_other_bg_check_021C80FC
+WWHD_GAME_FUNC(0x021C826C, void*, wwhd_s_w_sub_021C826C, (void* param_1, void* arg1));
+WWHD_GAME_FUNC(0x021C82F4, void*, wwhd_s_b_sub_021C82F4, (void* param_1, void* arg1));
 WWHD_GAME_FUNC(0x021C8378, void*, wwhd_search_bomb_021C8378, (void* i_this, int r26));
 WWHD_GAME_FUNC(0x021C872C, s32, wwhd_daMo2_wepon_view_check_021C872C, (void* i_this));
 #define wwhd_daMo2_wepon_view_check wwhd_daMo2_wepon_view_check_021C872C
@@ -8817,8 +9105,12 @@ WWHD_GAME_FUNC(0x021C8E30, void, wwhd_wait_set_021C8E30, (void* i_this));
 WWHD_GAME_FUNC(0x021C8FB8, void, wwhd_fight_run_set_021C8FB8, (void* i_this));
 WWHD_GAME_FUNC(0x021C9004, void, wwhd_path_check_021C9004, (void* i_this));
 WWHD_GAME_FUNC(0x021C9310, void, wwhd_attack_set_021C9310, (void* i_this, u8 param_2));
+WWHD_GAME_FUNC(0x021C9AA0, void, wwhd_AtHitCallback_021C9AA0, (void* a_this, void* arg1, void* actor, void* arg3));
+#define wwhd_AtHitCallback wwhd_AtHitCallback_021C9AA0
 WWHD_GAME_FUNC(0x021C9B1C, s32, wwhd_daMo2_Execute_021C9B1C, (void* i_this));
 #define wwhd_daMo2_Execute wwhd_daMo2_Execute_021C9B1C
+WWHD_GAME_FUNC(0x021CC444, s32, wwhd_daMo2_IsDelete_021CC444, (void* arg0));
+#define wwhd_daMo2_IsDelete wwhd_daMo2_IsDelete_021CC444
 WWHD_GAME_FUNC(0x021CC44C, s32, wwhd_daMo2_Delete_021CC44C, (void* i_this));
 #define wwhd_daMo2_Delete wwhd_daMo2_Delete_021CC44C
 WWHD_GAME_FUNC(0x021CC524, s32, wwhd_createHeap_021CC524, (void* a_this));
@@ -8855,6 +9147,7 @@ WWHD_GAME_FUNC(0x021D0A14, void, wwhd_Mo2_move_021D0A14, (void* i_this));
 #define wwhd_Mo2_move wwhd_Mo2_move_021D0A14
 WWHD_GAME_FUNC(0x021D3C90, void, wwhd_mo2_class_dt_021D3C90, (void* i_this, s32 flags));
 #define wwhd_mo2_class_dt wwhd_mo2_class_dt_021D3C90
+WWHD_GAME_FUNC(0x021D3DEC, void, wwhd_SafeString_assureTerminationImpl_021D3DEC, (void* arg0));
 WWHD_GAME_FUNC(0x021D3DF0, s32, wwhd_mozoJointCallback_021D3DF0, (void* node, s32 timing));
 #define wwhd_mozoJointCallback wwhd_mozoJointCallback_021D3DF0
 WWHD_GAME_FUNC(0x021D42B4, s32, wwhd_mozoHeap_021D42B4, (void* self));
@@ -8940,6 +9233,8 @@ WWHD_GAME_FUNC(0x021D733C, void, wwhd_msw_class_dt_021D733C, (void* i_this, s32 
 #define wwhd_msw_class_dt wwhd_msw_class_dt_021D733C
 WWHD_GAME_FUNC(0x021D73BC, void, wwhd_empty_virtual_021D73BC, (void* p));
 WWHD_GAME_FUNC(0x021D73C0, void, wwhd_anm_init_021D73C0, (void* i_this, int bckFileIdx, f32 morf, u8 loopMode, f32 speed, int soundFileIdx));
+WWHD_GAME_FUNC(0x021D7480, void*, wwhd_mt_a_d_sub_021D7480, (void* param_1, void* arg1));
+#define wwhd_mt_a_d_sub wwhd_mt_a_d_sub_021D7480
 WWHD_GAME_FUNC(0x021D74F8, void, wwhd_mt_bg_check_021D74F8, (void* i_this));
 #define wwhd_mt_bg_check wwhd_mt_bg_check_021D74F8
 WWHD_GAME_FUNC(0x021D75D8, void, wwhd_tex_anm_set_021D75D8, (void* i_this, u16 idx));
@@ -8957,6 +9252,8 @@ WWHD_GAME_FUNC(0x021D86F8, void, wwhd_water_damage_se_set_021D86F8, (void* i_thi
 #define wwhd_water_damage_se_set wwhd_water_damage_se_set_021D86F8
 WWHD_GAME_FUNC(0x021D87A0, s32, wwhd_daMt_Execute_021D87A0, (void* i_this));
 #define wwhd_daMt_Execute wwhd_daMt_Execute_021D87A0
+WWHD_GAME_FUNC(0x021DC62C, s32, wwhd_daMt_IsDelete_021DC62C, (void* arg0));
+#define wwhd_daMt_IsDelete wwhd_daMt_IsDelete_021DC62C
 WWHD_GAME_FUNC(0x021DC634, s32, wwhd_daMt_Delete_021DC634, (void* i_this));
 #define wwhd_daMt_Delete wwhd_daMt_Delete_021DC634
 WWHD_GAME_FUNC(0x021DC780, s32, wwhd_CallbackCreateHeap_021DC780, (void* a_this));
@@ -8991,6 +9288,7 @@ WWHD_GAME_FUNC(0x021DFDDC, f32, wwhd_TSinCosTable_cosShort_021DFDDC, (void* tabl
 WWHD_GAME_FUNC(0x021DFDF4, void, wwhd_followEcallBack_dt_021DFDF4, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x021DFE08, void, wwhd_mt_class_dt_021DFE08, (void* self, s32 flags));
 #define wwhd_mt_class_dt wwhd_mt_class_dt_021DFE08
+WWHD_GAME_FUNC(0x021DFF2C, void, wwhd_SafeString_assureTerminationImpl_021DFF2C, (void* arg0));
 WWHD_GAME_FUNC(0x021DFF30, void, wwhd_daMtoge_c__calcMtx_021DFF30, (void* self));
 #define wwhd_daMtoge_c__calcMtx wwhd_daMtoge_c__calcMtx_021DFF30
 WWHD_GAME_FUNC(0x021DFFF4, s32, wwhd_daMtoge_c__CreateHeap_021DFFF4, (void* self));
@@ -9012,6 +9310,8 @@ WWHD_GAME_FUNC(0x021E0340, s32, wwhd_daMtoge_Draw_021E0340, (void* i_this));
 #define wwhd_daMtoge_Draw wwhd_daMtoge_Draw_021E0340
 WWHD_GAME_FUNC(0x021E039C, s32, wwhd_daMtoge_Execute_021E039C, (void* i_this));
 #define wwhd_daMtoge_Execute wwhd_daMtoge_Execute_021E039C
+WWHD_GAME_FUNC(0x021E041C, s32, wwhd_daMtoge_IsDelete_021E041C, (void* arg0));
+#define wwhd_daMtoge_IsDelete wwhd_daMtoge_IsDelete_021E041C
 WWHD_GAME_FUNC(0x021E0424, s32, wwhd_daMtoge_Delete_021E0424, (void* i_this));
 #define wwhd_daMtoge_Delete wwhd_daMtoge_Delete_021E0424
 WWHD_GAME_FUNC(0x021E047C, s32, wwhd_daMtoge_c__CreateInit_021E047C, (void* self));
@@ -9123,6 +9423,8 @@ WWHD_GAME_FUNC(0x021E2C88, u8, wwhd_daNpc_Ac1_c__create_itm_Mdl_021E2C88, (void*
 WWHD_GAME_FUNC(0x021E2D68, s32, wwhd_daNpc_Ac1_c__CreateHeap_021E2D68, (void* self));
 #define wwhd_daNpc_Ac1_c__CreateHeap wwhd_daNpc_Ac1_c__CreateHeap_021E2D68
 WWHD_GAME_FUNC(0x021E305C, s32, wwhd_CheckCreateHeap_021E305C, (void* i_this));
+WWHD_GAME_FUNC(0x021E3060, u8, wwhd_daNpc_Ac1_c__charDecide_021E3060, (void* self, int arg1));
+#define wwhd_daNpc_Ac1_c__charDecide wwhd_daNpc_Ac1_c__charDecide_021E3060
 WWHD_GAME_FUNC(0x021E3074, s32, wwhd_daNpc_Ac1_c__set_action_021E3074, (void* self, void* i_newProcFunc, void* i_argsP));
 #define wwhd_daNpc_Ac1_c__set_action wwhd_daNpc_Ac1_c__set_action_021E3074
 WWHD_GAME_FUNC(0x021E31A0, u8, wwhd_daNpc_Ac1_c__init_AC1_0_021E31A0, (void* self));
@@ -9169,6 +9471,8 @@ WWHD_GAME_FUNC(0x021E417C, s32, wwhd_daNpc_Ac1_c___draw_021E417C, (void* self));
 #define wwhd_daNpc_Ac1_c___draw wwhd_daNpc_Ac1_c___draw_021E417C
 WWHD_GAME_FUNC(0x021E433C, s32, wwhd_daNpc_Ac1_Draw_021E433C, (void* i_this));
 #define wwhd_daNpc_Ac1_Draw wwhd_daNpc_Ac1_Draw_021E433C
+WWHD_GAME_FUNC(0x021E4340, s32, wwhd_daNpc_Ac1_IsDelete_021E4340, (void* arg0));
+#define wwhd_daNpc_Ac1_IsDelete wwhd_daNpc_Ac1_IsDelete_021E4340
 WWHD_GAME_FUNC(0x021E4348, int, wwhd_daNpc_Ac1_c__anmNum_toResID_021E4348, (void* self, int i_anmNum));
 #define wwhd_daNpc_Ac1_c__anmNum_toResID wwhd_daNpc_Ac1_c__anmNum_toResID_021E4348
 WWHD_GAME_FUNC(0x021E435C, int, wwhd_daNpc_Ac1_c__armAnmNum_toResID_021E435C, (void* self, int i_anmNum));
@@ -9209,6 +9513,8 @@ WWHD_GAME_FUNC(0x021E4A74, s32, wwhd_daNpc_Ac1_c__wait_1_021E4A74, (void* self))
 #define wwhd_daNpc_Ac1_c__wait_1 wwhd_daNpc_Ac1_c__wait_1_021E4A74
 WWHD_GAME_FUNC(0x021E4B38, s32, wwhd_daNpc_Ac1_c__talk_1_021E4B38, (void* self));
 #define wwhd_daNpc_Ac1_c__talk_1 wwhd_daNpc_Ac1_c__talk_1_021E4B38
+WWHD_GAME_FUNC(0x021E4C10, s32, wwhd_daNpc_Ac1_c__wait_action1_021E4C10, (void* self, void* arg1));
+#define wwhd_daNpc_Ac1_c__wait_action1 wwhd_daNpc_Ac1_c__wait_action1_021E4C10
 WWHD_GAME_FUNC(0x021E4CCC, void*, wwhd_daNpc_Ac1_HIO_c_ct_021E4CCC, (void* i_this));
 #define wwhd_daNpc_Ac1_HIO_c_ct wwhd_daNpc_Ac1_HIO_c_ct_021E4CCC
 WWHD_GAME_FUNC(0x021E4D38, void, wwhd___sinit_d_a_npc_ac1_cpp_021E4D38, (void));
@@ -9216,6 +9522,7 @@ WWHD_GAME_FUNC(0x021E4D38, void, wwhd___sinit_d_a_npc_ac1_cpp_021E4D38, (void));
 WWHD_GAME_FUNC(0x021E4DD8, void, wwhd_SafeString_dt_021E4DD8, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x021E4DEC, void, wwhd_daNpc_Ac1_c_dt_021E4DEC, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ac1_c_dt wwhd_daNpc_Ac1_c_dt_021E4DEC
+WWHD_GAME_FUNC(0x021E4E88, void, wwhd_SafeString_assureTerminationImpl_021E4E88, (void* arg0));
 WWHD_GAME_FUNC(0x021E4E8C, s32, wwhd_da_Npc_Ah_nodeCallBack_021E4E8C, (void* node, int calcTiming));
 #define wwhd_da_Npc_Ah_nodeCallBack wwhd_da_Npc_Ah_nodeCallBack_021E4E8C
 WWHD_GAME_FUNC(0x021E4FE8, s32, wwhd_daNpcAh_c__initTexPatternAnm_021E4FE8, (void* self, u32 modify));
@@ -9304,8 +9611,11 @@ WWHD_GAME_FUNC(0x021E6D6C, u32, wwhd_daNpcAh_c__getMsg_021E6D6C, (void* self));
 WWHD_GAME_FUNC(0x021E6E04, void, wwhd___sinit_d_a_npc_ah_cpp_021E6E04, (void));
 #define wwhd___sinit_d_a_npc_ah_cpp wwhd___sinit_d_a_npc_ah_cpp_021E6E04
 WWHD_GAME_FUNC(0x021E6E98, void, wwhd_SafeString_dt_021E6E98, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x021E6EAC, s32, wwhd_daNpc_AhIsDelete_021E6EAC, (void* arg0));
+#define wwhd_daNpc_AhIsDelete wwhd_daNpc_AhIsDelete_021E6EAC
 WWHD_GAME_FUNC(0x021E6EB4, void, wwhd_daNpcAh_dt_021E6EB4, (void* p, s32 flags));
 #define wwhd_daNpcAh_dt wwhd_daNpcAh_dt_021E6EB4
+WWHD_GAME_FUNC(0x021E6F50, void, wwhd_SafeString_assureTerminationImpl_021E6F50, (void* arg0));
 WWHD_GAME_FUNC(0x021E6F54, u32, wwhd_daObj_PrmAbstract_021E6F54, (void* ac, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x021E6F70, void, wwhd_daNpc_Aj1_c___nodeCB_Head_021E6F70, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Aj1_c___nodeCB_Head wwhd_daNpc_Aj1_c___nodeCB_Head_021E6F70
@@ -9313,6 +9623,8 @@ WWHD_GAME_FUNC(0x021E70F0, s32, wwhd_nodeCB_Head_021E70F0, (void* i_node, int i_
 WWHD_GAME_FUNC(0x021E7138, void, wwhd_daNpc_Aj1_c___nodeCB_BackBone_021E7138, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Aj1_c___nodeCB_BackBone wwhd_daNpc_Aj1_c___nodeCB_BackBone_021E7138
 WWHD_GAME_FUNC(0x021E7254, s32, wwhd_nodeCB_BackBone_021E7254, (void* i_node, int i_calcTiming));
+WWHD_GAME_FUNC(0x021E729C, int, wwhd_daNpc_Aj1_c__btpResID_021E729C, (void* self, int arg1));
+#define wwhd_daNpc_Aj1_c__btpResID wwhd_daNpc_Aj1_c__btpResID_021E729C
 WWHD_GAME_FUNC(0x021E72A8, u32, wwhd_daNpc_Aj1_c__init_texPttrnAnm_021E72A8, (void* self, s8 i_btpNum, u32 i_bModify));
 #define wwhd_daNpc_Aj1_c__init_texPttrnAnm wwhd_daNpc_Aj1_c__init_texPttrnAnm_021E72A8
 WWHD_GAME_FUNC(0x021E7398, s32, wwhd_daNpc_Aj1_c__bodyCreateHeap_021E7398, (void* self));
@@ -9420,6 +9732,8 @@ WWHD_GAME_FUNC(0x021E9920, s32, wwhd_daNpc_Aj1_c___draw_021E9920, (void* self));
 #define wwhd_daNpc_Aj1_c___draw wwhd_daNpc_Aj1_c___draw_021E9920
 WWHD_GAME_FUNC(0x021E9AA8, s32, wwhd_daNpc_Aj1_Draw_021E9AA8, (void* i_this));
 #define wwhd_daNpc_Aj1_Draw wwhd_daNpc_Aj1_Draw_021E9AA8
+WWHD_GAME_FUNC(0x021E9AAC, s32, wwhd_daNpc_Aj1_IsDelete_021E9AAC, (void* arg0));
+#define wwhd_daNpc_Aj1_IsDelete wwhd_daNpc_Aj1_IsDelete_021E9AAC
 WWHD_GAME_FUNC(0x021E9AB4, u8, wwhd_daNpc_Aj1_c__chk_parts_notMov_021E9AB4, (void* self));
 #define wwhd_daNpc_Aj1_c__chk_parts_notMov wwhd_daNpc_Aj1_c__chk_parts_notMov_021E9AB4
 WWHD_GAME_FUNC(0x021E9AF4, void, wwhd_daNpc_Aj1_c__ctrl_WAITanm_021E9AF4, (void* self));
@@ -9462,6 +9776,10 @@ WWHD_GAME_FUNC(0x021EA97C, s32, wwhd_daNpc_Aj1_c__wait_1_021EA97C, (void* self))
 #define wwhd_daNpc_Aj1_c__wait_1 wwhd_daNpc_Aj1_c__wait_1_021EA97C
 WWHD_GAME_FUNC(0x021EAA68, s32, wwhd_daNpc_Aj1_c__talk_1_021EAA68, (void* self));
 #define wwhd_daNpc_Aj1_c__talk_1 wwhd_daNpc_Aj1_c__talk_1_021EAA68
+WWHD_GAME_FUNC(0x021EAC18, s32, wwhd_daNpc_Aj1_c__wait_action1_021EAC18, (void* self, void* arg1));
+#define wwhd_daNpc_Aj1_c__wait_action1 wwhd_daNpc_Aj1_c__wait_action1_021EAC18
+WWHD_GAME_FUNC(0x021EACEC, s32, wwhd_daNpc_Aj1_c__wait_action2_021EACEC, (void* self, void* arg1));
+#define wwhd_daNpc_Aj1_c__wait_action2 wwhd_daNpc_Aj1_c__wait_action2_021EACEC
 WWHD_GAME_FUNC(0x021EAEA8, void*, wwhd_daNpc_Aj1_HIO_c_ct_021EAEA8, (void* i_this));
 #define wwhd_daNpc_Aj1_HIO_c_ct wwhd_daNpc_Aj1_HIO_c_ct_021EAEA8
 WWHD_GAME_FUNC(0x021EAF14, void, wwhd___sinit_d_a_npc_aj1_cpp_021EAF14, (void));
@@ -9469,6 +9787,7 @@ WWHD_GAME_FUNC(0x021EAF14, void, wwhd___sinit_d_a_npc_aj1_cpp_021EAF14, (void));
 WWHD_GAME_FUNC(0x021EAFB4, void, wwhd_SafeString_dt_021EAFB4, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x021EAFC8, void, wwhd_daNpc_Aj1_c_dt_021EAFC8, (void* i_this, s32 flags));
 #define wwhd_daNpc_Aj1_c_dt wwhd_daNpc_Aj1_c_dt_021EAFC8
+WWHD_GAME_FUNC(0x021EB064, void, wwhd_SafeString_assureTerminationImpl_021EB064, (void* arg0));
 WWHD_GAME_FUNC(0x021EB068, u32, wwhd_auctionJointCallback_021EB068, (u32 jointObject, s32 phase));
 #define wwhd_auctionJointCallback wwhd_auctionJointCallback_021EB068
 WWHD_GAME_FUNC(0x021EB1C0, u32, wwhd_auctionAlternateJointCallback_021EB1C0, (u32 jointObject, s32 phase));
@@ -9561,6 +9880,8 @@ WWHD_GAME_FUNC(0x021EE40C, void, wwhd_auctionDestructor_021EE40C, (void* a, s32 
 #define wwhd_auctionDestructor wwhd_auctionDestructor_021EE40C
 WWHD_GAME_FUNC(0x021EE4A8, void, wwhd_auctionSafeStringPrepare_021EE4A8, (u32 object));
 #define wwhd_auctionSafeStringPrepare wwhd_auctionSafeStringPrepare_021EE4A8
+WWHD_GAME_FUNC(0x021EE4AC, void*, wwhd_searchActor_Fa_021EE4AC, (void* i_param_1, void* arg1));
+#define wwhd_searchActor_Fa wwhd_searchActor_Fa_021EE4AC
 WWHD_GAME_FUNC(0x021EE52C, void, wwhd_daNpc_Ba1_c__nodeBa1Control_021EE52C, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Ba1_c__nodeBa1Control wwhd_daNpc_Ba1_c__nodeBa1Control_021EE52C
 WWHD_GAME_FUNC(0x021EE6CC, s32, wwhd_nodeCallBack_Ba1_021EE6CC, (void* i_param_1, int i_param_2));
@@ -9569,6 +9890,8 @@ WWHD_GAME_FUNC(0x021EE714, u8, wwhd_daNpc_Ba1_c__XyCheck_cB_021EE714, (void* sel
 #define wwhd_daNpc_Ba1_c__XyCheck_cB wwhd_daNpc_Ba1_c__XyCheck_cB_021EE714
 WWHD_GAME_FUNC(0x021EE754, u32, wwhd_daNpc_Ba1_XyCheck_cB_021EE754, (void* i_this, int i_itemBtn));
 #define wwhd_daNpc_Ba1_XyCheck_cB wwhd_daNpc_Ba1_XyCheck_cB_021EE754
+WWHD_GAME_FUNC(0x021EE758, s16, wwhd_daNpc_Ba1_c__XyEvent_cB_021EE758, (void* self, int arg1));
+#define wwhd_daNpc_Ba1_c__XyEvent_cB wwhd_daNpc_Ba1_c__XyEvent_cB_021EE758
 WWHD_GAME_FUNC(0x021EE760, s16, wwhd_daNpc_Ba1_XyEvent_cB_021EE760, (void* i_this, int param_1));
 #define wwhd_daNpc_Ba1_XyEvent_cB wwhd_daNpc_Ba1_XyEvent_cB_021EE760
 WWHD_GAME_FUNC(0x021EE764, void*, wwhd_daNpc_Ba1_c__create_Anm_021EE764, (void* self));
@@ -9694,6 +10017,8 @@ WWHD_GAME_FUNC(0x021F128C, s32, wwhd_daNpc_Ba1_c___draw_021F128C, (void* self));
 #define wwhd_daNpc_Ba1_c___draw wwhd_daNpc_Ba1_c___draw_021F128C
 WWHD_GAME_FUNC(0x021F1460, s32, wwhd_daNpc_Ba1_Draw_021F1460, (void* i_this));
 #define wwhd_daNpc_Ba1_Draw wwhd_daNpc_Ba1_Draw_021F1460
+WWHD_GAME_FUNC(0x021F1464, s32, wwhd_daNpc_Ba1_IsDelete_021F1464, (void* arg0));
+#define wwhd_daNpc_Ba1_IsDelete wwhd_daNpc_Ba1_IsDelete_021F1464
 WWHD_GAME_FUNC(0x021F146C, u8, wwhd_daNpc_Ba1_c__setAnm_021F146C, (void* self));
 #define wwhd_daNpc_Ba1_c__setAnm wwhd_daNpc_Ba1_c__setAnm_021F146C
 WWHD_GAME_FUNC(0x021F14F0, void, wwhd_daNpc_Ba1_c__setAnm_ATR_021F14F0, (void* self, int i_param_1));
@@ -9742,6 +10067,16 @@ WWHD_GAME_FUNC(0x021F26D0, s32, wwhd_daNpc_Ba1_c__wait_3_021F26D0, (void* self))
 #define wwhd_daNpc_Ba1_c__wait_3 wwhd_daNpc_Ba1_c__wait_3_021F26D0
 WWHD_GAME_FUNC(0x021F26D4, s32, wwhd_daNpc_Ba1_c__ZZZwai_021F26D4, (void* self));
 #define wwhd_daNpc_Ba1_c__ZZZwai wwhd_daNpc_Ba1_c__ZZZwai_021F26D4
+WWHD_GAME_FUNC(0x021F2818, s32, wwhd_daNpc_Ba1_c__wait_action1_021F2818, (void* self, void* arg1));
+#define wwhd_daNpc_Ba1_c__wait_action1 wwhd_daNpc_Ba1_c__wait_action1_021F2818
+WWHD_GAME_FUNC(0x021F2980, s32, wwhd_daNpc_Ba1_c__wait_action2_021F2980, (void* self, void* arg1));
+#define wwhd_daNpc_Ba1_c__wait_action2 wwhd_daNpc_Ba1_c__wait_action2_021F2980
+WWHD_GAME_FUNC(0x021F2A30, s32, wwhd_daNpc_Ba1_c__demo_action1_021F2A30, (void* self, void* arg1));
+#define wwhd_daNpc_Ba1_c__demo_action1 wwhd_daNpc_Ba1_c__demo_action1_021F2A30
+WWHD_GAME_FUNC(0x021F2A4C, s32, wwhd_daNpc_Ba1_c__wait_action3_021F2A4C, (void* self, void* arg1));
+#define wwhd_daNpc_Ba1_c__wait_action3 wwhd_daNpc_Ba1_c__wait_action3_021F2A4C
+WWHD_GAME_FUNC(0x021F2B08, s32, wwhd_daNpc_Ba1_c__wait_action4_021F2B08, (void* self, void* arg1));
+#define wwhd_daNpc_Ba1_c__wait_action4 wwhd_daNpc_Ba1_c__wait_action4_021F2B08
 WWHD_GAME_FUNC(0x021F2BB8, void*, wwhd_daNpc_Ba1_HIO_c_ct_021F2BB8, (void* i_this));
 #define wwhd_daNpc_Ba1_HIO_c_ct wwhd_daNpc_Ba1_HIO_c_ct_021F2BB8
 WWHD_GAME_FUNC(0x021F2C24, void, wwhd___sinit_d_a_npc_ba1_cpp_021F2C24, (void));
@@ -9749,6 +10084,9 @@ WWHD_GAME_FUNC(0x021F2C24, void, wwhd___sinit_d_a_npc_ba1_cpp_021F2C24, (void));
 WWHD_GAME_FUNC(0x021F2CC4, void, wwhd_SafeString_dt_021F2CC4, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x021F2CD8, void, wwhd_daNpc_Ba1_c_dt_021F2CD8, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ba1_c_dt wwhd_daNpc_Ba1_c_dt_021F2CD8
+WWHD_GAME_FUNC(0x021F2D74, void, wwhd_SafeString_assureTerminationImpl_021F2D74, (void* arg0));
+WWHD_GAME_FUNC(0x021F2D78, void*, wwhd_searchActor_Jb_021F2D78, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Jb wwhd_searchActor_Jb_021F2D78
 WWHD_GAME_FUNC(0x021F2E04, void, wwhd_daNpc_Bj1_c__nodeBj1Control_021F2E04, (void* self, void* node, void* model));
 #define wwhd_daNpc_Bj1_c__nodeBj1Control wwhd_daNpc_Bj1_c__nodeBj1Control_021F2E04
 WWHD_GAME_FUNC(0x021F2FD4, s32, wwhd_nodeCallBack_Bj1_021F2FD4, (void* node, int calcTiming));
@@ -9996,6 +10334,14 @@ WWHD_GAME_FUNC(0x021FA6D8, u32, wwhd_bj1_actorDestructor_021FA6D8, (void* storag
 #define wwhd_bj1_actorDestructor wwhd_bj1_actorDestructor_021FA6D8
 WWHD_GAME_FUNC(0x021FA774, u32, wwhd_bj1_safeStringEmptyVirtual_021FA774, (void* storage));
 #define wwhd_bj1_safeStringEmptyVirtual wwhd_bj1_safeStringEmptyVirtual_021FA774
+WWHD_GAME_FUNC(0x021FA778, void*, wwhd_searchActor_Zl_021FA778, (void* i_param_1, void* arg1));
+#define wwhd_searchActor_Zl wwhd_searchActor_Zl_021FA778
+WWHD_GAME_FUNC(0x021FA7F8, void*, wwhd_searchActor_Gp_021FA7F8, (void* i_param_1, void* arg1));
+#define wwhd_searchActor_Gp wwhd_searchActor_Gp_021FA7F8
+WWHD_GAME_FUNC(0x021FA878, void*, wwhd_searchActor_Bm_Skt_021FA878, (void* i_param_1, void* arg1));
+#define wwhd_searchActor_Bm_Skt wwhd_searchActor_Bm_Skt_021FA878
+WWHD_GAME_FUNC(0x021FA908, void*, wwhd_searchActor_Bm_Kkt_021FA908, (void* i_param_1, void* arg1));
+#define wwhd_searchActor_Bm_Kkt wwhd_searchActor_Bm_Kkt_021FA908
 WWHD_GAME_FUNC(0x021FA998, void, wwhd_daNpc_Bm1_c__nodeWngControl_021FA998, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Bm1_c__nodeWngControl wwhd_daNpc_Bm1_c__nodeWngControl_021FA998
 WWHD_GAME_FUNC(0x021FAB78, s32, wwhd_nodeCallBack_Wng_021FAB78, (void* i_param_1, int i_param_2));
@@ -10199,6 +10545,8 @@ WWHD_GAME_FUNC(0x02200F90, s32, wwhd_daNpc_Bm1_c___draw_02200F90, (void* self));
 #define wwhd_daNpc_Bm1_c___draw wwhd_daNpc_Bm1_c___draw_02200F90
 WWHD_GAME_FUNC(0x0220124C, s32, wwhd_daNpc_Bm1_Draw_0220124C, (void* i_this));
 #define wwhd_daNpc_Bm1_Draw wwhd_daNpc_Bm1_Draw_0220124C
+WWHD_GAME_FUNC(0x02201250, s32, wwhd_daNpc_Bm1_IsDelete_02201250, (void* arg0));
+#define wwhd_daNpc_Bm1_IsDelete wwhd_daNpc_Bm1_IsDelete_02201250
 WWHD_GAME_FUNC(0x02201258, u8, wwhd_daNpc_Bm1_c__setAnm_02201258, (void* self));
 #define wwhd_daNpc_Bm1_c__setAnm wwhd_daNpc_Bm1_c__setAnm_02201258
 WWHD_GAME_FUNC(0x022012DC, void, wwhd_daNpc_Bm1_c__setAnm_ATR_022012DC, (void* self, int i_param_1));
@@ -10283,6 +10631,28 @@ WWHD_GAME_FUNC(0x02203734, s32, wwhd_daNpc_Bm1_c__walk_1_02203734, (void* self))
 #define wwhd_daNpc_Bm1_c__walk_1 wwhd_daNpc_Bm1_c__walk_1_02203734
 WWHD_GAME_FUNC(0x02203830, s32, wwhd_daNpc_Bm1_c__CHKwai_02203830, (void* self));
 #define wwhd_daNpc_Bm1_c__CHKwai wwhd_daNpc_Bm1_c__CHKwai_02203830
+WWHD_GAME_FUNC(0x0220390C, s32, wwhd_daNpc_Bm1_c__demo_action1_0220390C, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__demo_action1 wwhd_daNpc_Bm1_c__demo_action1_0220390C
+WWHD_GAME_FUNC(0x022039E0, s32, wwhd_daNpc_Bm1_c__wait_action1_022039E0, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action1 wwhd_daNpc_Bm1_c__wait_action1_022039E0
+WWHD_GAME_FUNC(0x02203A9C, s32, wwhd_daNpc_Bm1_c__wait_action2_02203A9C, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action2 wwhd_daNpc_Bm1_c__wait_action2_02203A9C
+WWHD_GAME_FUNC(0x02203BAC, s32, wwhd_daNpc_Bm1_c__wait_action3_02203BAC, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action3 wwhd_daNpc_Bm1_c__wait_action3_02203BAC
+WWHD_GAME_FUNC(0x02203C44, s32, wwhd_daNpc_Bm1_c__wait_action4_02203C44, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action4 wwhd_daNpc_Bm1_c__wait_action4_02203C44
+WWHD_GAME_FUNC(0x02203C98, s32, wwhd_daNpc_Bm1_c__wait_action5_02203C98, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action5 wwhd_daNpc_Bm1_c__wait_action5_02203C98
+WWHD_GAME_FUNC(0x02203D48, s32, wwhd_daNpc_Bm1_c__wait_action6_02203D48, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action6 wwhd_daNpc_Bm1_c__wait_action6_02203D48
+WWHD_GAME_FUNC(0x02203DF8, s32, wwhd_daNpc_Bm1_c__wait_action7_02203DF8, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action7 wwhd_daNpc_Bm1_c__wait_action7_02203DF8
+WWHD_GAME_FUNC(0x02203ED8, s32, wwhd_daNpc_Bm1_c__wait_action8_02203ED8, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action8 wwhd_daNpc_Bm1_c__wait_action8_02203ED8
+WWHD_GAME_FUNC(0x02203FAC, s32, wwhd_daNpc_Bm1_c__wait_action9_02203FAC, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_action9 wwhd_daNpc_Bm1_c__wait_action9_02203FAC
+WWHD_GAME_FUNC(0x02204044, s32, wwhd_daNpc_Bm1_c__wait_actionA_02204044, (void* self, void* arg1));
+#define wwhd_daNpc_Bm1_c__wait_actionA wwhd_daNpc_Bm1_c__wait_actionA_02204044
 WWHD_GAME_FUNC(0x02204118, void*, wwhd_daNpc_Bm1_childHIO_c_ct_02204118, (void* i_this));
 #define wwhd_daNpc_Bm1_childHIO_c_ct wwhd_daNpc_Bm1_childHIO_c_ct_02204118
 WWHD_GAME_FUNC(0x02204158, void*, wwhd_daNpc_Bm1_HIO_c_ct_02204158, (void* i_this));
@@ -10292,6 +10662,7 @@ WWHD_GAME_FUNC(0x02204208, void, wwhd___sinit_d_a_npc_bm1_cpp_02204208, (void));
 WWHD_GAME_FUNC(0x022042A8, void, wwhd_SafeString_dt_022042A8, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022042BC, void, wwhd_daNpc_Bm1_c_dt_022042BC, (void* i_this, s32 flags));
 #define wwhd_daNpc_Bm1_c_dt wwhd_daNpc_Bm1_c_dt_022042BC
+WWHD_GAME_FUNC(0x02204358, void, wwhd_SafeString_assureTerminationImpl_02204358, (void* arg0));
 WWHD_GAME_FUNC(0x0220435C, s32, wwhd_daNpc_Bmcon_nodeCallBack_0220435C, (void* node, int calcTiming));
 #define wwhd_daNpc_Bmcon_nodeCallBack wwhd_daNpc_Bmcon_nodeCallBack_0220435C
 WWHD_GAME_FUNC(0x022044EC, void, wwhd_daNpcBmcon_c__nodeArmControl_022044EC, (void* self, void* node, void* model));
@@ -10312,6 +10683,8 @@ WWHD_GAME_FUNC(0x02204E40, void, wwhd_daNpcBmcon_c__setAnm_02204E40, (void* self
 #define wwhd_daNpcBmcon_c__setAnm wwhd_daNpcBmcon_c__setAnm_02204E40
 WWHD_GAME_FUNC(0x02204FA8, u8, wwhd_daNpcBmcon_c__setAnmTbl_02204FA8, (void* self, void* dat));
 #define wwhd_daNpcBmcon_c__setAnmTbl wwhd_daNpcBmcon_c__setAnmTbl_02204FA8
+WWHD_GAME_FUNC(0x02205074, s16, wwhd_daNpcBmcon_c__XyCheckCB_02205074, (void* self, int arg1));
+#define wwhd_daNpcBmcon_c__XyCheckCB wwhd_daNpcBmcon_c__XyCheckCB_02205074
 WWHD_GAME_FUNC(0x0220507C, s16, wwhd_daNpcBmcon_XyCheckCB_0220507C, (void* i_this, int i_itemBtn));
 #define wwhd_daNpcBmcon_XyCheckCB wwhd_daNpcBmcon_XyCheckCB_0220507C
 WWHD_GAME_FUNC(0x02205080, void, wwhd_daNpcBmcon_c__setMtx_02205080, (void* self));
@@ -10410,6 +10783,7 @@ WWHD_GAME_FUNC(0x02208270, s32, wwhd_daNpc_BmconIsDelete_02208270, (void* i_this
 #define wwhd_daNpc_BmconIsDelete wwhd_daNpc_BmconIsDelete_02208270
 WWHD_GAME_FUNC(0x02208278, void, wwhd_daNpcBmcon_dt_02208278, (void* p, s32 flags));
 #define wwhd_daNpcBmcon_dt wwhd_daNpcBmcon_dt_02208278
+WWHD_GAME_FUNC(0x02208314, void, wwhd_SafeString_assureTerminationImpl_02208314, (void* arg0));
 WWHD_GAME_FUNC(0x02208318, u32, wwhd_daObj_PrmAbstract_02208318, (void* i_actor, u32 i_width, u32 i_shift));
 WWHD_GAME_FUNC(0x02208334, s32, wwhd_daNpc_Bms1_shopMsgCheck_02208334, (u32 msgNo));
 #define wwhd_daNpc_Bms1_shopMsgCheck wwhd_daNpc_Bms1_shopMsgCheck_02208334
@@ -10460,6 +10834,8 @@ WWHD_GAME_FUNC(0x0220A954, s32, wwhd_daNpc_Bms1_c___draw_0220A954, (void* self))
 #define wwhd_daNpc_Bms1_c___draw wwhd_daNpc_Bms1_c___draw_0220A954
 WWHD_GAME_FUNC(0x0220AB74, s32, wwhd_daNpc_Bms1_Draw_0220AB74, (void* i_this));
 #define wwhd_daNpc_Bms1_Draw wwhd_daNpc_Bms1_Draw_0220AB74
+WWHD_GAME_FUNC(0x0220AB78, s32, wwhd_daNpc_Bms1_IsDelete_0220AB78, (void* arg0));
+#define wwhd_daNpc_Bms1_IsDelete wwhd_daNpc_Bms1_IsDelete_0220AB78
 WWHD_GAME_FUNC(0x0220AB80, void, wwhd_daNpc_Bms1_c__setAnm_0220AB80, (void* self, s8 i_idx, f32 i_morf));
 #define wwhd_daNpc_Bms1_c__setAnm wwhd_daNpc_Bms1_c__setAnm_0220AB80
 WWHD_GAME_FUNC(0x0220ABEC, void, wwhd_daNpc_Bms1_c__setAnmFromMsgTag_0220ABEC, (void* self));
@@ -10486,6 +10862,10 @@ WWHD_GAME_FUNC(0x0220BC54, s32, wwhd_daNpc_Bms1_c__wait01_0220BC54, (void* self)
 #define wwhd_daNpc_Bms1_c__wait01 wwhd_daNpc_Bms1_c__wait01_0220BC54
 WWHD_GAME_FUNC(0x0220BCD8, s32, wwhd_daNpc_Bms1_c__talk01_0220BCD8, (void* self));
 #define wwhd_daNpc_Bms1_c__talk01 wwhd_daNpc_Bms1_c__talk01_0220BCD8
+WWHD_GAME_FUNC(0x0220BDCC, s32, wwhd_daNpc_Bms1_c__wait_action_0220BDCC, (void* self, void* arg1));
+#define wwhd_daNpc_Bms1_c__wait_action wwhd_daNpc_Bms1_c__wait_action_0220BDCC
+WWHD_GAME_FUNC(0x0220BF90, s32, wwhd_daNpc_Bms1_c__getdemo_action_0220BF90, (void* self, void* arg1));
+#define wwhd_daNpc_Bms1_c__getdemo_action wwhd_daNpc_Bms1_c__getdemo_action_0220BF90
 WWHD_GAME_FUNC(0x0220C1C0, s32, wwhd_daNpc_Bms1_c__evn_talk_init_0220C1C0, (void* self, int i_staffIdx));
 #define wwhd_daNpc_Bms1_c__evn_talk_init wwhd_daNpc_Bms1_c__evn_talk_init_0220C1C0
 WWHD_GAME_FUNC(0x0220C2A4, s32, wwhd_daNpc_Bms1_c__evn_continue_talk_init_0220C2A4, (void* self, int i_staffIdx));
@@ -10498,6 +10878,8 @@ WWHD_GAME_FUNC(0x0220C394, s32, wwhd_daNpc_Bms1_c__evn_talk_0220C394, (void* sel
 #define wwhd_daNpc_Bms1_c__evn_talk wwhd_daNpc_Bms1_c__evn_talk_0220C394
 WWHD_GAME_FUNC(0x0220C660, s32, wwhd_daNpc_Bms1_c__privateCut_0220C660, (void* self));
 #define wwhd_daNpc_Bms1_c__privateCut wwhd_daNpc_Bms1_c__privateCut_0220C660
+WWHD_GAME_FUNC(0x0220C7CC, s32, wwhd_daNpc_Bms1_c__event_action_0220C7CC, (void* self, void* arg1));
+#define wwhd_daNpc_Bms1_c__event_action wwhd_daNpc_Bms1_c__event_action_0220C7CC
 WWHD_GAME_FUNC(0x0220C994, void*, wwhd_daNpc_Bms1_childHIO_c_ct_0220C994, (void* i_this));
 #define wwhd_daNpc_Bms1_childHIO_c_ct wwhd_daNpc_Bms1_childHIO_c_ct_0220C994
 WWHD_GAME_FUNC(0x0220CA14, void*, wwhd_daNpc_Bms1_HIO_c_ct_0220CA14, (void* i_this));
@@ -10507,6 +10889,7 @@ WWHD_GAME_FUNC(0x0220CB54, void, wwhd___sinit_d_a_npc_bms1_cpp_0220CB54, (void))
 WWHD_GAME_FUNC(0x0220CBF4, void, wwhd_trivial_dt_0220CBF4, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0220CC08, void, wwhd_daNpc_Bms1_c_dt_0220CC08, (void* i_this, s32 flags));
 #define wwhd_daNpc_Bms1_c_dt wwhd_daNpc_Bms1_c_dt_0220CC08
+WWHD_GAME_FUNC(0x0220CCB0, void, wwhd_empty_virtual_0220CCB0, (void* arg0));
 WWHD_GAME_FUNC(0x0220CCB4, s8, wwhd_cLib_calcTimer_s8_0220CCB4, (s8* t));
 #define wwhd_cLib_calcTimer_s8 wwhd_cLib_calcTimer_s8_0220CCB4
 WWHD_GAME_FUNC(0x0220CCD4, s32, wwhd_nodeCallBack_0220CCD4, (void* node, int calcTiming));
@@ -10591,6 +10974,8 @@ WWHD_GAME_FUNC(0x0220FE68, u16, wwhd_daNpc_Bmsw_c__next_msgStatus_0220FE68, (voi
 #define wwhd_daNpc_Bmsw_c__next_msgStatus wwhd_daNpc_Bmsw_c__next_msgStatus_0220FE68
 WWHD_GAME_FUNC(0x022102CC, u32, wwhd_daNpc_Bmsw_c__getMsg_022102CC, (void* self));
 #define wwhd_daNpc_Bmsw_c__getMsg wwhd_daNpc_Bmsw_c__getMsg_022102CC
+WWHD_GAME_FUNC(0x022103D4, void, wwhd_daNpc_Bmsw_c__anmAtr_022103D4, (void* self, u16 arg1));
+#define wwhd_daNpc_Bmsw_c__anmAtr wwhd_daNpc_Bmsw_c__anmAtr_022103D4
 WWHD_GAME_FUNC(0x0221047C, void, wwhd_daNpc_Bmsw_c__setAttention_0221047C, (void* self));
 #define wwhd_daNpc_Bmsw_c__setAttention wwhd_daNpc_Bmsw_c__setAttention_0221047C
 WWHD_GAME_FUNC(0x022104A4, void, wwhd_daNpc_Bmsw_c__lookBack_022104A4, (void* self));
@@ -10599,17 +10984,23 @@ WWHD_GAME_FUNC(0x0221068C, void, wwhd_daNpc_Bmsw_c__wait01_0221068C, (void* self
 #define wwhd_daNpc_Bmsw_c__wait01 wwhd_daNpc_Bmsw_c__wait01_0221068C
 WWHD_GAME_FUNC(0x02210804, void, wwhd_daNpc_Bmsw_c__talk01_02210804, (void* self));
 #define wwhd_daNpc_Bmsw_c__talk01 wwhd_daNpc_Bmsw_c__talk01_02210804
+WWHD_GAME_FUNC(0x02210AC0, s32, wwhd_daNpc_Bmsw_c__wait_action_02210AC0, (void* self, void* arg1));
+#define wwhd_daNpc_Bmsw_c__wait_action wwhd_daNpc_Bmsw_c__wait_action_02210AC0
 WWHD_GAME_FUNC(0x02210D20, void, wwhd_daNpc_Bmsw_c__TimerCountDown_02210D20, (void* self));
 #define wwhd_daNpc_Bmsw_c__TimerCountDown wwhd_daNpc_Bmsw_c__TimerCountDown_02210D20
 WWHD_GAME_FUNC(0x02210DCC, s32, wwhd_daNpc_Bmsw_c__checkNextMailThrowOK_02210DCC, (void* self));
 #define wwhd_daNpc_Bmsw_c__checkNextMailThrowOK wwhd_daNpc_Bmsw_c__checkNextMailThrowOK_02210DCC
 WWHD_GAME_FUNC(0x02210E74, void, wwhd_daNpc_Bmsw_c__setGameGetRupee_02210E74, (void* self, s16 rupees));
 #define wwhd_daNpc_Bmsw_c__setGameGetRupee wwhd_daNpc_Bmsw_c__setGameGetRupee_02210E74
+WWHD_GAME_FUNC(0x02210F60, s32, wwhd_daNpc_Bmsw_c__shiwake_game_action_02210F60, (void* self, void* arg1));
+#define wwhd_daNpc_Bmsw_c__shiwake_game_action wwhd_daNpc_Bmsw_c__shiwake_game_action_02210F60
 WWHD_GAME_FUNC(0x02211C80, void*, wwhd_daNpc_Bmsw_HIO_c_ct_02211C80, (void* i_this));
 #define wwhd_daNpc_Bmsw_HIO_c_ct wwhd_daNpc_Bmsw_HIO_c_ct_02211C80
 WWHD_GAME_FUNC(0x02211DC4, void, wwhd___sinit_d_a_npc_bmsw_cpp_02211DC4, (void));
 #define wwhd___sinit_d_a_npc_bmsw_cpp wwhd___sinit_d_a_npc_bmsw_cpp_02211DC4
 WWHD_GAME_FUNC(0x02211F40, void, wwhd_SafeString_dt_02211F40, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x02211F54, s32, wwhd_daNpc_Bmsw_IsDelete_02211F54, (void* arg0));
+#define wwhd_daNpc_Bmsw_IsDelete wwhd_daNpc_Bmsw_IsDelete_02211F54
 WWHD_GAME_FUNC(0x02211F5C, void, wwhd_daNpc_Bmsw_c_dt_02211F5C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Bmsw_c_dt wwhd_daNpc_Bmsw_c_dt_02211F5C
 WWHD_GAME_FUNC(0x02212004, void, wwhd_SafeString_assureTerminationImpl__02212004, (void* i_this));
@@ -10661,6 +11052,8 @@ WWHD_GAME_FUNC(0x02214104, s32, wwhd_daNpc_Bs1_c___draw_02214104, (void* self));
 #define wwhd_daNpc_Bs1_c___draw wwhd_daNpc_Bs1_c___draw_02214104
 WWHD_GAME_FUNC(0x022142EC, s32, wwhd_daNpc_Bs1_Draw_022142EC, (void* i_this));
 #define wwhd_daNpc_Bs1_Draw wwhd_daNpc_Bs1_Draw_022142EC
+WWHD_GAME_FUNC(0x022142F0, s32, wwhd_daNpc_Bs1_IsDelete_022142F0, (void* arg0));
+#define wwhd_daNpc_Bs1_IsDelete wwhd_daNpc_Bs1_IsDelete_022142F0
 WWHD_GAME_FUNC(0x022142F8, void, wwhd_daNpc_Bs1_c__setAnm_022142F8, (void* self, s8 index));
 #define wwhd_daNpc_Bs1_c__setAnm wwhd_daNpc_Bs1_c__setAnm_022142F8
 WWHD_GAME_FUNC(0x02214360, u32, wwhd_daNpc_Bs1_c__setTexAnm_02214360, (void* self, s8 value));
@@ -10713,6 +11106,12 @@ WWHD_GAME_FUNC(0x02216DA0, s32, wwhd_daNpc_Bs1_c__evn_mantan_init_02216DA0, (voi
 #define wwhd_daNpc_Bs1_c__evn_mantan_init wwhd_daNpc_Bs1_c__evn_mantan_init_02216DA0
 WWHD_GAME_FUNC(0x02216E90, s32, wwhd_daNpc_Bs1_c__privateCut_02216E90, (void* self));
 #define wwhd_daNpc_Bs1_c__privateCut wwhd_daNpc_Bs1_c__privateCut_02216E90
+WWHD_GAME_FUNC(0x0221709C, s32, wwhd_daNpc_Bs1_c__event_action_0221709C, (void* self, void* arg1));
+#define wwhd_daNpc_Bs1_c__event_action wwhd_daNpc_Bs1_c__event_action_0221709C
+WWHD_GAME_FUNC(0x02217258, s32, wwhd_daNpc_Bs1_c__wait_action_02217258, (void* self, void* arg1));
+#define wwhd_daNpc_Bs1_c__wait_action wwhd_daNpc_Bs1_c__wait_action_02217258
+WWHD_GAME_FUNC(0x02217368, s32, wwhd_daNpc_Bs1_c__getdemo_action_02217368, (void* self, void* arg1));
+#define wwhd_daNpc_Bs1_c__getdemo_action wwhd_daNpc_Bs1_c__getdemo_action_02217368
 WWHD_GAME_FUNC(0x0221763C, void*, wwhd_daNpc_Bs1_childHIO_ct_0221763C, (void* self));
 #define wwhd_daNpc_Bs1_childHIO_ct wwhd_daNpc_Bs1_childHIO_ct_0221763C
 WWHD_GAME_FUNC(0x022176B4, void*, wwhd_daNpc_Bs1_HIO_ct_022176B4, (void* self));
@@ -10722,6 +11121,7 @@ WWHD_GAME_FUNC(0x0221782C, void, wwhd___sinit_d_a_npc_bs1_cpp_0221782C, (void));
 WWHD_GAME_FUNC(0x022178CC, void, wwhd_SafeString_dtor_022178CC, (void* self, u32 flags));
 WWHD_GAME_FUNC(0x022178E0, void, wwhd_daNpc_Bs1_dtor_022178E0, (void* self, u32 flags));
 #define wwhd_daNpc_Bs1_dtor wwhd_daNpc_Bs1_dtor_022178E0
+WWHD_GAME_FUNC(0x02217988, void, wwhd_SafeString_assureTermination_02217988, (void* arg0));
 WWHD_GAME_FUNC(0x0221798C, s32, wwhd_nodeCallBack_0221798C, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x02217C54, s16, wwhd_daNpc_Btsw_XyCheckCB_02217C54, (void* actor, int i_itemBtn));
 #define wwhd_daNpc_Btsw_XyCheckCB wwhd_daNpc_Btsw_XyCheckCB_02217C54
@@ -10913,6 +11313,8 @@ WWHD_GAME_FUNC(0x0221E6E4, s32, wwhd_daNpc_Cb1_c__createHeap_0221E6E4, (void* se
 WWHD_GAME_FUNC(0x0221EC98, s32, wwhd_CheckCreateHeap_0221EC98, (void* i_this));
 WWHD_GAME_FUNC(0x0221EC9C, s16, wwhd_daNpc_Cb1_XyCheckCB_0221EC9C, (void* i_this, int i_itemBtn));
 #define wwhd_daNpc_Cb1_XyCheckCB wwhd_daNpc_Cb1_XyCheckCB_0221EC9C
+WWHD_GAME_FUNC(0x0221ED00, s16, wwhd_daNpc_Cb1_XyEventCB_0221ED00, (void* i_this, int arg1));
+#define wwhd_daNpc_Cb1_XyEventCB wwhd_daNpc_Cb1_XyEventCB_0221ED00
 WWHD_GAME_FUNC(0x0221ED08, void, wwhd_daNpc_Cb1_c__setBaseMtx_0221ED08, (void* self));
 #define wwhd_daNpc_Cb1_c__setBaseMtx wwhd_daNpc_Cb1_c__setBaseMtx_0221ED08
 WWHD_GAME_FUNC(0x0221F140, s32, wwhd_daNpc_Cb1_c__setAction_0221F140, (void* self, void* cur, void* newFunc, void* arg));
@@ -11015,6 +11417,12 @@ WWHD_GAME_FUNC(0x02223308, s32, wwhd_daNpc_Cb1_c__initTalk_02223308, (void* self
 #define wwhd_daNpc_Cb1_c__initTalk wwhd_daNpc_Cb1_c__initTalk_02223308
 WWHD_GAME_FUNC(0x02223380, s32, wwhd_daNpc_Cb1_c__execTalk_02223380, (void* self, s32 param_1));
 #define wwhd_daNpc_Cb1_c__execTalk wwhd_daNpc_Cb1_c__execTalk_02223380
+WWHD_GAME_FUNC(0x02223500, s32, wwhd_daNpc_Cb1_c__talkNpcAction_02223500, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__talkNpcAction wwhd_daNpc_Cb1_c__talkNpcAction_02223500
+WWHD_GAME_FUNC(0x02223694, s32, wwhd_daNpc_Cb1_c__carryNpcAction_02223694, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__carryNpcAction wwhd_daNpc_Cb1_c__carryNpcAction_02223694
+WWHD_GAME_FUNC(0x02223A88, s32, wwhd_daNpc_Cb1_c__flyNpcAction_02223A88, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__flyNpcAction wwhd_daNpc_Cb1_c__flyNpcAction_02223A88
 WWHD_GAME_FUNC(0x02223BB4, f32, wwhd_daNpc_Cb1_c__checkForwardGroundY_02223BB4, (void* self, s16 param_1));
 #define wwhd_daNpc_Cb1_c__checkForwardGroundY wwhd_daNpc_Cb1_c__checkForwardGroundY_02223BB4
 WWHD_GAME_FUNC(0x02223D5C, f32, wwhd_daNpc_Cb1_c__checkWallJump_02223D5C, (void* self, s16 param_1));
@@ -11027,40 +11435,82 @@ WWHD_GAME_FUNC(0x02223F20, void, wwhd_daNpc_Cb1_c__routeWallCheck_02223F20, (voi
 #define wwhd_daNpc_Cb1_c__routeWallCheck wwhd_daNpc_Cb1_c__routeWallCheck_02223F20
 WWHD_GAME_FUNC(0x0222403C, s32, wwhd_daNpc_Cb1_c__routeCheck_0222403C, (void* self, f32 param_1, s16* param_2));
 #define wwhd_daNpc_Cb1_c__routeCheck wwhd_daNpc_Cb1_c__routeCheck_0222403C
+WWHD_GAME_FUNC(0x022244A0, s32, wwhd_daNpc_Cb1_c__searchNpcAction_022244A0, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__searchNpcAction wwhd_daNpc_Cb1_c__searchNpcAction_022244A0
+WWHD_GAME_FUNC(0x0222487C, s32, wwhd_daNpc_Cb1_doorNpcAction_0222487C, (void* i_this, void* arg1));
+#define wwhd_daNpc_Cb1_doorNpcAction wwhd_daNpc_Cb1_doorNpcAction_0222487C
+WWHD_GAME_FUNC(0x022249C0, s32, wwhd_daNpc_Cb1_c__hitNpcAction_022249C0, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__hitNpcAction wwhd_daNpc_Cb1_c__hitNpcAction_022249C0
 WWHD_GAME_FUNC(0x02224AC0, s32, wwhd_daNpc_Cb1_c__jumpNpcAction_02224AC0, (void* self, void* param_1));
 #define wwhd_daNpc_Cb1_c__jumpNpcAction wwhd_daNpc_Cb1_c__jumpNpcAction_02224AC0
+WWHD_GAME_FUNC(0x02224BC0, s32, wwhd_daNpc_Cb1_c__rescueNpcAction_02224BC0, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__rescueNpcAction wwhd_daNpc_Cb1_c__rescueNpcAction_02224BC0
+WWHD_GAME_FUNC(0x02224C20, s32, wwhd_daNpc_Cb1_c__musicNpcAction_02224C20, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__musicNpcAction wwhd_daNpc_Cb1_c__musicNpcAction_02224C20
+WWHD_GAME_FUNC(0x02224CFC, s32, wwhd_daNpc_Cb1_c__shipNpcAction_02224CFC, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__shipNpcAction wwhd_daNpc_Cb1_c__shipNpcAction_02224CFC
+WWHD_GAME_FUNC(0x02224E38, s32, wwhd_daNpc_Cb1_c__waitPlayerAction_02224E38, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__waitPlayerAction wwhd_daNpc_Cb1_c__waitPlayerAction_02224E38
+WWHD_GAME_FUNC(0x022250AC, s32, wwhd_daNpc_Cb1_c__walkPlayerAction_022250AC, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__walkPlayerAction wwhd_daNpc_Cb1_c__walkPlayerAction_022250AC
+WWHD_GAME_FUNC(0x02225388, s32, wwhd_daNpc_Cb1_c__hitPlayerAction_02225388, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__hitPlayerAction wwhd_daNpc_Cb1_c__hitPlayerAction_02225388
 WWHD_GAME_FUNC(0x02225464, s32, wwhd_daNpc_Cb1_c__jumpPlayerAction_02225464, (void* self, void* param_1));
 #define wwhd_daNpc_Cb1_c__jumpPlayerAction wwhd_daNpc_Cb1_c__jumpPlayerAction_02225464
+WWHD_GAME_FUNC(0x0222555C, s32, wwhd_daNpc_Cb1_c__flyPlayerAction_0222555C, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__flyPlayerAction wwhd_daNpc_Cb1_c__flyPlayerAction_0222555C
+WWHD_GAME_FUNC(0x0222566C, s32, wwhd_daNpc_Cb1_c__carryPlayerAction_0222566C, (void* self, void* arg1));
+#define wwhd_daNpc_Cb1_c__carryPlayerAction wwhd_daNpc_Cb1_c__carryPlayerAction_0222566C
 WWHD_GAME_FUNC(0x022256D4, void, wwhd_daNpc_Cb1_c__evCheckDisp_022256D4, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evCheckDisp wwhd_daNpc_Cb1_c__evCheckDisp_022256D4
 WWHD_GAME_FUNC(0x02225798, void, wwhd_daNpc_Cb1_c__evInitWait_02225798, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitWait wwhd_daNpc_Cb1_c__evInitWait_02225798
+WWHD_GAME_FUNC(0x02225820, s32, wwhd_daNpc_Cb1_c__evActWait_02225820, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evActWait wwhd_daNpc_Cb1_c__evActWait_02225820
 WWHD_GAME_FUNC(0x02225890, void, wwhd_daNpc_Cb1_c__evInitMsgSet_02225890, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitMsgSet wwhd_daNpc_Cb1_c__evInitMsgSet_02225890
+WWHD_GAME_FUNC(0x02225928, s32, wwhd_daNpc_Cb1_c__evActMsgSet_02225928, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evActMsgSet wwhd_daNpc_Cb1_c__evActMsgSet_02225928
 WWHD_GAME_FUNC(0x0222592C, s32, wwhd_daNpc_Cb1_c__evActMsgEnd_0222592C, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActMsgEnd wwhd_daNpc_Cb1_c__evActMsgEnd_0222592C
 WWHD_GAME_FUNC(0x022259B8, void, wwhd_daNpc_Cb1_c__evInitMovePos_022259B8, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitMovePos wwhd_daNpc_Cb1_c__evInitMovePos_022259B8
 WWHD_GAME_FUNC(0x02225B24, void, wwhd_daNpc_Cb1_c__evInitOffsetLink_02225B24, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitOffsetLink wwhd_daNpc_Cb1_c__evInitOffsetLink_02225B24
+WWHD_GAME_FUNC(0x02225C74, void, wwhd_daNpc_Cb1_c__evInitWalk_02225C74, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evInitWalk wwhd_daNpc_Cb1_c__evInitWalk_02225C74
 WWHD_GAME_FUNC(0x02225CB0, s32, wwhd_daNpc_Cb1_c__evActWalk_02225CB0, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActWalk wwhd_daNpc_Cb1_c__evActWalk_02225CB0
+WWHD_GAME_FUNC(0x02226078, void, wwhd_daNpc_Cb1_c__evInitToLink_02226078, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evInitToLink wwhd_daNpc_Cb1_c__evInitToLink_02226078
 WWHD_GAME_FUNC(0x022260D0, s32, wwhd_daNpc_Cb1_c__evActToLink_022260D0, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActToLink wwhd_daNpc_Cb1_c__evActToLink_022260D0
+WWHD_GAME_FUNC(0x022261F4, u32, wwhd_daNpc_Cb1_c__evInitTact_022261F4, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evInitTact wwhd_daNpc_Cb1_c__evInitTact_022261F4
 WWHD_GAME_FUNC(0x022261FC, s32, wwhd_daNpc_Cb1_c__evActTact_022261FC, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActTact wwhd_daNpc_Cb1_c__evActTact_022261FC
+WWHD_GAME_FUNC(0x02226320, u32, wwhd_daNpc_Cb1_c__evInitCelloPlay_02226320, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evInitCelloPlay wwhd_daNpc_Cb1_c__evInitCelloPlay_02226320
+WWHD_GAME_FUNC(0x02226328, s32, wwhd_daNpc_Cb1_c__evActCelloPlay_02226328, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evActCelloPlay wwhd_daNpc_Cb1_c__evActCelloPlay_02226328
 WWHD_GAME_FUNC(0x02226358, void, wwhd_daNpc_Cb1_c__evInitTurn_02226358, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitTurn wwhd_daNpc_Cb1_c__evInitTurn_02226358
 WWHD_GAME_FUNC(0x02226390, s32, wwhd_daNpc_Cb1_c__evActTurn_02226390, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActTurn wwhd_daNpc_Cb1_c__evActTurn_02226390
 WWHD_GAME_FUNC(0x022264E4, void, wwhd_daNpc_Cb1_c__evInitSow_022264E4, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitSow wwhd_daNpc_Cb1_c__evInitSow_022264E4
+WWHD_GAME_FUNC(0x022265AC, s32, wwhd_daNpc_Cb1_c__evActSow_022265AC, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evActSow wwhd_daNpc_Cb1_c__evActSow_022265AC
 WWHD_GAME_FUNC(0x0222666C, void, wwhd_daNpc_Cb1_c__evInitSetAnm_0222666C, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitSetAnm wwhd_daNpc_Cb1_c__evInitSetAnm_0222666C
 WWHD_GAME_FUNC(0x022266DC, void, wwhd_daNpc_Cb1_c__evInitSetGoal_022266DC, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitSetGoal wwhd_daNpc_Cb1_c__evInitSetGoal_022266DC
 WWHD_GAME_FUNC(0x02226784, s32, wwhd_daNpc_Cb1_c__evActSetGoal_02226784, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evActSetGoal wwhd_daNpc_Cb1_c__evActSetGoal_02226784
+WWHD_GAME_FUNC(0x02226884, void, wwhd_daNpc_Cb1_c__evInitWarp_02226884, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evInitWarp wwhd_daNpc_Cb1_c__evInitWarp_02226884
+WWHD_GAME_FUNC(0x022268E0, s32, wwhd_daNpc_Cb1_c__evActWarp_022268E0, (void* self, int arg1));
+#define wwhd_daNpc_Cb1_c__evActWarp wwhd_daNpc_Cb1_c__evActWarp_022268E0
 WWHD_GAME_FUNC(0x02226A88, void, wwhd_daNpc_Cb1_c__evInitEnd_02226A88, (void* self, int staffIdx));
 #define wwhd_daNpc_Cb1_c__evInitEnd wwhd_daNpc_Cb1_c__evInitEnd_02226A88
 WWHD_GAME_FUNC(0x02226B9C, void*, wwhd_daNpc_Cb1_HIO_c_ct_02226B9C, (void* i_this));
@@ -11178,6 +11628,8 @@ WWHD_GAME_FUNC(0x02227A04, s32, wwhd_daNpc_Co1_c__CreateHeap_02227A04, (void* se
 WWHD_GAME_FUNC(0x02227BB8, s32, wwhd_CheckCreateHeap_02227BB8, (void* i_this));
 WWHD_GAME_FUNC(0x02227BBC, void*, wwhd_daNpc_Co1_c_ct_02227BBC, (void* i_this));
 #define wwhd_daNpc_Co1_c_ct wwhd_daNpc_Co1_c_ct_02227BBC
+WWHD_GAME_FUNC(0x02227C34, u8, wwhd_daNpc_Co1_c__charDecide_02227C34, (void* self, int arg1));
+#define wwhd_daNpc_Co1_c__charDecide wwhd_daNpc_Co1_c__charDecide_02227C34
 WWHD_GAME_FUNC(0x02227C48, s32, wwhd_daNpc_Co1_c__set_action_02227C48, (void* self, void* i_newProcFunc, void* i_argsP));
 #define wwhd_daNpc_Co1_c__set_action wwhd_daNpc_Co1_c__set_action_02227C48
 WWHD_GAME_FUNC(0x02227D74, u8, wwhd_daNpc_Co1_c__init_CO1_0_02227D74, (void* self));
@@ -11250,6 +11702,8 @@ WWHD_GAME_FUNC(0x02229738, s32, wwhd_daNpc_Co1_c___draw_02229738, (void* self));
 #define wwhd_daNpc_Co1_c___draw wwhd_daNpc_Co1_c___draw_02229738
 WWHD_GAME_FUNC(0x022298F8, s32, wwhd_daNpc_Co1_Draw_022298F8, (void* i_this));
 #define wwhd_daNpc_Co1_Draw wwhd_daNpc_Co1_Draw_022298F8
+WWHD_GAME_FUNC(0x022298FC, s32, wwhd_daNpc_Co1_IsDelete_022298FC, (void* arg0));
+#define wwhd_daNpc_Co1_IsDelete wwhd_daNpc_Co1_IsDelete_022298FC
 WWHD_GAME_FUNC(0x02229904, void, wwhd_daNpc_Co1_c__set_target_02229904, (void* self, int i_type));
 #define wwhd_daNpc_Co1_c__set_target wwhd_daNpc_Co1_c__set_target_02229904
 WWHD_GAME_FUNC(0x02229A38, void, wwhd_daNpc_Co1_c__setAnm_ATR_02229A38, (void* self, int i_param_1));
@@ -11286,6 +11740,8 @@ WWHD_GAME_FUNC(0x0222A4C4, s32, wwhd_daNpc_Co1_c__read_1_0222A4C4, (void* self))
 #define wwhd_daNpc_Co1_c__read_1 wwhd_daNpc_Co1_c__read_1_0222A4C4
 WWHD_GAME_FUNC(0x0222A500, s32, wwhd_daNpc_Co1_c__modoru_0222A500, (void* self));
 #define wwhd_daNpc_Co1_c__modoru wwhd_daNpc_Co1_c__modoru_0222A500
+WWHD_GAME_FUNC(0x0222A568, s32, wwhd_daNpc_Co1_c__wait_action1_0222A568, (void* self, void* arg1));
+#define wwhd_daNpc_Co1_c__wait_action1 wwhd_daNpc_Co1_c__wait_action1_0222A568
 WWHD_GAME_FUNC(0x0222A73C, void*, wwhd_daNpc_Co1_HIO_c_ct_0222A73C, (void* i_this));
 #define wwhd_daNpc_Co1_HIO_c_ct wwhd_daNpc_Co1_HIO_c_ct_0222A73C
 WWHD_GAME_FUNC(0x0222A7A8, void, wwhd___sinit_d_a_npc_co1_cpp_0222A7A8, (void));
@@ -11293,6 +11749,9 @@ WWHD_GAME_FUNC(0x0222A7A8, void, wwhd___sinit_d_a_npc_co1_cpp_0222A7A8, (void));
 WWHD_GAME_FUNC(0x0222A848, void, wwhd_SafeString_dt_0222A848, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0222A85C, void, wwhd_daNpc_Co1_c_dt_0222A85C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Co1_c_dt wwhd_daNpc_Co1_c_dt_0222A85C
+WWHD_GAME_FUNC(0x0222A8F8, void, wwhd_SafeString_assureTerminationImpl_0222A8F8, (void* arg0));
+WWHD_GAME_FUNC(0x0222A8FC, void*, wwhd_searchActor_leafLift_0222A8FC, (void* i_actor, void* arg1));
+#define wwhd_searchActor_leafLift wwhd_searchActor_leafLift_0222A8FC
 WWHD_GAME_FUNC(0x0222A97C, s32, wwhd_daNpc_De1_c__CreateHeap_0222A97C, (void* self));
 #define wwhd_daNpc_De1_c__CreateHeap wwhd_daNpc_De1_c__CreateHeap_0222A97C
 WWHD_GAME_FUNC(0x0222AC80, s32, wwhd_CheckCreateHeap_0222AC80, (void* i_this));
@@ -11360,6 +11819,8 @@ WWHD_GAME_FUNC(0x0222C36C, s32, wwhd_daNpc_De1_c___draw_0222C36C, (void* self));
 #define wwhd_daNpc_De1_c___draw wwhd_daNpc_De1_c___draw_0222C36C
 WWHD_GAME_FUNC(0x0222C424, s32, wwhd_daNpc_De1_Draw_0222C424, (void* i_this));
 #define wwhd_daNpc_De1_Draw wwhd_daNpc_De1_Draw_0222C424
+WWHD_GAME_FUNC(0x0222C428, s32, wwhd_daNpc_De1_IsDelete_0222C428, (void* arg0));
+#define wwhd_daNpc_De1_IsDelete wwhd_daNpc_De1_IsDelete_0222C428
 WWHD_GAME_FUNC(0x0222C430, s32, wwhd_daNpc_De1_c__setAnm_ATR_0222C430, (void* self));
 #define wwhd_daNpc_De1_c__setAnm_ATR wwhd_daNpc_De1_c__setAnm_ATR_0222C430
 WWHD_GAME_FUNC(0x0222C448, void, wwhd_daNpc_De1_c__chngAnmAtr_0222C448, (void* self, u32 i_atr));
@@ -11392,13 +11853,20 @@ WWHD_GAME_FUNC(0x0222CF18, s32, wwhd_daNpc_De1_c__talk01_0222CF18, (void* self))
 #define wwhd_daNpc_De1_c__talk01 wwhd_daNpc_De1_c__talk01_0222CF18
 WWHD_GAME_FUNC(0x0222CF78, s32, wwhd_daNpc_De1_c__talk02_0222CF78, (void* self));
 #define wwhd_daNpc_De1_c__talk02 wwhd_daNpc_De1_c__talk02_0222CF78
+WWHD_GAME_FUNC(0x0222CFF8, s32, wwhd_daNpc_De1_c__wait_action1_0222CFF8, (void* self, void* arg1));
+#define wwhd_daNpc_De1_c__wait_action1 wwhd_daNpc_De1_c__wait_action1_0222CFF8
+WWHD_GAME_FUNC(0x0222D0A4, s32, wwhd_daNpc_De1_c__wait_action2_0222D0A4, (void* self, void* arg1));
+#define wwhd_daNpc_De1_c__wait_action2 wwhd_daNpc_De1_c__wait_action2_0222D0A4
 WWHD_GAME_FUNC(0x0222D1B8, u8*, wwhd_daNpc_De1_HIO_c_ct_0222D1B8, (u8* i_this));
 #define wwhd_daNpc_De1_HIO_c_ct wwhd_daNpc_De1_HIO_c_ct_0222D1B8
 WWHD_GAME_FUNC(0x0222D224, void, wwhd___sinit_d_a_npc_de1_cpp_0222D224, (void));
 #define wwhd___sinit_d_a_npc_de1_cpp wwhd___sinit_d_a_npc_de1_cpp_0222D224
 WWHD_GAME_FUNC(0x0222D2C4, void, wwhd_SafeString_dt_0222D2C4, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x0222D2D8, void, wwhd_SafeString_assureTerminationImpl_0222D2D8, (void* arg0));
 WWHD_GAME_FUNC(0x0222D2DC, void, wwhd_daNpc_De1_c_dt_0222D2DC, (void* i_this, s32 flags));
 #define wwhd_daNpc_De1_c_dt wwhd_daNpc_De1_c_dt_0222D2DC
+WWHD_GAME_FUNC(0x0222D378, void, wwhd_de1_empty_0222D378_0222D378, (void* arg0));
+#define wwhd_de1_empty_0222D378 wwhd_de1_empty_0222D378_0222D378
 WWHD_GAME_FUNC(0x0222D37C, s32, wwhd_daNpc_Ds1_checkCreateDrugChuchu_0222D37C, (u8 itemNo));
 #define wwhd_daNpc_Ds1_checkCreateDrugChuchu wwhd_daNpc_Ds1_checkCreateDrugChuchu_0222D37C
 WWHD_GAME_FUNC(0x0222D3FC, s16, wwhd_daNpc_Ds1_c__XyEventCB_0222D3FC, (void* self, int i));
@@ -11450,6 +11918,8 @@ WWHD_GAME_FUNC(0x0222F5D0, s32, wwhd_daNpc_Ds1_c___draw_0222F5D0, (void* self));
 #define wwhd_daNpc_Ds1_c___draw wwhd_daNpc_Ds1_c___draw_0222F5D0
 WWHD_GAME_FUNC(0x0222F9B4, s32, wwhd_daNpc_Ds1_Draw_0222F9B4, (void* i_this));
 #define wwhd_daNpc_Ds1_Draw wwhd_daNpc_Ds1_Draw_0222F9B4
+WWHD_GAME_FUNC(0x0222F9B8, s32, wwhd_daNpc_Ds1_IsDelete_0222F9B8, (void* arg0));
+#define wwhd_daNpc_Ds1_IsDelete wwhd_daNpc_Ds1_IsDelete_0222F9B8
 WWHD_GAME_FUNC(0x0222F9C0, void, wwhd_daNpc_Ds1_c__setAnm_0222F9C0, (void* self, s8 anmIdx, f32 morf));
 #define wwhd_daNpc_Ds1_c__setAnm wwhd_daNpc_Ds1_c__setAnm_0222F9C0
 WWHD_GAME_FUNC(0x0222FA9C, u32, wwhd_daNpc_Ds1_c__setTexAnm_0222FA9C, (void* self, s8 texIdx));
@@ -11476,6 +11946,8 @@ WWHD_GAME_FUNC(0x02230F2C, s32, wwhd_daNpc_Ds1_c__wait01_02230F2C, (void* self))
 #define wwhd_daNpc_Ds1_c__wait01 wwhd_daNpc_Ds1_c__wait01_02230F2C
 WWHD_GAME_FUNC(0x02230F8C, s32, wwhd_daNpc_Ds1_c__talk01_02230F8C, (void* self));
 #define wwhd_daNpc_Ds1_c__talk01 wwhd_daNpc_Ds1_c__talk01_02230F8C
+WWHD_GAME_FUNC(0x022311F4, s32, wwhd_daNpc_Ds1_c__wait_action_022311F4, (void* self, void* arg1));
+#define wwhd_daNpc_Ds1_c__wait_action wwhd_daNpc_Ds1_c__wait_action_022311F4
 WWHD_GAME_FUNC(0x022312F8, s32, wwhd_daNpc_Ds1_c__getdemo_action_022312F8, (void* self, void* arg));
 #define wwhd_daNpc_Ds1_c__getdemo_action wwhd_daNpc_Ds1_c__getdemo_action_022312F8
 WWHD_GAME_FUNC(0x0223164C, s32, wwhd_daNpc_Ds1_c__dummy_action_0223164C, (void* self, void* arg));
@@ -11661,6 +12133,8 @@ WWHD_GAME_FUNC(0x02235940, s32, wwhd_nodeCB_Neck_02235940, (void* i_node, int i_
 WWHD_GAME_FUNC(0x02235988, void, wwhd_daNpc_Gk1_c___nodeCB_BackBone_02235988, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Gk1_c___nodeCB_BackBone wwhd_daNpc_Gk1_c___nodeCB_BackBone_02235988
 WWHD_GAME_FUNC(0x02235AAC, s32, wwhd_nodeCB_BackBone_02235AAC, (void* i_node, int i_calcTiming));
+WWHD_GAME_FUNC(0x02235AF4, int, wwhd_daNpc_Gk1_c__btpResID_02235AF4, (void* self, int arg1));
+#define wwhd_daNpc_Gk1_c__btpResID wwhd_daNpc_Gk1_c__btpResID_02235AF4
 WWHD_GAME_FUNC(0x02235B00, u32, wwhd_daNpc_Gk1_c__setBtp_02235B00, (void* self, s8 i_btpNum, u32 i_bModify));
 #define wwhd_daNpc_Gk1_c__setBtp wwhd_daNpc_Gk1_c__setBtp_02235B00
 WWHD_GAME_FUNC(0x02235BEC, u32, wwhd_daNpc_Gk1_c__init_texPttrnAnm_02235BEC, (void* self, s8 i_btpNum, u32 i_bModify));
@@ -11674,6 +12148,8 @@ WWHD_GAME_FUNC(0x02235FD4, s32, wwhd_daNpc_Gk1_c__hat_CreateHeap_02235FD4, (void
 WWHD_GAME_FUNC(0x0223606C, s32, wwhd_daNpc_Gk1_c__CreateHeap_0223606C, (void* self));
 #define wwhd_daNpc_Gk1_c__CreateHeap wwhd_daNpc_Gk1_c__CreateHeap_0223606C
 WWHD_GAME_FUNC(0x02236138, s32, wwhd_CheckCreateHeap_02236138, (void* i_this));
+WWHD_GAME_FUNC(0x0223613C, u8, wwhd_daNpc_Gk1_c__decideType_0223613C, (void* self, int arg1));
+#define wwhd_daNpc_Gk1_c__decideType wwhd_daNpc_Gk1_c__decideType_0223613C
 WWHD_GAME_FUNC(0x022361A0, s32, wwhd_daNpc_Gk1_c__set_action_022361A0, (void* self, void* i_newProcFunc, void* i_argsP));
 #define wwhd_daNpc_Gk1_c__set_action wwhd_daNpc_Gk1_c__set_action_022361A0
 WWHD_GAME_FUNC(0x022362CC, u8, wwhd_daNpc_Gk1_c__init_GK1_0_022362CC, (void* self));
@@ -11722,6 +12198,8 @@ WWHD_GAME_FUNC(0x022374E8, s32, wwhd_daNpc_Gk1_c___draw_022374E8, (void* self));
 #define wwhd_daNpc_Gk1_c___draw wwhd_daNpc_Gk1_c___draw_022374E8
 WWHD_GAME_FUNC(0x02237694, s32, wwhd_daNpc_Gk1_Draw_02237694, (void* i_this));
 #define wwhd_daNpc_Gk1_Draw wwhd_daNpc_Gk1_Draw_02237694
+WWHD_GAME_FUNC(0x02237698, s32, wwhd_daNpc_Gk1_IsDelete_02237698, (void* arg0));
+#define wwhd_daNpc_Gk1_IsDelete wwhd_daNpc_Gk1_IsDelete_02237698
 WWHD_GAME_FUNC(0x022376A0, int, wwhd_daNpc_Gk1_c__bckResID_022376A0, (void* self, int i_bckNum));
 #define wwhd_daNpc_Gk1_c__bckResID wwhd_daNpc_Gk1_c__bckResID_022376A0
 WWHD_GAME_FUNC(0x022376B4, void, wwhd_daNpc_Gk1_c__setAnm_anm_022376B4, (void* self, void* i_anmPrmP));
@@ -11754,6 +12232,8 @@ WWHD_GAME_FUNC(0x02237F9C, s32, wwhd_daNpc_Gk1_c__wait_1_02237F9C, (void* self))
 #define wwhd_daNpc_Gk1_c__wait_1 wwhd_daNpc_Gk1_c__wait_1_02237F9C
 WWHD_GAME_FUNC(0x022380B0, s32, wwhd_daNpc_Gk1_c__talk_1_022380B0, (void* self));
 #define wwhd_daNpc_Gk1_c__talk_1 wwhd_daNpc_Gk1_c__talk_1_022380B0
+WWHD_GAME_FUNC(0x022381E8, s32, wwhd_daNpc_Gk1_c__wait_action1_022381E8, (void* self, void* arg1));
+#define wwhd_daNpc_Gk1_c__wait_action1 wwhd_daNpc_Gk1_c__wait_action1_022381E8
 WWHD_GAME_FUNC(0x022382A0, void*, wwhd_daNpc_Gk1_HIO_c_ct_022382A0, (void* i_this));
 #define wwhd_daNpc_Gk1_HIO_c_ct wwhd_daNpc_Gk1_HIO_c_ct_022382A0
 WWHD_GAME_FUNC(0x0223830C, void, wwhd___sinit_d_a_npc_gk1_cpp_0223830C, (void));
@@ -11761,12 +12241,17 @@ WWHD_GAME_FUNC(0x0223830C, void, wwhd___sinit_d_a_npc_gk1_cpp_0223830C, (void));
 WWHD_GAME_FUNC(0x022383AC, void, wwhd_SafeString_dt_022383AC, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022383C0, void, wwhd_daNpc_Gk1_c_dt_022383C0, (void* i_this, s32 flags));
 #define wwhd_daNpc_Gk1_c_dt wwhd_daNpc_Gk1_c_dt_022383C0
+WWHD_GAME_FUNC(0x0223845C, void, wwhd_SafeString_assureTerminationImpl_0223845C, (void* arg0));
+WWHD_GAME_FUNC(0x02238460, void*, wwhd_searchActor_Bm_02238460, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Bm wwhd_searchActor_Bm_02238460
 WWHD_GAME_FUNC(0x022384E0, void, wwhd_daNpc_Gp1_c__nodeGp1Control_022384E0, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Gp1_c__nodeGp1Control wwhd_daNpc_Gp1_c__nodeGp1Control_022384E0
 WWHD_GAME_FUNC(0x02238680, s32, wwhd_nodeCallBack_Gp1_02238680, (void* i_node, int i_calcTiming));
 #define wwhd_nodeCallBack_Gp1 wwhd_nodeCallBack_Gp1_02238680
 WWHD_GAME_FUNC(0x022386C8, void*, wwhd_daNpc_Gp1_c__create_Anm_022386C8, (void* self));
 #define wwhd_daNpc_Gp1_c__create_Anm wwhd_daNpc_Gp1_c__create_Anm_022386C8
+WWHD_GAME_FUNC(0x022388E4, int, wwhd_daNpc_Gp1_c__btpNum_toResID_022388E4, (void* self, int arg1));
+#define wwhd_daNpc_Gp1_c__btpNum_toResID wwhd_daNpc_Gp1_c__btpNum_toResID_022388E4
 WWHD_GAME_FUNC(0x022388F0, u32, wwhd_daNpc_Gp1_c__setBtp_022388F0, (void* self, u32 i_bModify, int i_btpNum));
 #define wwhd_daNpc_Gp1_c__setBtp wwhd_daNpc_Gp1_c__setBtp_022388F0
 WWHD_GAME_FUNC(0x022389DC, u32, wwhd_daNpc_Gp1_c__iniTexPttrnAnm_022389DC, (void* self, u32 i_bModify));
@@ -11774,6 +12259,8 @@ WWHD_GAME_FUNC(0x022389DC, u32, wwhd_daNpc_Gp1_c__iniTexPttrnAnm_022389DC, (void
 WWHD_GAME_FUNC(0x022389E8, s32, wwhd_daNpc_Gp1_c__CreateHeap_022389E8, (void* self));
 #define wwhd_daNpc_Gp1_c__CreateHeap wwhd_daNpc_Gp1_c__CreateHeap_022389E8
 WWHD_GAME_FUNC(0x02238B44, s32, wwhd_CheckCreateHeap_02238B44, (void* i_this));
+WWHD_GAME_FUNC(0x02238B48, s32, wwhd_daNpc_Gp1_c__charDecide_02238B48, (void* self, int arg1));
+#define wwhd_daNpc_Gp1_c__charDecide wwhd_daNpc_Gp1_c__charDecide_02238B48
 WWHD_GAME_FUNC(0x02238B5C, s32, wwhd_daNpc_Gp1_c__set_action_02238B5C, (void* self, void* i_newProcFunc, void* i_argsP));
 #define wwhd_daNpc_Gp1_c__set_action wwhd_daNpc_Gp1_c__set_action_02238B5C
 WWHD_GAME_FUNC(0x02238C88, u8, wwhd_daNpc_Gp1_c__init_GP1_0_02238C88, (void* self));
@@ -11852,6 +12339,8 @@ WWHD_GAME_FUNC(0x0223A5AC, s32, wwhd_daNpc_Gp1_c___draw_0223A5AC, (void* self));
 #define wwhd_daNpc_Gp1_c___draw wwhd_daNpc_Gp1_c___draw_0223A5AC
 WWHD_GAME_FUNC(0x0223A73C, s32, wwhd_daNpc_Gp1_Draw_0223A73C, (void* i_this));
 #define wwhd_daNpc_Gp1_Draw wwhd_daNpc_Gp1_Draw_0223A73C
+WWHD_GAME_FUNC(0x0223A740, s32, wwhd_daNpc_Gp1_IsDelete_0223A740, (void* arg0));
+#define wwhd_daNpc_Gp1_IsDelete wwhd_daNpc_Gp1_IsDelete_0223A740
 WWHD_GAME_FUNC(0x0223A748, void, wwhd_daNpc_Gp1_c__setAnm_ATR_0223A748, (void* self, int i_setBtp));
 #define wwhd_daNpc_Gp1_c__setAnm_ATR wwhd_daNpc_Gp1_c__setAnm_ATR_0223A748
 WWHD_GAME_FUNC(0x0223A7B8, void, wwhd_daNpc_Gp1_c__chg_anmAtr_0223A7B8, (void* self, u8 i_atr));
@@ -11886,6 +12375,8 @@ WWHD_GAME_FUNC(0x0223B8D4, s32, wwhd_daNpc_Gp1_c__hair_1_0223B8D4, (void* self))
 #define wwhd_daNpc_Gp1_c__hair_1 wwhd_daNpc_Gp1_c__hair_1_0223B8D4
 WWHD_GAME_FUNC(0x0223B978, s32, wwhd_daNpc_Gp1_c__wait_2_0223B978, (void* self));
 #define wwhd_daNpc_Gp1_c__wait_2 wwhd_daNpc_Gp1_c__wait_2_0223B978
+WWHD_GAME_FUNC(0x0223B9F8, s32, wwhd_daNpc_Gp1_c__wait_action1_0223B9F8, (void* self, void* arg1));
+#define wwhd_daNpc_Gp1_c__wait_action1 wwhd_daNpc_Gp1_c__wait_action1_0223B9F8
 WWHD_GAME_FUNC(0x0223BBC4, void*, wwhd_daNpc_Gp1_HIO_c_ct_0223BBC4, (void* i_this));
 #define wwhd_daNpc_Gp1_HIO_c_ct wwhd_daNpc_Gp1_HIO_c_ct_0223BBC4
 WWHD_GAME_FUNC(0x0223BC30, void, wwhd___sinit_d_a_npc_gp1_cpp_0223BC30, (void));
@@ -11893,14 +12384,19 @@ WWHD_GAME_FUNC(0x0223BC30, void, wwhd___sinit_d_a_npc_gp1_cpp_0223BC30, (void));
 WWHD_GAME_FUNC(0x0223BCD0, void, wwhd_SafeString_dt_0223BCD0, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0223BCE4, void, wwhd_daNpc_Gp1_c_dt_0223BCE4, (void* i_this, s32 flags));
 #define wwhd_daNpc_Gp1_c_dt wwhd_daNpc_Gp1_c_dt_0223BCE4
+WWHD_GAME_FUNC(0x0223BD80, void, wwhd_SafeString_assureTerminationImpl_0223BD80, (void* arg0));
 WWHD_GAME_FUNC(0x0223BD84, void, wwhd_daNpc_Hi1_c___nodeCB_Head_0223BD84, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Hi1_c___nodeCB_Head wwhd_daNpc_Hi1_c___nodeCB_Head_0223BD84
 WWHD_GAME_FUNC(0x0223BEFC, s32, wwhd_nodeCB_Head_0223BEFC, (void* i_node, int i_param));
 WWHD_GAME_FUNC(0x0223BF44, void, wwhd_daNpc_Hi1_c___nodeCB_BackBone_0223BF44, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Hi1_c___nodeCB_BackBone wwhd_daNpc_Hi1_c___nodeCB_BackBone_0223BF44
 WWHD_GAME_FUNC(0x0223C068, s32, wwhd_nodeCB_BackBone_0223C068, (void* i_node, int i_param));
+WWHD_GAME_FUNC(0x0223C0B0, s32, wwhd_daNpc_Hi1_c__btpResID_0223C0B0, (void* self, int arg1));
+#define wwhd_daNpc_Hi1_c__btpResID wwhd_daNpc_Hi1_c__btpResID_0223C0B0
 WWHD_GAME_FUNC(0x0223C0BC, u8, wwhd_daNpc_Hi1_c__setBtp_0223C0BC, (void* self, s32 param_1, u32 param_2));
 #define wwhd_daNpc_Hi1_c__setBtp wwhd_daNpc_Hi1_c__setBtp_0223C0BC
+WWHD_GAME_FUNC(0x0223C1A8, s32, wwhd_daNpc_Hi1_c__btkResID_0223C1A8, (void* self, int arg1));
+#define wwhd_daNpc_Hi1_c__btkResID wwhd_daNpc_Hi1_c__btkResID_0223C1A8
 WWHD_GAME_FUNC(0x0223C1B4, u8, wwhd_daNpc_Hi1_c__setBtk_0223C1B4, (void* self, s32 param_1, u32 param_2));
 #define wwhd_daNpc_Hi1_c__setBtk wwhd_daNpc_Hi1_c__setBtk_0223C1B4
 WWHD_GAME_FUNC(0x0223C29C, u8, wwhd_daNpc_Hi1_c__init_texPttrnAnm_0223C29C, (void* self, s32 param_1, u32 param_2));
@@ -11962,6 +12458,8 @@ WWHD_GAME_FUNC(0x0223D9C0, s32, wwhd_daNpc_Hi1_c___draw_0223D9C0, (void* self));
 #define wwhd_daNpc_Hi1_c___draw wwhd_daNpc_Hi1_c___draw_0223D9C0
 WWHD_GAME_FUNC(0x0223DB0C, s32, wwhd_daNpc_Hi1_Draw_0223DB0C, (void* i_this));
 #define wwhd_daNpc_Hi1_Draw wwhd_daNpc_Hi1_Draw_0223DB0C
+WWHD_GAME_FUNC(0x0223DB10, s32, wwhd_daNpc_Hi1_IsDelete_0223DB10, (void* arg0));
+#define wwhd_daNpc_Hi1_IsDelete wwhd_daNpc_Hi1_IsDelete_0223DB10
 WWHD_GAME_FUNC(0x0223DB18, s32, wwhd_daNpc_Hi1_c__bckResID_0223DB18, (void* self, int idx));
 #define wwhd_daNpc_Hi1_c__bckResID wwhd_daNpc_Hi1_c__bckResID_0223DB18
 WWHD_GAME_FUNC(0x0223DB2C, void, wwhd_daNpc_Hi1_c__setAnm_anm_0223DB2C, (void* self, void* param_1));
@@ -11976,6 +12474,8 @@ WWHD_GAME_FUNC(0x0223DD0C, void, wwhd_daNpc_Hi1_c__chngAnmAtr_0223DD0C, (void* s
 #define wwhd_daNpc_Hi1_c__chngAnmAtr wwhd_daNpc_Hi1_c__chngAnmAtr_0223DD0C
 WWHD_GAME_FUNC(0x0223DD28, void, wwhd_daNpc_Hi1_c__anmAtr_0223DD28, (void* self, u32 i_msgStatus));
 #define wwhd_daNpc_Hi1_c__anmAtr wwhd_daNpc_Hi1_c__anmAtr_0223DD28
+WWHD_GAME_FUNC(0x0223DDF8, u16, wwhd_daNpc_Hi1_c__next_msgStatus_0223DDF8, (void* self, u32* arg1));
+#define wwhd_daNpc_Hi1_c__next_msgStatus wwhd_daNpc_Hi1_c__next_msgStatus_0223DDF8
 WWHD_GAME_FUNC(0x0223DE00, u32, wwhd_daNpc_Hi1_c__getMsg_0223DE00, (void* self));
 #define wwhd_daNpc_Hi1_c__getMsg wwhd_daNpc_Hi1_c__getMsg_0223DE00
 WWHD_GAME_FUNC(0x0223DE08, u8, wwhd_daNpc_Hi1_c__chk_talk_0223DE08, (void* self));
@@ -11990,6 +12490,8 @@ WWHD_GAME_FUNC(0x0223DFB4, s32, wwhd_daNpc_Hi1_c__wait_1_0223DFB4, (void* self))
 #define wwhd_daNpc_Hi1_c__wait_1 wwhd_daNpc_Hi1_c__wait_1_0223DFB4
 WWHD_GAME_FUNC(0x0223E12C, u32, wwhd_daNpc_Hi1_c__talk_1_0223E12C, (void* self));
 #define wwhd_daNpc_Hi1_c__talk_1 wwhd_daNpc_Hi1_c__talk_1_0223E12C
+WWHD_GAME_FUNC(0x0223E204, s32, wwhd_daNpc_Hi1_c__wait_action1_0223E204, (void* self, void* arg1));
+#define wwhd_daNpc_Hi1_c__wait_action1 wwhd_daNpc_Hi1_c__wait_action1_0223E204
 WWHD_GAME_FUNC(0x0223E2BC, void*, wwhd_daNpc_Hi1_HIO_c_ct_0223E2BC, (void* i_this));
 #define wwhd_daNpc_Hi1_HIO_c_ct wwhd_daNpc_Hi1_HIO_c_ct_0223E2BC
 WWHD_GAME_FUNC(0x0223E328, void, wwhd___sinit_d_a_npc_hi1_cpp_0223E328, (void));
@@ -11997,8 +12499,11 @@ WWHD_GAME_FUNC(0x0223E328, void, wwhd___sinit_d_a_npc_hi1_cpp_0223E328, (void));
 WWHD_GAME_FUNC(0x0223E3C8, void, wwhd_SafeString_dt_0223E3C8, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0223E3DC, void, wwhd_daNpc_Hi1_c_dt_0223E3DC, (void* i_this, s32 flags));
 #define wwhd_daNpc_Hi1_c_dt wwhd_daNpc_Hi1_c_dt_0223E3DC
+WWHD_GAME_FUNC(0x0223E478, void, wwhd_SafeString_assureTerminationImpl_0223E478, (void* arg0));
 WWHD_GAME_FUNC(0x0223E47C, s32, wwhd_nodeCallBack_Ho_0223E47C, (void* node, int calcTiming));
 #define wwhd_nodeCallBack_Ho wwhd_nodeCallBack_Ho_0223E47C
+WWHD_GAME_FUNC(0x0223E704, s16, wwhd_daNpc_Ho_c__XyCheckCB_0223E704, (void* self, int arg1));
+#define wwhd_daNpc_Ho_c__XyCheckCB wwhd_daNpc_Ho_c__XyCheckCB_0223E704
 WWHD_GAME_FUNC(0x0223E70C, s16, wwhd_daNpc_ho_XyCheckCB_0223E70C, (void* i_this, int i_itemBtn));
 #define wwhd_daNpc_ho_XyCheckCB wwhd_daNpc_ho_XyCheckCB_0223E70C
 WWHD_GAME_FUNC(0x0223E710, s32, wwhd_daNpc_Ho_c__initTexPatternAnm_0223E710, (void* self, u32 i_modify));
@@ -12036,6 +12541,8 @@ WWHD_GAME_FUNC(0x0223F5FC, s32, wwhd_daNpc_Ho_c___draw_0223F5FC, (void* self));
 #define wwhd_daNpc_Ho_c___draw wwhd_daNpc_Ho_c___draw_0223F5FC
 WWHD_GAME_FUNC(0x0223F768, s32, wwhd_daNpc_Ho_Draw_0223F768, (void* i_this));
 #define wwhd_daNpc_Ho_Draw wwhd_daNpc_Ho_Draw_0223F768
+WWHD_GAME_FUNC(0x0223F76C, s32, wwhd_daNpc_Ho_IsDelete_0223F76C, (void* arg0));
+#define wwhd_daNpc_Ho_IsDelete wwhd_daNpc_Ho_IsDelete_0223F76C
 WWHD_GAME_FUNC(0x0223F774, void, wwhd_daNpc_Ho_c__setAnmStatus_0223F774, (void* self));
 #define wwhd_daNpc_Ho_c__setAnmStatus wwhd_daNpc_Ho_c__setAnmStatus_0223F774
 WWHD_GAME_FUNC(0x0223F77C, u8, wwhd_daNpc_Ho_c__chkAttentionLocal_0223F77C, (void* self));
@@ -12074,15 +12581,20 @@ WWHD_GAME_FUNC(0x022409D4, u8, wwhd_daNpc_Ho_c__give02_022409D4, (void* self));
 #define wwhd_daNpc_Ho_c__give02 wwhd_daNpc_Ho_c__give02_022409D4
 WWHD_GAME_FUNC(0x02240A70, u8, wwhd_daNpc_Ho_c__preach_02240A70, (void* self));
 #define wwhd_daNpc_Ho_c__preach wwhd_daNpc_Ho_c__preach_02240A70
+WWHD_GAME_FUNC(0x02240B18, s32, wwhd_daNpc_Ho_c__wait_action_02240B18, (void* self, void* arg1));
+#define wwhd_daNpc_Ho_c__wait_action wwhd_daNpc_Ho_c__wait_action_02240B18
 WWHD_GAME_FUNC(0x02240CE4, void, wwhd___sinit_d_a_npc_ho_cpp_02240CE4, (void));
 #define wwhd___sinit_d_a_npc_ho_cpp wwhd___sinit_d_a_npc_ho_cpp_02240CE4
 WWHD_GAME_FUNC(0x02240D78, void, wwhd_SafeString_dt_02240D78, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x02240D8C, void, wwhd_daNpc_Ho_c_dt_02240D8C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ho_c_dt wwhd_daNpc_Ho_c_dt_02240D8C
+WWHD_GAME_FUNC(0x02240E28, void, wwhd_SafeString_assureTerminationImpl_02240E28, (void* arg0));
 WWHD_GAME_FUNC(0x02240E2C, s16, wwhd_daNpc_Hr_c__XyCheckCB_02240E2C, (void* self, int i_itemBtn));
 #define wwhd_daNpc_Hr_c__XyCheckCB wwhd_daNpc_Hr_c__XyCheckCB_02240E2C
 WWHD_GAME_FUNC(0x02240E6C, s16, wwhd_daNpc_hr_XyCheckCB_02240E6C, (void* i_this, int i_itemBtn));
 #define wwhd_daNpc_hr_XyCheckCB wwhd_daNpc_hr_XyCheckCB_02240E6C
+WWHD_GAME_FUNC(0x02240E70, s16, wwhd_daNpc_hr_XyEventCB_02240E70, (void* i_this, int arg1));
+#define wwhd_daNpc_hr_XyEventCB wwhd_daNpc_hr_XyEventCB_02240E70
 WWHD_GAME_FUNC(0x02240EB4, s32, wwhd_nodeCallBack_Hr_02240EB4, (void* node, int calcTiming));
 #define wwhd_nodeCallBack_Hr wwhd_nodeCallBack_Hr_02240EB4
 WWHD_GAME_FUNC(0x022412D8, void, wwhd_daNpc_Hr_c__node_Ht_ant_022412D8, (void* self, int jntNo));
@@ -12154,6 +12666,8 @@ WWHD_GAME_FUNC(0x02243168, s32, wwhd_daNpc_Hr_c___draw_02243168, (void* self));
 #define wwhd_daNpc_Hr_c___draw wwhd_daNpc_Hr_c___draw_02243168
 WWHD_GAME_FUNC(0x022433B0, s32, wwhd_daNpc_Hr_Draw_022433B0, (void* i_this));
 #define wwhd_daNpc_Hr_Draw wwhd_daNpc_Hr_Draw_022433B0
+WWHD_GAME_FUNC(0x022433B4, s32, wwhd_daNpc_Hr_IsDelete_022433B4, (void* arg0));
+#define wwhd_daNpc_Hr_IsDelete wwhd_daNpc_Hr_IsDelete_022433B4
 WWHD_GAME_FUNC(0x022433BC, s32, wwhd_daNpc_Wind_Eff__create_022433BC, (void* self, void* squallPos));
 #define wwhd_daNpc_Wind_Eff__create wwhd_daNpc_Wind_Eff__create_022433BC
 WWHD_GAME_FUNC(0x02243490, s32, wwhd_daNpc_Wind_Eff__end_02243490, (void* self));
@@ -12264,6 +12778,8 @@ WWHD_GAME_FUNC(0x02246950, u8, wwhd_daNpc_Hr_c__ht_hide_02246950, (void* self));
 #define wwhd_daNpc_Hr_c__ht_hide wwhd_daNpc_Hr_c__ht_hide_02246950
 WWHD_GAME_FUNC(0x02246AB0, void, wwhd_daNpc_Hr_c__smokeProc_02246AB0, (void* self));
 #define wwhd_daNpc_Hr_c__smokeProc wwhd_daNpc_Hr_c__smokeProc_02246AB0
+WWHD_GAME_FUNC(0x02246D58, s32, wwhd_daNpc_Hr_c__wait_action_02246D58, (void* self, void* arg1));
+#define wwhd_daNpc_Hr_c__wait_action wwhd_daNpc_Hr_c__wait_action_02246D58
 WWHD_GAME_FUNC(0x022470AC, void, wwhd___sinit_d_a_npc_hr_cpp_022470AC, (void));
 #define wwhd___sinit_d_a_npc_hr_cpp wwhd___sinit_d_a_npc_hr_cpp_022470AC
 WWHD_GAME_FUNC(0x02247140, void, wwhd_SafeString_dt_02247140, (void* i_this, s32 flags));
@@ -12273,6 +12789,7 @@ WWHD_GAME_FUNC(0x022471A4, void, wwhd_daNpc_Wind_Eff_dt_022471A4, (void* i_this,
 #define wwhd_daNpc_Wind_Eff_dt wwhd_daNpc_Wind_Eff_dt_022471A4
 WWHD_GAME_FUNC(0x022471B8, void, wwhd_daNpc_Hr_c_dt_022471B8, (void* i_this, s32 flags));
 #define wwhd_daNpc_Hr_c_dt wwhd_daNpc_Hr_c_dt_022471B8
+WWHD_GAME_FUNC(0x0224725C, void, wwhd_SafeString_assureTerminationImpl_0224725C, (void* arg0));
 WWHD_GAME_FUNC(0x02247260, void*, wwhd_Jb_createAnimation_02247260, (void* actor));
 #define wwhd_Jb_createAnimation wwhd_Jb_createAnimation_02247260
 WWHD_GAME_FUNC(0x022474D8, s32, wwhd_Jb_createLight_022474D8, (void* actor));
@@ -12503,6 +13020,8 @@ WWHD_GAME_FUNC(0x02255654, s32, wwhd_daNpc_Ji1_c__teachSubActionAttack_02255654,
 #define wwhd_daNpc_Ji1_c__teachSubActionAttack wwhd_daNpc_Ji1_c__teachSubActionAttack_02255654
 WWHD_GAME_FUNC(0x0225589C, void, wwhd_daNpc_Ji1_c__teachSubActionAttackInit_0225589C, (void* self));
 #define wwhd_daNpc_Ji1_c__teachSubActionAttackInit wwhd_daNpc_Ji1_c__teachSubActionAttackInit_0225589C
+WWHD_GAME_FUNC(0x02255908, s32, wwhd_daNpc_Ji1_c__teachAction_02255908, (void* self, void* arg1));
+#define wwhd_daNpc_Ji1_c__teachAction wwhd_daNpc_Ji1_c__teachAction_02255908
 WWHD_GAME_FUNC(0x02256F1C, s32, wwhd_daNpc_Ji1_c__teachSPRollCutAction_02256F1C, (void* self, void* arg));
 #define wwhd_daNpc_Ji1_c__teachSPRollCutAction wwhd_daNpc_Ji1_c__teachSPRollCutAction_02256F1C
 WWHD_GAME_FUNC(0x02257C9C, s32, wwhd_daNpc_Ji1_c__plmoveAction_02257C9C, (void* self, void* arg));
@@ -12698,8 +13217,14 @@ WWHD_GAME_FUNC(0x0225FEA4, s16, wwhd_daNpc_kam_c__getAngleX_0225FEA4, (void* sel
 #define wwhd_daNpc_kam_c__getAngleX wwhd_daNpc_kam_c__getAngleX_0225FEA4
 WWHD_GAME_FUNC(0x022600FC, s32, wwhd_daNpc_kam_c__keyProc_022600FC, (void* self));
 #define wwhd_daNpc_kam_c__keyProc wwhd_daNpc_kam_c__keyProc_022600FC
+WWHD_GAME_FUNC(0x02260220, s32, wwhd_daNpc_kam_c__waitNpcAction_02260220, (void* self, void* arg1));
+#define wwhd_daNpc_kam_c__waitNpcAction wwhd_daNpc_kam_c__waitNpcAction_02260220
 WWHD_GAME_FUNC(0x022602DC, void, wwhd_daNpc_kam_c__setAnm_022602DC, (void* self, int anmIdx));
 #define wwhd_daNpc_kam_c__setAnm wwhd_daNpc_kam_c__setAnm_022602DC
+WWHD_GAME_FUNC(0x02260510, s32, wwhd_daNpc_kam_c__waitPlayerAction_02260510, (void* self, void* arg1));
+#define wwhd_daNpc_kam_c__waitPlayerAction wwhd_daNpc_kam_c__waitPlayerAction_02260510
+WWHD_GAME_FUNC(0x022608A4, s32, wwhd_daNpc_kam_c__damagePlayerAction_022608A4, (void* self, void* arg1));
+#define wwhd_daNpc_kam_c__damagePlayerAction wwhd_daNpc_kam_c__damagePlayerAction_022608A4
 WWHD_GAME_FUNC(0x022609E0, void*, wwhd_daNpc_kam_HIO1_c_ct_022609E0, (void* i_this));
 #define wwhd_daNpc_kam_HIO1_c_ct wwhd_daNpc_kam_HIO1_c_ct_022609E0
 WWHD_GAME_FUNC(0x02260A9C, void*, wwhd_daNpc_kam_HIO_c_ct_02260A9C, (void* i_this));
@@ -12800,6 +13325,8 @@ WWHD_GAME_FUNC(0x02261624, s32, wwhd_daNpc_Kf1_c__itemCreateHeap_02261624, (void
 WWHD_GAME_FUNC(0x022616BC, s32, wwhd_daNpc_Kf1_c__CreateHeap_022616BC, (void* self));
 #define wwhd_daNpc_Kf1_c__CreateHeap wwhd_daNpc_Kf1_c__CreateHeap_022616BC
 WWHD_GAME_FUNC(0x02261778, s32, wwhd_CheckCreateHeap_02261778, (void* i_this));
+WWHD_GAME_FUNC(0x0226177C, void*, wwhd_searchActor_Tsubo_0226177C, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Tsubo wwhd_searchActor_Tsubo_0226177C
 WWHD_GAME_FUNC(0x02261814, u8, wwhd_daNpc_Kf1_c__decideType_02261814, (void* self, int i_type));
 #define wwhd_daNpc_Kf1_c__decideType wwhd_daNpc_Kf1_c__decideType_02261814
 WWHD_GAME_FUNC(0x02261878, void, wwhd_daNpc_Kf1_c__set_pthPoint_02261878, (void* self, u32 i_idx));
@@ -12908,6 +13435,8 @@ WWHD_GAME_FUNC(0x022645F8, s32, wwhd_daNpc_Kf1_c___draw_022645F8, (void* self));
 #define wwhd_daNpc_Kf1_c___draw wwhd_daNpc_Kf1_c___draw_022645F8
 WWHD_GAME_FUNC(0x02264780, s32, wwhd_daNpc_Kf1_Draw_02264780, (void* i_this));
 #define wwhd_daNpc_Kf1_Draw wwhd_daNpc_Kf1_Draw_02264780
+WWHD_GAME_FUNC(0x02264784, s32, wwhd_daNpc_Kf1_IsDelete_02264784, (void* arg0));
+#define wwhd_daNpc_Kf1_IsDelete wwhd_daNpc_Kf1_IsDelete_02264784
 WWHD_GAME_FUNC(0x0226478C, void, wwhd_daNpc_Kf1_c__setAnm_ATR_0226478C, (void* self));
 #define wwhd_daNpc_Kf1_c__setAnm_ATR wwhd_daNpc_Kf1_c__setAnm_ATR_0226478C
 WWHD_GAME_FUNC(0x022647F4, void, wwhd_daNpc_Kf1_c__chngAnmAtr_022647F4, (void* self, u8 i_atr));
@@ -12934,6 +13463,8 @@ WWHD_GAME_FUNC(0x02264FC4, s32, wwhd_daNpc_Kf1_c__walk_1_02264FC4, (void* self))
 #define wwhd_daNpc_Kf1_c__walk_1 wwhd_daNpc_Kf1_c__walk_1_02264FC4
 WWHD_GAME_FUNC(0x022651E0, s32, wwhd_daNpc_Kf1_c__talk_1_022651E0, (void* self));
 #define wwhd_daNpc_Kf1_c__talk_1 wwhd_daNpc_Kf1_c__talk_1_022651E0
+WWHD_GAME_FUNC(0x022652F0, s32, wwhd_daNpc_Kf1_c__wait_action1_022652F0, (void* self, void* arg1));
+#define wwhd_daNpc_Kf1_c__wait_action1 wwhd_daNpc_Kf1_c__wait_action1_022652F0
 WWHD_GAME_FUNC(0x022653DC, void*, wwhd_daNpc_Kf1_HIO_c_ct_022653DC, (void* i_this));
 #define wwhd_daNpc_Kf1_HIO_c_ct wwhd_daNpc_Kf1_HIO_c_ct_022653DC
 WWHD_GAME_FUNC(0x02265448, void, wwhd___sinit_d_a_npc_kf1_cpp_02265448, (void));
@@ -12941,6 +13472,7 @@ WWHD_GAME_FUNC(0x02265448, void, wwhd___sinit_d_a_npc_kf1_cpp_02265448, (void));
 WWHD_GAME_FUNC(0x022654E8, void, wwhd_SafeString_dt_022654E8, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022654FC, void, wwhd_daNpc_Kf1_c_dt_022654FC, (void* i_this, s32 flags));
 #define wwhd_daNpc_Kf1_c_dt wwhd_daNpc_Kf1_c_dt_022654FC
+WWHD_GAME_FUNC(0x02265598, void, wwhd_SafeString_assureTerminationImpl_02265598, (void* arg0));
 WWHD_GAME_FUNC(0x0226559C, s32, wwhd_daNpc_Kg1_nodeCallBack_0226559C, (void* node, s32 stage));
 #define wwhd_daNpc_Kg1_nodeCallBack wwhd_daNpc_Kg1_nodeCallBack_0226559C
 WWHD_GAME_FUNC(0x0226586C, s32, wwhd_daNpc_Kg1_initTexPatternAnm_0226586C, (void* a, s32 index, u32 modify));
@@ -13069,6 +13601,10 @@ WWHD_GAME_FUNC(0x0226A258, void, wwhd_daNpc_Kg2_wait01_0226A258, (void* a));
 #define wwhd_daNpc_Kg2_wait01 wwhd_daNpc_Kg2_wait01_0226A258
 WWHD_GAME_FUNC(0x0226A394, void, wwhd_daNpc_Kg2_talk01_0226A394, (void* a));
 #define wwhd_daNpc_Kg2_talk01 wwhd_daNpc_Kg2_talk01_0226A394
+WWHD_GAME_FUNC(0x0226A474, s32, wwhd_daNpc_Kg2_wait_action_0226A474, (void* a, void* arg1));
+#define wwhd_daNpc_Kg2_wait_action wwhd_daNpc_Kg2_wait_action_0226A474
+WWHD_GAME_FUNC(0x0226A574, s32, wwhd_daNpc_Kg2_event_wait_action_0226A574, (void* a, void* arg1));
+#define wwhd_daNpc_Kg2_event_wait_action wwhd_daNpc_Kg2_event_wait_action_0226A574
 WWHD_GAME_FUNC(0x0226A8B8, void*, wwhd_daNpc_Kg2_HIO_ct_0226A8B8, (void* self));
 #define wwhd_daNpc_Kg2_HIO_ct wwhd_daNpc_Kg2_HIO_ct_0226A8B8
 WWHD_GAME_FUNC(0x0226A99C, void, wwhd_daNpc_Kg2_sinit_0226A99C, (void));
@@ -13232,6 +13768,8 @@ WWHD_GAME_FUNC(0x0226ECA8, s32, wwhd_daNpc_Kk1_c___draw_0226ECA8, (void* self));
 #define wwhd_daNpc_Kk1_c___draw wwhd_daNpc_Kk1_c___draw_0226ECA8
 WWHD_GAME_FUNC(0x0226EF40, s32, wwhd_daNpc_Kk1_Draw_0226EF40, (void* i_this));
 #define wwhd_daNpc_Kk1_Draw wwhd_daNpc_Kk1_Draw_0226EF40
+WWHD_GAME_FUNC(0x0226EF44, s32, wwhd_daNpc_Kk1_IsDelete_0226EF44, (void* arg0));
+#define wwhd_daNpc_Kk1_IsDelete wwhd_daNpc_Kk1_IsDelete_0226EF44
 WWHD_GAME_FUNC(0x0226EF4C, void, wwhd_daNpc_Kk1_c__setAnm_ATR_0226EF4C, (void* self));
 #define wwhd_daNpc_Kk1_c__setAnm_ATR wwhd_daNpc_Kk1_c__setAnm_ATR_0226EF4C
 WWHD_GAME_FUNC(0x0226EFB4, void, wwhd_daNpc_Kk1_c__chngAnmAtr_0226EFB4, (void* self, u8 i_attr));
@@ -13288,6 +13826,8 @@ WWHD_GAME_FUNC(0x02270DA8, s32, wwhd_daNpc_Kk1_c__wait_4_02270DA8, (void* self))
 #define wwhd_daNpc_Kk1_c__wait_4 wwhd_daNpc_Kk1_c__wait_4_02270DA8
 WWHD_GAME_FUNC(0x02270F28, s32, wwhd_daNpc_Kk1_c__talk_1_02270F28, (void* self));
 #define wwhd_daNpc_Kk1_c__talk_1 wwhd_daNpc_Kk1_c__talk_1_02270F28
+WWHD_GAME_FUNC(0x02271084, s32, wwhd_daNpc_Kk1_c__wait_action1_02271084, (void* self, void* arg1));
+#define wwhd_daNpc_Kk1_c__wait_action1 wwhd_daNpc_Kk1_c__wait_action1_02271084
 WWHD_GAME_FUNC(0x022711F4, void*, wwhd_daNpc_Kk1_HIO_c_ct_022711F4, (void* i_this));
 #define wwhd_daNpc_Kk1_HIO_c_ct wwhd_daNpc_Kk1_HIO_c_ct_022711F4
 WWHD_GAME_FUNC(0x02271260, void, wwhd___sinit_d_a_npc_kk1_cpp_02271260, (void));
@@ -13295,6 +13835,7 @@ WWHD_GAME_FUNC(0x02271260, void, wwhd___sinit_d_a_npc_kk1_cpp_02271260, (void));
 WWHD_GAME_FUNC(0x02271300, void, wwhd_SafeString_dt_02271300, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x02271314, void, wwhd_daNpc_Kk1_c_dt_02271314, (void* i_this, s32 flags));
 #define wwhd_daNpc_Kk1_c_dt wwhd_daNpc_Kk1_c_dt_02271314
+WWHD_GAME_FUNC(0x022713BC, void, wwhd_SafeString_assureTerminationImpl_022713BC, (void* arg0));
 WWHD_GAME_FUNC(0x022713C0, s32, wwhd_nodeCallBack_Km_022713C0, (void* i_node, int i_calcTiming));
 #define wwhd_nodeCallBack_Km wwhd_nodeCallBack_Km_022713C0
 WWHD_GAME_FUNC(0x02271624, void, wwhd_daNpc_Km1_c__BtpNum2ResID_02271624, (void* self, int i_num, s32* o_btp_num));
@@ -13350,6 +13891,8 @@ WWHD_GAME_FUNC(0x02272858, s32, wwhd_daNpc_Km1_c___draw_02272858, (void* self));
 #define wwhd_daNpc_Km1_c___draw wwhd_daNpc_Km1_c___draw_02272858
 WWHD_GAME_FUNC(0x02272974, s32, wwhd_daNpc_Km1_Draw_02272974, (void* i_this));
 #define wwhd_daNpc_Km1_Draw wwhd_daNpc_Km1_Draw_02272974
+WWHD_GAME_FUNC(0x02272978, s32, wwhd_daNpc_Km1_IsDelete_02272978, (void* arg0));
+#define wwhd_daNpc_Km1_IsDelete wwhd_daNpc_Km1_IsDelete_02272978
 WWHD_GAME_FUNC(0x02272980, u8, wwhd_daNpc_Km1_c__anmResID_02272980, (void* self, int i_num, s32* o_bck_num, s32* o_bas_num));
 #define wwhd_daNpc_Km1_c__anmResID wwhd_daNpc_Km1_c__anmResID_02272980
 WWHD_GAME_FUNC(0x02272A10, u32, wwhd_daNpc_Km1_c__setAnm_tex_02272A10, (void* self, s8 i_param_1));
@@ -13366,6 +13909,8 @@ WWHD_GAME_FUNC(0x02272BE4, void, wwhd_daNpc_Km1_c__anmAtr_02272BE4, (void* self,
 #define wwhd_daNpc_Km1_c__anmAtr wwhd_daNpc_Km1_c__anmAtr_02272BE4
 WWHD_GAME_FUNC(0x02272CA4, void, wwhd_daNpc_Km1_c__setStt_02272CA4, (void* self, s8 param_1));
 #define wwhd_daNpc_Km1_c__setStt wwhd_daNpc_Km1_c__setStt_02272CA4
+WWHD_GAME_FUNC(0x02272CD4, u16, wwhd_daNpc_Km1_c__next_msgStatus_02272CD4, (void* self, u32* arg1));
+#define wwhd_daNpc_Km1_c__next_msgStatus wwhd_daNpc_Km1_c__next_msgStatus_02272CD4
 WWHD_GAME_FUNC(0x02272CDC, u32, wwhd_daNpc_Km1_c__getMsg_02272CDC, (void* self));
 #define wwhd_daNpc_Km1_c__getMsg wwhd_daNpc_Km1_c__getMsg_02272CDC
 WWHD_GAME_FUNC(0x02272CE4, u8, wwhd_daNpc_Km1_c__chkAttention_02272CE4, (void* self));
@@ -13376,6 +13921,8 @@ WWHD_GAME_FUNC(0x02272DAC, s32, wwhd_daNpc_Km1_c__wait01_02272DAC, (void* self))
 #define wwhd_daNpc_Km1_c__wait01 wwhd_daNpc_Km1_c__wait01_02272DAC
 WWHD_GAME_FUNC(0x02272E6C, s32, wwhd_daNpc_Km1_c__talk01_02272E6C, (void* self));
 #define wwhd_daNpc_Km1_c__talk01 wwhd_daNpc_Km1_c__talk01_02272E6C
+WWHD_GAME_FUNC(0x02272EEC, s32, wwhd_daNpc_Km1_c__wait_action1_02272EEC, (void* self, void* arg1));
+#define wwhd_daNpc_Km1_c__wait_action1 wwhd_daNpc_Km1_c__wait_action1_02272EEC
 WWHD_GAME_FUNC(0x02272FB0, void*, wwhd_daNpc_Km1_HIO_c_ct_02272FB0, (void* i_this));
 #define wwhd_daNpc_Km1_HIO_c_ct wwhd_daNpc_Km1_HIO_c_ct_02272FB0
 WWHD_GAME_FUNC(0x0227301C, void, wwhd___sinit_d_a_npc_km1_cpp_0227301C, (void));
@@ -13383,6 +13930,13 @@ WWHD_GAME_FUNC(0x0227301C, void, wwhd___sinit_d_a_npc_km1_cpp_0227301C, (void));
 WWHD_GAME_FUNC(0x022730BC, void, wwhd_SafeString_dt_022730BC, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022730D0, void, wwhd_daNpc_Km1_c_dt_022730D0, (void* i_this, s32 flags));
 #define wwhd_daNpc_Km1_c_dt wwhd_daNpc_Km1_c_dt_022730D0
+WWHD_GAME_FUNC(0x0227316C, void, wwhd_SafeString_assureTerminationImpl_0227316C, (void* arg0));
+WWHD_GAME_FUNC(0x02273170, void*, wwhd_searchActor_Ko_Hna_02273170, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Ko_Hna wwhd_searchActor_Ko_Hna_02273170
+WWHD_GAME_FUNC(0x022731F0, void*, wwhd_searchActor_Ko_Bou_022731F0, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Ko_Bou wwhd_searchActor_Ko_Bou_022731F0
+WWHD_GAME_FUNC(0x02273270, void*, wwhd_searchActor_Ob_02273270, (void* i_actor, void* arg1));
+#define wwhd_searchActor_Ob wwhd_searchActor_Ob_02273270
 WWHD_GAME_FUNC(0x022732F0, void, wwhd_daNpc_Ko1_c__nodeHedControl_022732F0, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Ko1_c__nodeHedControl wwhd_daNpc_Ko1_c__nodeHedControl_022732F0
 WWHD_GAME_FUNC(0x0227337C, s32, wwhd_nodeCallBack_Hed_0227337C, (void* i_node, int i_timing));
@@ -13502,6 +14056,8 @@ WWHD_GAME_FUNC(0x0227684C, s32, wwhd_daNpc_Ko1_c___draw_0227684C, (void* self));
 #define wwhd_daNpc_Ko1_c___draw wwhd_daNpc_Ko1_c___draw_0227684C
 WWHD_GAME_FUNC(0x02276B20, s32, wwhd_daNpc_Ko1_Draw_02276B20, (void* i_this));
 #define wwhd_daNpc_Ko1_Draw wwhd_daNpc_Ko1_Draw_02276B20
+WWHD_GAME_FUNC(0x02276B24, s32, wwhd_daNpc_Ko1_IsDelete_02276B24, (void* arg0));
+#define wwhd_daNpc_Ko1_IsDelete wwhd_daNpc_Ko1_IsDelete_02276B24
 WWHD_GAME_FUNC(0x02276B2C, s32, wwhd_daNpc_Ko1_c__anmNum_toResID_02276B2C, (void* self, s32 i_anmNum));
 #define wwhd_daNpc_Ko1_c__anmNum_toResID wwhd_daNpc_Ko1_c__anmNum_toResID_02276B2C
 WWHD_GAME_FUNC(0x02276B40, s32, wwhd_daNpc_Ko1_c__headAnmNum_toResID_02276B40, (void* self, s32 i_anmNum));
@@ -13628,6 +14184,24 @@ WWHD_GAME_FUNC(0x0227A110, s32, wwhd_daNpc_Ko1_c__neru_1_0227A110, (void* self))
 #define wwhd_daNpc_Ko1_c__neru_1 wwhd_daNpc_Ko1_c__neru_1_0227A110
 WWHD_GAME_FUNC(0x0227A1C8, s32, wwhd_daNpc_Ko1_c__neru_2_0227A1C8, (void* self));
 #define wwhd_daNpc_Ko1_c__neru_2 wwhd_daNpc_Ko1_c__neru_2_0227A1C8
+WWHD_GAME_FUNC(0x0227A374, s32, wwhd_daNpc_Ko1_c__hana_action1_0227A374, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__hana_action1 wwhd_daNpc_Ko1_c__hana_action1_0227A374
+WWHD_GAME_FUNC(0x0227A4DC, s32, wwhd_daNpc_Ko1_c__hana_action2_0227A4DC, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__hana_action2 wwhd_daNpc_Ko1_c__hana_action2_0227A4DC
+WWHD_GAME_FUNC(0x0227A60C, s32, wwhd_daNpc_Ko1_c__hana_action3_0227A60C, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__hana_action3 wwhd_daNpc_Ko1_c__hana_action3_0227A60C
+WWHD_GAME_FUNC(0x0227A750, s32, wwhd_daNpc_Ko1_c__hana_action4_0227A750, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__hana_action4 wwhd_daNpc_Ko1_c__hana_action4_0227A750
+WWHD_GAME_FUNC(0x0227A830, s32, wwhd_daNpc_Ko1_c__hana_action5_0227A830, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__hana_action5 wwhd_daNpc_Ko1_c__hana_action5_0227A830
+WWHD_GAME_FUNC(0x0227A8C8, s32, wwhd_daNpc_Ko1_c__wait_action1_0227A8C8, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__wait_action1 wwhd_daNpc_Ko1_c__wait_action1_0227A8C8
+WWHD_GAME_FUNC(0x0227A9C0, s32, wwhd_daNpc_Ko1_c__wait_action2_0227A9C0, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__wait_action2 wwhd_daNpc_Ko1_c__wait_action2_0227A9C0
+WWHD_GAME_FUNC(0x0227AB28, s32, wwhd_daNpc_Ko1_c__wait_action3_0227AB28, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__wait_action3 wwhd_daNpc_Ko1_c__wait_action3_0227AB28
+WWHD_GAME_FUNC(0x0227AC08, s32, wwhd_daNpc_Ko1_c__wait_action4_0227AC08, (void* self, void* arg1));
+#define wwhd_daNpc_Ko1_c__wait_action4 wwhd_daNpc_Ko1_c__wait_action4_0227AC08
 WWHD_GAME_FUNC(0x0227ACA0, void*, wwhd_daNpc_Ko1_childHIO_c_ct_0227ACA0, (void* i_this));
 #define wwhd_daNpc_Ko1_childHIO_c_ct wwhd_daNpc_Ko1_childHIO_c_ct_0227ACA0
 WWHD_GAME_FUNC(0x0227ACE0, void*, wwhd_daNpc_Ko1_HIO_c_ct_0227ACE0, (void* i_this));
@@ -13637,6 +14211,7 @@ WWHD_GAME_FUNC(0x0227AD90, void, wwhd___sinit_d_a_npc_ko1_cpp_0227AD90, (void));
 WWHD_GAME_FUNC(0x0227AE30, void, wwhd_SafeString_dt_0227AE30, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0227AE44, void, wwhd_daNpc_Ko1_c_dt_0227AE44, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ko1_c_dt wwhd_daNpc_Ko1_c_dt_0227AE44
+WWHD_GAME_FUNC(0x0227AEE0, void, wwhd_SafeString_assureTerminationImpl_0227AEE0, (void* arg0));
 WWHD_GAME_FUNC(0x0227AEE4, s32, wwhd_nodeCallBack_Kp_0227AEE4, (void* i_node, int i_calcTiming));
 #define wwhd_nodeCallBack_Kp wwhd_nodeCallBack_Kp_0227AEE4
 WWHD_GAME_FUNC(0x0227B168, void, wwhd_daNpc_Kp1_c__BtpNum2ResID_0227B168, (void* self, int i_num, s32* o_btp_num));
@@ -13694,6 +14269,8 @@ WWHD_GAME_FUNC(0x0227C930, s32, wwhd_daNpc_Kp1_c___draw_0227C930, (void* self));
 #define wwhd_daNpc_Kp1_c___draw wwhd_daNpc_Kp1_c___draw_0227C930
 WWHD_GAME_FUNC(0x0227CAA8, s32, wwhd_daNpc_Kp1_Draw_0227CAA8, (void* i_this));
 #define wwhd_daNpc_Kp1_Draw wwhd_daNpc_Kp1_Draw_0227CAA8
+WWHD_GAME_FUNC(0x0227CAAC, s32, wwhd_daNpc_Kp1_IsDelete_0227CAAC, (void* arg0));
+#define wwhd_daNpc_Kp1_IsDelete wwhd_daNpc_Kp1_IsDelete_0227CAAC
 WWHD_GAME_FUNC(0x0227CAB4, u8, wwhd_daNpc_Kp1_c__anmResID_0227CAB4, (void* self, int i_num, s32* o_bck_num, s32* o_bas_num));
 #define wwhd_daNpc_Kp1_c__anmResID wwhd_daNpc_Kp1_c__anmResID_0227CAB4
 WWHD_GAME_FUNC(0x0227CB64, u32, wwhd_daNpc_Kp1_c__setAnm_tex_0227CB64, (void* self, s8 i_param_1));
@@ -13726,6 +14303,8 @@ WWHD_GAME_FUNC(0x0227D3C8, s32, wwhd_daNpc_Kp1_c__wait01_0227D3C8, (void* self))
 #define wwhd_daNpc_Kp1_c__wait01 wwhd_daNpc_Kp1_c__wait01_0227D3C8
 WWHD_GAME_FUNC(0x0227D480, s32, wwhd_daNpc_Kp1_c__talk01_0227D480, (void* self));
 #define wwhd_daNpc_Kp1_c__talk01 wwhd_daNpc_Kp1_c__talk01_0227D480
+WWHD_GAME_FUNC(0x0227D558, s32, wwhd_daNpc_Kp1_c__wait_action1_0227D558, (void* self, void* arg1));
+#define wwhd_daNpc_Kp1_c__wait_action1 wwhd_daNpc_Kp1_c__wait_action1_0227D558
 WWHD_GAME_FUNC(0x0227D61C, void*, wwhd_daNpc_Kp1_HIO_c_ct_0227D61C, (void* i_this));
 #define wwhd_daNpc_Kp1_HIO_c_ct wwhd_daNpc_Kp1_HIO_c_ct_0227D61C
 WWHD_GAME_FUNC(0x0227D688, void, wwhd___sinit_d_a_npc_kp1_cpp_0227D688, (void));
@@ -13733,6 +14312,7 @@ WWHD_GAME_FUNC(0x0227D688, void, wwhd___sinit_d_a_npc_kp1_cpp_0227D688, (void));
 WWHD_GAME_FUNC(0x0227D728, void, wwhd_SafeString_dt_0227D728, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0227D73C, void, wwhd_daNpc_Kp1_c_dt_0227D73C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Kp1_c_dt wwhd_daNpc_Kp1_c_dt_0227D73C
+WWHD_GAME_FUNC(0x0227D7D8, void, wwhd_SafeString_assureTerminationImpl_0227D7D8, (void* arg0));
 WWHD_GAME_FUNC(0x0227D7DC, void, wwhd_daNpc_Ls1_c___nodeCB_Head_0227D7DC, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Ls1_c___nodeCB_Head wwhd_daNpc_Ls1_c___nodeCB_Head_0227D7DC
 WWHD_GAME_FUNC(0x0227D954, s32, wwhd_nodeCB_Head_0227D954, (void* i_node, int i_calcTiming));
@@ -13778,6 +14358,11 @@ WWHD_GAME_FUNC(0x0227EBF4, s32, wwhd_daNpc_Ls1_c__itemCreateHeap_0227EBF4, (void
 WWHD_GAME_FUNC(0x0227EC98, s32, wwhd_daNpc_Ls1_c__CreateHeap_0227EC98, (void* self));
 #define wwhd_daNpc_Ls1_c__CreateHeap wwhd_daNpc_Ls1_c__CreateHeap_0227EC98
 WWHD_GAME_FUNC(0x0227ED64, s32, wwhd_CheckCreateHeap_0227ED64, (void* i_this));
+WWHD_GAME_FUNC(0x0227ED68, void*, wwhd_searchActor_Bm1_0227ED68, (void* i_actorP, void* arg1));
+WWHD_GAME_FUNC(0x0227EDE8, void*, wwhd_searchActor_kamome_Set_NOSTOP_DEMO_0227EDE8, (void* i_actorP, void* arg1));
+#define wwhd_searchActor_kamome_Set_NOSTOP_DEMO wwhd_searchActor_kamome_Set_NOSTOP_DEMO_0227EDE8
+WWHD_GAME_FUNC(0x0227EE40, void*, wwhd_searchActor_kamome_Clr_NOSTOP_DEMO_0227EE40, (void* i_actorP, void* arg1));
+#define wwhd_searchActor_kamome_Clr_NOSTOP_DEMO wwhd_searchActor_kamome_Clr_NOSTOP_DEMO_0227EE40
 WWHD_GAME_FUNC(0x0227EE98, u8, wwhd_daNpc_Ls1_c__decideType_0227EE98, (void* self, int i_type));
 #define wwhd_daNpc_Ls1_c__decideType wwhd_daNpc_Ls1_c__decideType_0227EE98
 WWHD_GAME_FUNC(0x0227EFF4, s32, wwhd_daNpc_Ls1_c__set_action_0227EFF4, (void* self, void* i_newProcFunc, void* i_argsP));
@@ -13866,6 +14451,8 @@ WWHD_GAME_FUNC(0x02281318, s32, wwhd_daNpc_Ls1_c___draw_02281318, (void* self));
 #define wwhd_daNpc_Ls1_c___draw wwhd_daNpc_Ls1_c___draw_02281318
 WWHD_GAME_FUNC(0x02281558, s32, wwhd_daNpc_Ls1_Draw_02281558, (void* i_this));
 #define wwhd_daNpc_Ls1_Draw wwhd_daNpc_Ls1_Draw_02281558
+WWHD_GAME_FUNC(0x0228155C, s32, wwhd_daNpc_Ls1_IsDelete_0228155C, (void* arg0));
+#define wwhd_daNpc_Ls1_IsDelete wwhd_daNpc_Ls1_IsDelete_0228155C
 WWHD_GAME_FUNC(0x02281564, void, wwhd_daNpc_Ls1_matAnm_c_calc_02281564, (void* i_this, void* i_material));
 #define wwhd_daNpc_Ls1_matAnm_c_calc wwhd_daNpc_Ls1_matAnm_c_calc_02281564
 WWHD_GAME_FUNC(0x022816A4, u32, wwhd_daNpc_Ls1_c__chngAnmTag_022816A4, (void* self));
@@ -13910,6 +14497,10 @@ WWHD_GAME_FUNC(0x02282EB0, s32, wwhd_daNpc_Ls1_c__wait_4_02282EB0, (void* self))
 #define wwhd_daNpc_Ls1_c__wait_4 wwhd_daNpc_Ls1_c__wait_4_02282EB0
 WWHD_GAME_FUNC(0x02282F6C, s32, wwhd_daNpc_Ls1_c__talk_1_02282F6C, (void* self));
 #define wwhd_daNpc_Ls1_c__talk_1 wwhd_daNpc_Ls1_c__talk_1_02282F6C
+WWHD_GAME_FUNC(0x02283038, s32, wwhd_daNpc_Ls1_c__wait_action1_02283038, (void* self, void* arg1));
+#define wwhd_daNpc_Ls1_c__wait_action1 wwhd_daNpc_Ls1_c__wait_action1_02283038
+WWHD_GAME_FUNC(0x02283228, s32, wwhd_daNpc_Ls1_c__demo_action1_02283228, (void* self, void* arg1));
+#define wwhd_daNpc_Ls1_c__demo_action1 wwhd_daNpc_Ls1_c__demo_action1_02283228
 WWHD_GAME_FUNC(0x02283290, void*, wwhd_daNpc_Ls1_HIO_c_ct_02283290, (void* i_this));
 #define wwhd_daNpc_Ls1_HIO_c_ct wwhd_daNpc_Ls1_HIO_c_ct_02283290
 WWHD_GAME_FUNC(0x022832FC, void, wwhd___sinit_d_a_npc_ls1_cpp_022832FC, (void));
@@ -13917,6 +14508,7 @@ WWHD_GAME_FUNC(0x022832FC, void, wwhd___sinit_d_a_npc_ls1_cpp_022832FC, (void));
 WWHD_GAME_FUNC(0x022833CC, void, wwhd_SafeString_dt_022833CC, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022833E0, void, wwhd_daNpc_Ls1_c_dt_022833E0, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ls1_c_dt wwhd_daNpc_Ls1_c_dt_022833E0
+WWHD_GAME_FUNC(0x0228347C, void, wwhd_SafeString_assureTerminationImpl_0228347C, (void* arg0));
 WWHD_GAME_FUNC(0x02283480, s16, wwhd_daNpc_Md_c__XyCheckCB_02283480, (void* self, int i_itemBtn));
 #define wwhd_daNpc_Md_c__XyCheckCB wwhd_daNpc_Md_c__XyCheckCB_02283480
 WWHD_GAME_FUNC(0x02283584, s16, wwhd_daNpc_Md_XyCheckCB_02283584, (void* i_this, int param_1));
@@ -14009,6 +14601,8 @@ WWHD_GAME_FUNC(0x02289E2C, s32, wwhd_daNpc_Md_c__draw_02289E2C, (void* self));
 #define wwhd_daNpc_Md_c__draw wwhd_daNpc_Md_c__draw_02289E2C
 WWHD_GAME_FUNC(0x0228A168, s32, wwhd_daNpc_Md_Draw_0228A168, (void* i_this));
 #define wwhd_daNpc_Md_Draw wwhd_daNpc_Md_Draw_0228A168
+WWHD_GAME_FUNC(0x0228A16C, s32, wwhd_daNpc_Md_IsDelete_0228A16C, (void* arg0));
+#define wwhd_daNpc_Md_IsDelete wwhd_daNpc_Md_IsDelete_0228A16C
 WWHD_GAME_FUNC(0x0228A174, void, wwhd_daNpc_Md_followEcallBack_execute_0228A174, (void* cb, void* emitter));
 #define wwhd_daNpc_Md_followEcallBack_execute wwhd_daNpc_Md_followEcallBack_execute_0228A174
 WWHD_GAME_FUNC(0x0228A1B8, void, wwhd_daNpc_Md_followEcallBack_setup_0228A1B8, (void* cb, void* emitter));
@@ -14023,20 +14617,30 @@ WWHD_GAME_FUNC(0x0228A254, void, wwhd_daNpc_Md_dt_0228A254, (void* i_this, s32 f
 #define wwhd_daNpc_Md_dt wwhd_daNpc_Md_dt_0228A254
 WWHD_GAME_FUNC(0x0228A4E4, void, wwhd_daNpc_Md_c__changeCaught02_0228A4E4, (void* self));
 #define wwhd_daNpc_Md_c__changeCaught02 wwhd_daNpc_Md_c__changeCaught02_0228A4E4
+WWHD_GAME_FUNC(0x0228A520, void, wwhd_daNpc_Md_c__initialDefault_0228A520, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialDefault wwhd_daNpc_Md_c__initialDefault_0228A520
+WWHD_GAME_FUNC(0x0228A67C, s32, wwhd_daNpc_Md_c__actionDefault_0228A67C, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionDefault wwhd_daNpc_Md_c__actionDefault_0228A67C
 WWHD_GAME_FUNC(0x0228A6AC, void, wwhd_daNpc_Md_c__initialWaitEvent_0228A6AC, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialWaitEvent wwhd_daNpc_Md_c__initialWaitEvent_0228A6AC
+WWHD_GAME_FUNC(0x0228A7D4, s32, wwhd_daNpc_Md_c__actionWaitEvent_0228A7D4, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionWaitEvent wwhd_daNpc_Md_c__actionWaitEvent_0228A7D4
 WWHD_GAME_FUNC(0x0228A800, void, wwhd_daNpc_Md_c__initialLetterEvent_0228A800, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialLetterEvent wwhd_daNpc_Md_c__initialLetterEvent_0228A800
 WWHD_GAME_FUNC(0x0228A928, void, wwhd_daNpc_Md_c__initialMsgSetEvent_0228A928, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialMsgSetEvent wwhd_daNpc_Md_c__initialMsgSetEvent_0228A928
 WWHD_GAME_FUNC(0x0228AA7C, s32, wwhd_daNpc_Md_c__talk_init_0228AA7C, (void* self));
 #define wwhd_daNpc_Md_c__talk_init wwhd_daNpc_Md_c__talk_init_0228AA7C
+WWHD_GAME_FUNC(0x0228AAF4, s32, wwhd_daNpc_Md_c__actionMsgSetEvent_0228AAF4, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionMsgSetEvent wwhd_daNpc_Md_c__actionMsgSetEvent_0228AAF4
 WWHD_GAME_FUNC(0x0228AB40, int, wwhd_daNpc_Md_c__getAnmType_0228AB40, (void* self, u8 r4));
 #define wwhd_daNpc_Md_c__getAnmType wwhd_daNpc_Md_c__getAnmType_0228AB40
 WWHD_GAME_FUNC(0x0228AB60, u16, wwhd_daNpc_Md_c__next_msgStatus_0228AB60, (void* self, u32* pCurrMsgNo));
 #define wwhd_daNpc_Md_c__next_msgStatus wwhd_daNpc_Md_c__next_msgStatus_0228AB60
 WWHD_GAME_FUNC(0x0228B1B8, s32, wwhd_daNpc_Md_c__talk_0228B1B8, (void* self, int r4));
 #define wwhd_daNpc_Md_c__talk wwhd_daNpc_Md_c__talk_0228B1B8
+WWHD_GAME_FUNC(0x0228B3CC, void, wwhd_daNpc_Md_c__setHarpPlayNum_0228B3CC, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__setHarpPlayNum wwhd_daNpc_Md_c__setHarpPlayNum_0228B3CC
 WWHD_GAME_FUNC(0x0228B418, void, wwhd_daNpc_Md_c__initialEndEvent_0228B418, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialEndEvent wwhd_daNpc_Md_c__initialEndEvent_0228B418
 WWHD_GAME_FUNC(0x0228B610, s32, wwhd_daNpc_Md_c__actionMsgEndEvent_0228B610, (void* self, int staffIdx));
@@ -14047,8 +14651,20 @@ WWHD_GAME_FUNC(0x0228C104, void, wwhd_daNpc_Md_c__particle_set_0228C104, (void* 
 #define wwhd_daNpc_Md_c__particle_set wwhd_daNpc_Md_c__particle_set_0228C104
 WWHD_GAME_FUNC(0x0228C1B4, void, wwhd_daNpc_Md_c__setWingEmitter_0228C1B4, (void* self));
 #define wwhd_daNpc_Md_c__setWingEmitter wwhd_daNpc_Md_c__setWingEmitter_0228C1B4
+WWHD_GAME_FUNC(0x0228C1C4, void, wwhd_daNpc_Md_c__initialFlyEvent_0228C1C4, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialFlyEvent wwhd_daNpc_Md_c__initialFlyEvent_0228C1C4
 WWHD_GAME_FUNC(0x0228C234, s32, wwhd_daNpc_Md_c__actionFlyEvent_0228C234, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__actionFlyEvent wwhd_daNpc_Md_c__actionFlyEvent_0228C234
+WWHD_GAME_FUNC(0x0228C338, void, wwhd_daNpc_Md_c__initialGlidingEvent_0228C338, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialGlidingEvent wwhd_daNpc_Md_c__initialGlidingEvent_0228C338
+WWHD_GAME_FUNC(0x0228C354, s32, wwhd_daNpc_Md_c__actionGlidingEvent_0228C354, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionGlidingEvent wwhd_daNpc_Md_c__actionGlidingEvent_0228C354
+WWHD_GAME_FUNC(0x0228C3E8, void, wwhd_daNpc_Md_c__initialLandingEvent_0228C3E8, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialLandingEvent wwhd_daNpc_Md_c__initialLandingEvent_0228C3E8
+WWHD_GAME_FUNC(0x0228C454, s32, wwhd_daNpc_Md_c__actionLandingEvent_0228C454, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionLandingEvent wwhd_daNpc_Md_c__actionLandingEvent_0228C454
+WWHD_GAME_FUNC(0x0228C4A4, void, wwhd_daNpc_Md_c__initialWalkEvent_0228C4A4, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialWalkEvent wwhd_daNpc_Md_c__initialWalkEvent_0228C4A4
 WWHD_GAME_FUNC(0x0228C4D0, int, wwhd_daNpc_Md_c__wallHitCheck_0228C4D0, (void* self));
 #define wwhd_daNpc_Md_c__wallHitCheck wwhd_daNpc_Md_c__wallHitCheck_0228C4D0
 WWHD_GAME_FUNC(0x0228C50C, s32, wwhd_daNpc_Md_c__actionWalkEvent_0228C50C, (void* self, int staffIdx));
@@ -14057,16 +14673,36 @@ WWHD_GAME_FUNC(0x0228C898, s32, wwhd_daNpc_Md_c__actionDashEvent_0228C898, (void
 #define wwhd_daNpc_Md_c__actionDashEvent wwhd_daNpc_Md_c__actionDashEvent_0228C898
 WWHD_GAME_FUNC(0x0228CB88, s32, wwhd_daNpc_Md_c__actionTactEvent_0228CB88, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__actionTactEvent wwhd_daNpc_Md_c__actionTactEvent_0228CB88
+WWHD_GAME_FUNC(0x0228CCC0, void, wwhd_daNpc_Md_c__initialTakeOffEvent_0228CCC0, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialTakeOffEvent wwhd_daNpc_Md_c__initialTakeOffEvent_0228CCC0
+WWHD_GAME_FUNC(0x0228CCF8, s32, wwhd_daNpc_Md_c__actionTakeOffEvent_0228CCF8, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionTakeOffEvent wwhd_daNpc_Md_c__actionTakeOffEvent_0228CCF8
 WWHD_GAME_FUNC(0x0228CD40, void, wwhd_daNpc_Md_c__initialOnetimeEvent_0228CD40, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialOnetimeEvent wwhd_daNpc_Md_c__initialOnetimeEvent_0228CD40
+WWHD_GAME_FUNC(0x0228CDFC, s32, wwhd_daNpc_Md_c__actionOnetimeEvent_0228CDFC, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionOnetimeEvent wwhd_daNpc_Md_c__actionOnetimeEvent_0228CDFC
 WWHD_GAME_FUNC(0x0228CE84, void, wwhd_daNpc_Md_c__initialQuake_0228CE84, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialQuake wwhd_daNpc_Md_c__initialQuake_0228CE84
+WWHD_GAME_FUNC(0x0228D0A4, void, wwhd_daNpc_Md_c__initialHarpPlayEvent_0228D0A4, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialHarpPlayEvent wwhd_daNpc_Md_c__initialHarpPlayEvent_0228D0A4
+WWHD_GAME_FUNC(0x0228D0AC, s32, wwhd_daNpc_Md_c__actionHarpPlayEvent_0228D0AC, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionHarpPlayEvent wwhd_daNpc_Md_c__actionHarpPlayEvent_0228D0AC
+WWHD_GAME_FUNC(0x0228D0F0, void, wwhd_daNpc_Md_c__initialOffLinkEvent_0228D0F0, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialOffLinkEvent wwhd_daNpc_Md_c__initialOffLinkEvent_0228D0F0
+WWHD_GAME_FUNC(0x0228D120, void, wwhd_daNpc_Md_c__initialOnLinkEvent_0228D120, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialOnLinkEvent wwhd_daNpc_Md_c__initialOnLinkEvent_0228D120
 WWHD_GAME_FUNC(0x0228D150, void, wwhd_daNpc_Md_c__initialTurnEvent_0228D150, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialTurnEvent wwhd_daNpc_Md_c__initialTurnEvent_0228D150
 WWHD_GAME_FUNC(0x0228D32C, s32, wwhd_daNpc_Md_c__actionTurnEvent_0228D32C, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__actionTurnEvent wwhd_daNpc_Md_c__actionTurnEvent_0228D32C
 WWHD_GAME_FUNC(0x0228D564, void, wwhd_daNpc_Md_c__initialSetAnmEvent_0228D564, (void* self, int staffIdx));
 #define wwhd_daNpc_Md_c__initialSetAnmEvent wwhd_daNpc_Md_c__initialSetAnmEvent_0228D564
+WWHD_GAME_FUNC(0x0228D840, u32, wwhd_daNpc_Md_c__initialLookDown_0228D840, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialLookDown wwhd_daNpc_Md_c__initialLookDown_0228D840
+WWHD_GAME_FUNC(0x0228D848, s32, wwhd_daNpc_Md_c__actionLookDown_0228D848, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__actionLookDown wwhd_daNpc_Md_c__actionLookDown_0228D848
+WWHD_GAME_FUNC(0x0228D948, u32, wwhd_daNpc_Md_c__initialLookUp_0228D948, (void* self, int arg1));
+#define wwhd_daNpc_Md_c__initialLookUp wwhd_daNpc_Md_c__initialLookUp_0228D948
 WWHD_GAME_FUNC(0x0228D950, s32, wwhd_daNpc_Md_c__isTagCheckOK_0228D950, (void* self));
 #define wwhd_daNpc_Md_c__isTagCheckOK wwhd_daNpc_Md_c__isTagCheckOK_0228D950
 WWHD_GAME_FUNC(0x0228DA10, void, wwhd_daNpc_Md_c__setMessageAnimation_0228DA10, (void* self, u8 msgAnmAtr));
@@ -14105,14 +14741,50 @@ WWHD_GAME_FUNC(0x0228EACC, s32, wwhd_daNpc_Md_c__chkAdanmaeDemoOrder_0228EACC, (
 #define wwhd_daNpc_Md_c__chkAdanmaeDemoOrder wwhd_daNpc_Md_c__chkAdanmaeDemoOrder_0228EACC
 WWHD_GAME_FUNC(0x0228EB50, s32, wwhd_daNpc_Md_c__XYTalkCheck_0228EB50, (void* self));
 #define wwhd_daNpc_Md_c__XYTalkCheck wwhd_daNpc_Md_c__XYTalkCheck_0228EB50
+WWHD_GAME_FUNC(0x0228EB88, s32, wwhd_daNpc_Md_c__waitNpcAction_0228EB88, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__waitNpcAction wwhd_daNpc_Md_c__waitNpcAction_0228EB88
+WWHD_GAME_FUNC(0x0228F424, s32, wwhd_daNpc_Md_c__harpWaitNpcAction_0228F424, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__harpWaitNpcAction wwhd_daNpc_Md_c__harpWaitNpcAction_0228F424
+WWHD_GAME_FUNC(0x0228F610, s32, wwhd_daNpc_Md_c__talkNpcAction_0228F610, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__talkNpcAction wwhd_daNpc_Md_c__talkNpcAction_0228F610
+WWHD_GAME_FUNC(0x0228FA44, s32, wwhd_daNpc_Md_c__shipTalkNpcAction_0228FA44, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__shipTalkNpcAction wwhd_daNpc_Md_c__shipTalkNpcAction_0228FA44
+WWHD_GAME_FUNC(0x0228FC24, s32, wwhd_daNpc_Md_c__kyohiNpcAction_0228FC24, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__kyohiNpcAction wwhd_daNpc_Md_c__kyohiNpcAction_0228FC24
+WWHD_GAME_FUNC(0x0228FD20, s32, wwhd_daNpc_Md_c__shipNpcAction_0228FD20, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__shipNpcAction wwhd_daNpc_Md_c__shipNpcAction_0228FD20
+WWHD_GAME_FUNC(0x0228FF5C, s32, wwhd_daNpc_Md_c__mwaitNpcAction_0228FF5C, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__mwaitNpcAction wwhd_daNpc_Md_c__mwaitNpcAction_0228FF5C
+WWHD_GAME_FUNC(0x02290234, s32, wwhd_daNpc_Md_c__squatdownNpcAction_02290234, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__squatdownNpcAction wwhd_daNpc_Md_c__squatdownNpcAction_02290234
+WWHD_GAME_FUNC(0x02290358, s32, wwhd_daNpc_Md_c__sqwait01NpcAction_02290358, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__sqwait01NpcAction wwhd_daNpc_Md_c__sqwait01NpcAction_02290358
+WWHD_GAME_FUNC(0x022904DC, s32, wwhd_daNpc_Md_c__carryNpcAction_022904DC, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__carryNpcAction wwhd_daNpc_Md_c__carryNpcAction_022904DC
 WWHD_GAME_FUNC(0x02290CF8, s16, wwhd_daNpc_Md_c__windProc_02290CF8, (void* self));
 #define wwhd_daNpc_Md_c__windProc wwhd_daNpc_Md_c__windProc_02290CF8
+WWHD_GAME_FUNC(0x02291094, s32, wwhd_daNpc_Md_c__throwNpcAction_02291094, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__throwNpcAction wwhd_daNpc_Md_c__throwNpcAction_02291094
+WWHD_GAME_FUNC(0x02291304, s32, wwhd_daNpc_Md_c__glidingNpcAction_02291304, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__glidingNpcAction wwhd_daNpc_Md_c__glidingNpcAction_02291304
+WWHD_GAME_FUNC(0x02291644, s32, wwhd_daNpc_Md_c__fallNpcAction_02291644, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__fallNpcAction wwhd_daNpc_Md_c__fallNpcAction_02291644
 WWHD_GAME_FUNC(0x02291764, s32, wwhd_daNpc_Md_c__fall02NpcAction_02291764, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__fall02NpcAction wwhd_daNpc_Md_c__fall02NpcAction_02291764
 WWHD_GAME_FUNC(0x022919D4, s32, wwhd_daNpc_Md_c__wallHitNpcAction_022919D4, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__wallHitNpcAction wwhd_daNpc_Md_c__wallHitNpcAction_022919D4
 WWHD_GAME_FUNC(0x02291BE4, s32, wwhd_daNpc_Md_c__land01NpcAction_02291BE4, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__land01NpcAction wwhd_daNpc_Md_c__land01NpcAction_02291BE4
+WWHD_GAME_FUNC(0x02291D50, s32, wwhd_daNpc_Md_c__land02NpcAction_02291D50, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__land02NpcAction wwhd_daNpc_Md_c__land02NpcAction_02291D50
+WWHD_GAME_FUNC(0x02291E50, s32, wwhd_daNpc_Md_c__land03NpcAction_02291E50, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__land03NpcAction wwhd_daNpc_Md_c__land03NpcAction_02291E50
+WWHD_GAME_FUNC(0x02291F50, s32, wwhd_daNpc_Md_c__piyo2NpcAction_02291F50, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__piyo2NpcAction wwhd_daNpc_Md_c__piyo2NpcAction_02291F50
+WWHD_GAME_FUNC(0x0229216C, s32, wwhd_daNpc_Md_c__deleteNpcAction_0229216C, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__deleteNpcAction wwhd_daNpc_Md_c__deleteNpcAction_0229216C
+WWHD_GAME_FUNC(0x022921B4, s32, wwhd_daNpc_Md_c__demoFlyNpcAction_022921B4, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__demoFlyNpcAction wwhd_daNpc_Md_c__demoFlyNpcAction_022921B4
 WWHD_GAME_FUNC(0x0229249C, f32, wwhd_daNpc_Md_c__checkForwardGroundY_0229249C, (void* self, s16 param_1));
 #define wwhd_daNpc_Md_c__checkForwardGroundY wwhd_daNpc_Md_c__checkForwardGroundY_0229249C
 WWHD_GAME_FUNC(0x02292650, f32, wwhd_daNpc_Md_c__checkWallJump_02292650, (void* self, s16 param_1));
@@ -14123,14 +14795,32 @@ WWHD_GAME_FUNC(0x0229278C, void, wwhd_daNpc_Md_c__routeWallCheck_0229278C, (void
 #define wwhd_daNpc_Md_c__routeWallCheck wwhd_daNpc_Md_c__routeWallCheck_0229278C
 WWHD_GAME_FUNC(0x022928A8, s32, wwhd_daNpc_Md_c__routeCheck_022928A8, (void* self, f32 param_1, s16* param_2));
 #define wwhd_daNpc_Md_c__routeCheck wwhd_daNpc_Md_c__routeCheck_022928A8
+WWHD_GAME_FUNC(0x02292C48, s32, wwhd_daNpc_Md_c__searchNpcAction_02292C48, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__searchNpcAction wwhd_daNpc_Md_c__searchNpcAction_02292C48
+WWHD_GAME_FUNC(0x0229310C, s32, wwhd_daNpc_Md_c__npcAction_0229310C_0229310C, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__npcAction_0229310C wwhd_daNpc_Md_c__npcAction_0229310C_0229310C
 WWHD_GAME_FUNC(0x0229325C, s32, wwhd_daNpc_Md_c__hitNpcAction_0229325C, (void* self, void* r29));
 #define wwhd_daNpc_Md_c__hitNpcAction wwhd_daNpc_Md_c__hitNpcAction_0229325C
 WWHD_GAME_FUNC(0x022933A0, s32, wwhd_daNpc_Md_c__jumpNpcAction_022933A0, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__jumpNpcAction wwhd_daNpc_Md_c__jumpNpcAction_022933A0
+WWHD_GAME_FUNC(0x02293500, s32, wwhd_daNpc_Md_c__escapeNpcAction_02293500, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__escapeNpcAction wwhd_daNpc_Md_c__escapeNpcAction_02293500
+WWHD_GAME_FUNC(0x02293840, s32, wwhd_daNpc_Md_c__waitPlayerAction_02293840, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__waitPlayerAction wwhd_daNpc_Md_c__waitPlayerAction_02293840
+WWHD_GAME_FUNC(0x02293B5C, s32, wwhd_daNpc_Md_c__walkPlayerAction_02293B5C, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__walkPlayerAction wwhd_daNpc_Md_c__walkPlayerAction_02293B5C
 WWHD_GAME_FUNC(0x02293DDC, s32, wwhd_daNpc_Md_c__hitPlayerAction_02293DDC, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__hitPlayerAction wwhd_daNpc_Md_c__hitPlayerAction_02293DDC
 WWHD_GAME_FUNC(0x02293FA8, s32, wwhd_daNpc_Md_c__jumpPlayerAction_02293FA8, (void* self, void* param_1));
 #define wwhd_daNpc_Md_c__jumpPlayerAction wwhd_daNpc_Md_c__jumpPlayerAction_02293FA8
+WWHD_GAME_FUNC(0x02294160, s32, wwhd_daNpc_Md_c__flyPlayerAction_02294160, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__flyPlayerAction wwhd_daNpc_Md_c__flyPlayerAction_02294160
+WWHD_GAME_FUNC(0x02294838, s32, wwhd_daNpc_Md_c__landPlayerAction_02294838, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__landPlayerAction wwhd_daNpc_Md_c__landPlayerAction_02294838
+WWHD_GAME_FUNC(0x02294984, s32, wwhd_daNpc_Md_c__mkamaePlayerAction_02294984, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__mkamaePlayerAction wwhd_daNpc_Md_c__mkamaePlayerAction_02294984
+WWHD_GAME_FUNC(0x02294C00, s32, wwhd_daNpc_Md_c__carryPlayerAction_02294C00, (void* self, void* arg1));
+#define wwhd_daNpc_Md_c__carryPlayerAction wwhd_daNpc_Md_c__carryPlayerAction_02294C00
 WWHD_GAME_FUNC(0x02294CD0, void*, wwhd_daNpc_Md_HIO6_c_ct_02294CD0, (void* i_this));
 #define wwhd_daNpc_Md_HIO6_c_ct wwhd_daNpc_Md_HIO6_c_ct_02294CD0
 WWHD_GAME_FUNC(0x02294D50, void*, wwhd_daNpc_Md_HIO5_c_ct_02294D50, (void* i_this));
@@ -14266,6 +14956,8 @@ WWHD_GAME_FUNC(0x02296FAC, s32, wwhd_daNpc_Mk_c___draw_02296FAC, (void* self));
 #define wwhd_daNpc_Mk_c___draw wwhd_daNpc_Mk_c___draw_02296FAC
 WWHD_GAME_FUNC(0x02297060, s32, wwhd_daNpc_Mk_Draw_02297060, (void* i_this));
 #define wwhd_daNpc_Mk_Draw wwhd_daNpc_Mk_Draw_02297060
+WWHD_GAME_FUNC(0x02297064, s32, wwhd_daNpc_Mk_IsDelete_02297064, (void* arg0));
+#define wwhd_daNpc_Mk_IsDelete wwhd_daNpc_Mk_IsDelete_02297064
 WWHD_GAME_FUNC(0x0229706C, void, wwhd_daNpc_Mk_c__setAnmStatus_0229706C, (void* self));
 #define wwhd_daNpc_Mk_c__setAnmStatus wwhd_daNpc_Mk_c__setAnmStatus_0229706C
 WWHD_GAME_FUNC(0x022970AC, u8, wwhd_daNpc_Mk_c__chkAttentionLocal_022970AC, (void* self));
@@ -14342,11 +15034,20 @@ WWHD_GAME_FUNC(0x02299C68, u8, wwhd_daNpc_Mk_c__jitanda02_02299C68, (void* self)
 #define wwhd_daNpc_Mk_c__jitanda02 wwhd_daNpc_Mk_c__jitanda02_02299C68
 WWHD_GAME_FUNC(0x02299D00, u8, wwhd_daNpc_Mk_c__demo02_02299D00, (void* self));
 #define wwhd_daNpc_Mk_c__demo02 wwhd_daNpc_Mk_c__demo02_02299D00
+WWHD_GAME_FUNC(0x02299EAC, s32, wwhd_daNpc_Mk_c__wait_action_02299EAC, (void* self, void* arg1));
+#define wwhd_daNpc_Mk_c__wait_action wwhd_daNpc_Mk_c__wait_action_02299EAC
+WWHD_GAME_FUNC(0x02299F8C, s32, wwhd_daNpc_Mk_c__hind_action_02299F8C, (void* self, void* arg1));
+#define wwhd_daNpc_Mk_c__hind_action wwhd_daNpc_Mk_c__hind_action_02299F8C
+WWHD_GAME_FUNC(0x0229A17C, s32, wwhd_daNpc_Mk_c__visit_action_0229A17C, (void* self, void* arg1));
+#define wwhd_daNpc_Mk_c__visit_action wwhd_daNpc_Mk_c__visit_action_0229A17C
+WWHD_GAME_FUNC(0x0229A3C8, s32, wwhd_daNpc_Mk_c__seek_action_0229A3C8, (void* self, void* arg1));
+#define wwhd_daNpc_Mk_c__seek_action wwhd_daNpc_Mk_c__seek_action_0229A3C8
 WWHD_GAME_FUNC(0x0229A7A4, void, wwhd___sinit_d_a_npc_mk_cpp_0229A7A4, (void));
 #define wwhd___sinit_d_a_npc_mk_cpp wwhd___sinit_d_a_npc_mk_cpp_0229A7A4
 WWHD_GAME_FUNC(0x0229A838, void, wwhd_SafeString_dt_0229A838, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0229A84C, void, wwhd_daNpc_Mk_c_dt_0229A84C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Mk_c_dt wwhd_daNpc_Mk_c_dt_0229A84C
+WWHD_GAME_FUNC(0x0229A8E8, void, wwhd_SafeString_assureTerminationImpl_0229A8E8, (void* arg0));
 WWHD_GAME_FUNC(0x0229A8EC, u32, wwhd_daNpc_Mk_Static_c__turnPath_0229A8EC, (void* self, void* actor, void* path, u8 options));
 #define wwhd_daNpc_Mk_Static_c__turnPath wwhd_daNpc_Mk_Static_c__turnPath_0229A8EC
 WWHD_GAME_FUNC(0x0229AA38, s32, wwhd_daNpc_Mk_Static_c__chkPath_0229AA38, (void* self, void* actor, void* path, u8 options));
@@ -14403,6 +15104,8 @@ WWHD_GAME_FUNC(0x0229C3D8, void, wwhd_daNpcMn_c__setAnm_0229C3D8, (void* self, u
 #define wwhd_daNpcMn_c__setAnm wwhd_daNpcMn_c__setAnm_0229C3D8
 WWHD_GAME_FUNC(0x0229C4E4, u8, wwhd_daNpcMn_c__setAnmTbl_0229C4E4, (void* self, void* i_anmDat));
 #define wwhd_daNpcMn_c__setAnmTbl wwhd_daNpcMn_c__setAnmTbl_0229C4E4
+WWHD_GAME_FUNC(0x0229C5BC, s16, wwhd_daNpcMn_c__XyCheckCB_0229C5BC, (void* self, int arg1));
+#define wwhd_daNpcMn_c__XyCheckCB wwhd_daNpcMn_c__XyCheckCB_0229C5BC
 WWHD_GAME_FUNC(0x0229C5C4, s16, wwhd_daNpcMn_XyCheckCB_0229C5C4, (void* i_this, int i_itemBtn));
 #define wwhd_daNpcMn_XyCheckCB wwhd_daNpcMn_XyCheckCB_0229C5C4
 WWHD_GAME_FUNC(0x0229C5C8, void, wwhd_daNpcMn_c__setMtx_0229C5C8, (void* self));
@@ -14527,8 +15230,11 @@ WWHD_GAME_FUNC(0x0229F518, u32, wwhd_daNpcMn_c__getMsg_0229F518, (void* self));
 WWHD_GAME_FUNC(0x0229F6F0, void, wwhd___sinit_d_a_npc_mn_cpp_0229F6F0, (void));
 #define wwhd___sinit_d_a_npc_mn_cpp wwhd___sinit_d_a_npc_mn_cpp_0229F6F0
 WWHD_GAME_FUNC(0x0229F784, void, wwhd_SafeString_dt_0229F784, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0229F798, s32, wwhd_daNpc_MnIsDelete_0229F798, (void* arg0));
+#define wwhd_daNpc_MnIsDelete wwhd_daNpc_MnIsDelete_0229F798
 WWHD_GAME_FUNC(0x0229F7A0, void, wwhd_daNpcMn_dt_0229F7A0, (void* p, s32 flags));
 #define wwhd_daNpcMn_dt wwhd_daNpcMn_dt_0229F7A0
+WWHD_GAME_FUNC(0x0229F83C, void, wwhd_SafeString_assureTerminationImpl_0229F83C, (void* arg0));
 WWHD_GAME_FUNC(0x0229F840, u32, wwhd_daObj_PrmAbstract_0229F840, (void* i_actor, u32 i_width, u32 i_shift));
 WWHD_GAME_FUNC(0x0229F85C, s32, wwhd_daNpcMt_nodeCallback_0229F85C, (void* node, s32 phase));
 #define wwhd_daNpcMt_nodeCallback wwhd_daNpcMt_nodeCallback_0229F85C
@@ -14784,6 +15490,8 @@ WWHD_GAME_FUNC(0x022A5F5C, void, wwhd_nzDestructor_022A5F5C, (void* self, u32 fl
 #define wwhd_nzDestructor wwhd_nzDestructor_022A5F5C
 WWHD_GAME_FUNC(0x022A6034, void, wwhd_nzHioMessage_022A6034, (void* self, void* context));
 #define wwhd_nzHioMessage wwhd_nzHioMessage_022A6034
+WWHD_GAME_FUNC(0x022A6038, void*, wwhd_searchActor_Kb_022A6038, (void* p, void* arg1));
+#define wwhd_searchActor_Kb wwhd_searchActor_Kb_022A6038
 WWHD_GAME_FUNC(0x022A60D4, void, wwhd_daNpc_Ob1_c__nodeOb1Control_022A60D4, (void* self, void* node, void* model));
 #define wwhd_daNpc_Ob1_c__nodeOb1Control wwhd_daNpc_Ob1_c__nodeOb1Control_022A60D4
 WWHD_GAME_FUNC(0x022A6274, s32, wwhd_nodeCallBack_Ob1_022A6274, (void* node, int calcTiming));
@@ -14863,6 +15571,8 @@ WWHD_GAME_FUNC(0x022A7DBC, s32, wwhd_daNpc_Ob1_c___draw_022A7DBC, (void* self));
 #define wwhd_daNpc_Ob1_c___draw wwhd_daNpc_Ob1_c___draw_022A7DBC
 WWHD_GAME_FUNC(0x022A7F44, s32, wwhd_daNpc_Ob1_Draw_022A7F44, (void* i_this));
 #define wwhd_daNpc_Ob1_Draw wwhd_daNpc_Ob1_Draw_022A7F44
+WWHD_GAME_FUNC(0x022A7F48, s32, wwhd_daNpc_Ob1_IsDelete_022A7F48, (void* arg0));
+#define wwhd_daNpc_Ob1_IsDelete wwhd_daNpc_Ob1_IsDelete_022A7F48
 WWHD_GAME_FUNC(0x022A7F50, s32, wwhd_daNpc_Ob1_c__anmNum_toResID_022A7F50, (void* self, int num));
 #define wwhd_daNpc_Ob1_c__anmNum_toResID wwhd_daNpc_Ob1_c__anmNum_toResID_022A7F50
 WWHD_GAME_FUNC(0x022A7F64, u32, wwhd_daNpc_Ob1_c__setAnm_tex_022A7F64, (void* self, s8 tex));
@@ -14923,6 +15633,10 @@ WWHD_GAME_FUNC(0x022A93A8, s32, wwhd_daNpc_Ob1_c__talk_1_022A93A8, (void* self))
 #define wwhd_daNpc_Ob1_c__talk_1 wwhd_daNpc_Ob1_c__talk_1_022A93A8
 WWHD_GAME_FUNC(0x022A9610, s32, wwhd_daNpc_Ob1_c__manzai_022A9610, (void* self));
 #define wwhd_daNpc_Ob1_c__manzai wwhd_daNpc_Ob1_c__manzai_022A9610
+WWHD_GAME_FUNC(0x022A9730, s32, wwhd_daNpc_Ob1_c__wait_action1_022A9730, (void* self, void* arg1));
+#define wwhd_daNpc_Ob1_c__wait_action1 wwhd_daNpc_Ob1_c__wait_action1_022A9730
+WWHD_GAME_FUNC(0x022A9824, s32, wwhd_daNpc_Ob1_c__wait_action2_022A9824, (void* self, void* arg1));
+#define wwhd_daNpc_Ob1_c__wait_action2 wwhd_daNpc_Ob1_c__wait_action2_022A9824
 WWHD_GAME_FUNC(0x022A98F8, void*, wwhd_daNpc_Ob1_HIO_ct_022A98F8, (void* p));
 #define wwhd_daNpc_Ob1_HIO_ct wwhd_daNpc_Ob1_HIO_ct_022A98F8
 WWHD_GAME_FUNC(0x022A9964, void, wwhd___sinit_d_a_npc_ob1_cpp_022A9964, (void));
@@ -14930,6 +15644,7 @@ WWHD_GAME_FUNC(0x022A9964, void, wwhd___sinit_d_a_npc_ob1_cpp_022A9964, (void));
 WWHD_GAME_FUNC(0x022A9A04, void, wwhd_SafeString_dt_022A9A04, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x022A9A18, void, wwhd_daNpc_Ob1_dt_022A9A18, (void* p, s32 flags));
 #define wwhd_daNpc_Ob1_dt wwhd_daNpc_Ob1_dt_022A9A18
+WWHD_GAME_FUNC(0x022A9AB4, void, wwhd_SafeString_assureTerminationImpl_022A9AB4, (void* arg0));
 WWHD_GAME_FUNC(0x022A9AB8, s32, wwhd_nodeCallBack_022A9AB8, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x022A9C74, s32, wwhd_daNpc_Os_c__jointCheck_022A9C74, (void* self, s8 param_1));
 #define wwhd_daNpc_Os_c__jointCheck wwhd_daNpc_Os_c__jointCheck_022A9C74
@@ -15018,12 +15733,26 @@ WWHD_GAME_FUNC(0x022AD138, s32, wwhd_daNpc_Os_c__draw_022AD138, (void* self));
 #define wwhd_daNpc_Os_c__draw wwhd_daNpc_Os_c__draw_022AD138
 WWHD_GAME_FUNC(0x022AD20C, s32, wwhd_daNpc_Os_Draw_022AD20C, (void* i_this));
 #define wwhd_daNpc_Os_Draw wwhd_daNpc_Os_Draw_022AD20C
+WWHD_GAME_FUNC(0x022AD210, s32, wwhd_daNpc_Os_IsDelete_022AD210, (void* arg0));
+#define wwhd_daNpc_Os_IsDelete wwhd_daNpc_Os_IsDelete_022AD210
 WWHD_GAME_FUNC(0x022AD218, void, wwhd_daNpc_Os_c_dtor_022AD218, (void* i_this, s32 flags));
 #define wwhd_daNpc_Os_c_dtor wwhd_daNpc_Os_c_dtor_022AD218
+WWHD_GAME_FUNC(0x022AD360, void, wwhd_daNpc_Os_c__initialDefault_022AD360, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialDefault wwhd_daNpc_Os_c__initialDefault_022AD360
+WWHD_GAME_FUNC(0x022AD364, s32, wwhd_daNpc_Os_c__actionDefault_022AD364, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionDefault wwhd_daNpc_Os_c__actionDefault_022AD364
 WWHD_GAME_FUNC(0x022AD36C, void, wwhd_daNpc_Os_c__initialWaitEvent_022AD36C, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__initialWaitEvent wwhd_daNpc_Os_c__initialWaitEvent_022AD36C
+WWHD_GAME_FUNC(0x022AD4F0, s32, wwhd_daNpc_Os_c__actionWaitEvent_022AD4F0, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionWaitEvent wwhd_daNpc_Os_c__actionWaitEvent_022AD4F0
 WWHD_GAME_FUNC(0x022AD540, void, wwhd_daNpc_Os_c__setWakeup_022AD540, (void* self));
 #define wwhd_daNpc_Os_c__setWakeup wwhd_daNpc_Os_c__setWakeup_022AD540
+WWHD_GAME_FUNC(0x022AD598, void, wwhd_daNpc_Os_c__initialWakeupEvent_022AD598, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialWakeupEvent wwhd_daNpc_Os_c__initialWakeupEvent_022AD598
+WWHD_GAME_FUNC(0x022AD614, s32, wwhd_daNpc_Os_c__actionWakeupEvent_022AD614, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionWakeupEvent wwhd_daNpc_Os_c__actionWakeupEvent_022AD614
+WWHD_GAME_FUNC(0x022AD660, void, wwhd_daNpc_Os_c__initialMoveEvent_022AD660, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialMoveEvent wwhd_daNpc_Os_c__initialMoveEvent_022AD660
 WWHD_GAME_FUNC(0x022AD668, u32, wwhd_daNpc_Os_c__walkProc_022AD668, (void* self, f32 param_1, s16 param_2));
 #define wwhd_daNpc_Os_c__walkProc wwhd_daNpc_Os_c__walkProc_022AD668
 WWHD_GAME_FUNC(0x022AD6CC, void, wwhd_daNpc_Os_c__setAttention_022AD6CC, (void* self, u8 param_1));
@@ -15032,22 +15761,36 @@ WWHD_GAME_FUNC(0x022AD720, s32, wwhd_daNpc_Os_c__actionMoveEvent_022AD720, (void
 #define wwhd_daNpc_Os_c__actionMoveEvent wwhd_daNpc_Os_c__actionMoveEvent_022AD720
 WWHD_GAME_FUNC(0x022AD89C, void, wwhd_daNpc_Os_c__initialMoveEndEvent_022AD89C, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__initialMoveEndEvent wwhd_daNpc_Os_c__initialMoveEndEvent_022AD89C
+WWHD_GAME_FUNC(0x022AD940, void, wwhd_daNpc_Os_c__initialEndEvent_022AD940, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialEndEvent wwhd_daNpc_Os_c__initialEndEvent_022AD940
+WWHD_GAME_FUNC(0x022AD998, void, wwhd_daNpc_Os_c__initialTurnEvent_022AD998, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialTurnEvent wwhd_daNpc_Os_c__initialTurnEvent_022AD998
 WWHD_GAME_FUNC(0x022AD99C, s32, wwhd_daNpc_Os_c__actionTurnEvent_022AD99C, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__actionTurnEvent wwhd_daNpc_Os_c__actionTurnEvent_022AD99C
 WWHD_GAME_FUNC(0x022ADA3C, void, wwhd_daNpc_Os_c__setAnm_brkAnm_022ADA3C, (void* self, int param_1));
 #define wwhd_daNpc_Os_c__setAnm_brkAnm wwhd_daNpc_Os_c__setAnm_brkAnm_022ADA3C
 WWHD_GAME_FUNC(0x022ADAA4, void, wwhd_daNpc_Os_c__initialFinishEvent_022ADAA4, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__initialFinishEvent wwhd_daNpc_Os_c__initialFinishEvent_022ADAA4
+WWHD_GAME_FUNC(0x022ADB4C, s32, wwhd_daNpc_Os_c__actionFinishEvent_022ADB4C, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionFinishEvent wwhd_daNpc_Os_c__actionFinishEvent_022ADB4C
 WWHD_GAME_FUNC(0x022ADB60, void, wwhd_daNpc_Os_c__initialMsgSetEvent_022ADB60, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__initialMsgSetEvent wwhd_daNpc_Os_c__initialMsgSetEvent_022ADB60
 WWHD_GAME_FUNC(0x022ADBCC, s32, wwhd_daNpc_Os_c__talk_init_022ADBCC, (void* self));
 #define wwhd_daNpc_Os_c__talk_init wwhd_daNpc_Os_c__talk_init_022ADBCC
+WWHD_GAME_FUNC(0x022ADC38, s32, wwhd_daNpc_Os_c__actionMsgSetEvent_022ADC38, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionMsgSetEvent wwhd_daNpc_Os_c__actionMsgSetEvent_022ADC38
 WWHD_GAME_FUNC(0x022ADC3C, u16, wwhd_daNpc_Os_c__next_msgStatus_022ADC3C, (void* self, u32* pMsgNo));
 #define wwhd_daNpc_Os_c__next_msgStatus wwhd_daNpc_Os_c__next_msgStatus_022ADC3C
 WWHD_GAME_FUNC(0x022ADC88, s32, wwhd_daNpc_Os_c__talk_022ADC88, (void* self));
 #define wwhd_daNpc_Os_c__talk wwhd_daNpc_Os_c__talk_022ADC88
+WWHD_GAME_FUNC(0x022ADD68, s32, wwhd_daNpc_Os_c__actionMsgEndEvent_022ADD68, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__actionMsgEndEvent wwhd_daNpc_Os_c__actionMsgEndEvent_022ADD68
+WWHD_GAME_FUNC(0x022ADD6C, void, wwhd_daNpc_Os_c__initialSwitchOnEvent_022ADD6C, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialSwitchOnEvent wwhd_daNpc_Os_c__initialSwitchOnEvent_022ADD6C
 WWHD_GAME_FUNC(0x022ADDE0, void, wwhd_daNpc_Os_c__initialNextEvent_022ADDE0, (void* self, int staffIdx));
 #define wwhd_daNpc_Os_c__initialNextEvent wwhd_daNpc_Os_c__initialNextEvent_022ADDE0
+WWHD_GAME_FUNC(0x022ADE94, void, wwhd_daNpc_Os_c__initialSaveEvent_022ADE94, (void* self, int arg1));
+#define wwhd_daNpc_Os_c__initialSaveEvent wwhd_daNpc_Os_c__initialSaveEvent_022ADE94
 WWHD_GAME_FUNC(0x022ADF24, s32, wwhd_os_022ADF24_022ADF24, (void* t));
 #define wwhd_os_022ADF24 wwhd_os_022ADF24_022ADF24
 WWHD_GAME_FUNC(0x022ADFCC, s32, wwhd_os_022ADFCC_022ADFCC, (void* t));
@@ -15184,6 +15927,10 @@ WWHD_GAME_FUNC(0x022B0648, u32, wwhd_os_getLeftHandMatrix_022B0648, (void* p));
 #define wwhd_os_getLeftHandMatrix wwhd_os_getLeftHandMatrix_022B0648
 WWHD_GAME_FUNC(0x022B0650, u32, wwhd_os_getRightHandMatrix_022B0650, (void* p));
 #define wwhd_os_getRightHandMatrix wwhd_os_getRightHandMatrix_022B0650
+WWHD_GAME_FUNC(0x022B0658, f32, wwhd_os_getBaseAnimeFrameRate_022B0658, (void* arg0));
+#define wwhd_os_getBaseAnimeFrameRate wwhd_os_getBaseAnimeFrameRate_022B0658
+WWHD_GAME_FUNC(0x022B0664, f32, wwhd_os_getBaseAnimeFrame_022B0664, (void* arg0));
+#define wwhd_os_getBaseAnimeFrame wwhd_os_getBaseAnimeFrame_022B0664
 WWHD_GAME_FUNC(0x022B0670, void, wwhd_os_empty_022B0670_022B0670, (void));
 #define wwhd_os_empty_022B0670 wwhd_os_empty_022B0670_022B0670
 WWHD_GAME_FUNC(0x022B0674, s32, wwhd_nodeCallBack1_022B0674, (void* i_node, int i_param_2));
@@ -15228,6 +15975,8 @@ WWHD_GAME_FUNC(0x022B32B0, s32, wwhd_daNpc_P1_c___execute_022B32B0, (void* self)
 #define wwhd_daNpc_P1_c___execute wwhd_daNpc_P1_c___execute_022B32B0
 WWHD_GAME_FUNC(0x022B3578, s32, wwhd_daNpc_P1_Execute_022B3578, (void* i_this));
 #define wwhd_daNpc_P1_Execute wwhd_daNpc_P1_Execute_022B3578
+WWHD_GAME_FUNC(0x022B359C, s32, wwhd_daNpc_P1_IsDelete_022B359C, (void* arg0));
+#define wwhd_daNpc_P1_IsDelete wwhd_daNpc_P1_IsDelete_022B359C
 WWHD_GAME_FUNC(0x022B35A4, s32, wwhd_daNpc_P1_c___delete_022B35A4, (void* self));
 #define wwhd_daNpc_P1_c___delete wwhd_daNpc_P1_c___delete_022B35A4
 WWHD_GAME_FUNC(0x022B3628, s32, wwhd_daNpc_P1_Delete_022B3628, (void* i_this));
@@ -15238,6 +15987,18 @@ WWHD_GAME_FUNC(0x022B36A8, s32, wwhd_daNpc_P1_c___create_022B36A8, (void* self))
 #define wwhd_daNpc_P1_c___create wwhd_daNpc_P1_c___create_022B36A8
 WWHD_GAME_FUNC(0x022B43E8, s32, wwhd_daNpc_P1_Create_022B43E8, (void* i_this));
 #define wwhd_daNpc_P1_Create wwhd_daNpc_P1_Create_022B43E8
+WWHD_GAME_FUNC(0x022B43EC, s32, wwhd_daNpc_P1_c__normalAction_022B43EC, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__normalAction wwhd_daNpc_P1_c__normalAction_022B43EC
+WWHD_GAME_FUNC(0x022B4764, s32, wwhd_daNpc_P1_c__confuseAction_022B4764, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__confuseAction wwhd_daNpc_P1_c__confuseAction_022B4764
+WWHD_GAME_FUNC(0x022B48D0, s32, wwhd_daNpc_P1_c__talkAction_022B48D0, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__talkAction wwhd_daNpc_P1_c__talkAction_022B48D0
+WWHD_GAME_FUNC(0x022B4E54, s32, wwhd_daNpc_P1_c__speakAction_022B4E54, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__speakAction wwhd_daNpc_P1_c__speakAction_022B4E54
+WWHD_GAME_FUNC(0x022B53A0, s32, wwhd_daNpc_P1_c__p1c_speakAction_022B53A0, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__p1c_speakAction wwhd_daNpc_P1_c__p1c_speakAction_022B53A0
+WWHD_GAME_FUNC(0x022B5744, s32, wwhd_daNpc_P1_c__explainAction_022B5744, (void* self, void* arg1));
+#define wwhd_daNpc_P1_c__explainAction wwhd_daNpc_P1_c__explainAction_022B5744
 WWHD_GAME_FUNC(0x022B57C8, void*, wwhd_daNpc_P1_childHIO_ct_022B57C8, (void* self));
 #define wwhd_daNpc_P1_childHIO_ct wwhd_daNpc_P1_childHIO_ct_022B57C8
 WWHD_GAME_FUNC(0x022B5808, void*, wwhd_daNpc_P1_HIO_ct_022B5808, (void* self));
@@ -15393,6 +16154,8 @@ WWHD_GAME_FUNC(0x022BC3AC, void, wwhd_daNpc_P2_c__zukotelescope_022BC3AC, (void*
 #define wwhd_daNpc_P2_c__zukotelescope wwhd_daNpc_P2_c__zukotelescope_022BC3AC
 WWHD_GAME_FUNC(0x022BC45C, void, wwhd_daNpc_P2_c__talk01_022BC45C, (void* self));
 #define wwhd_daNpc_P2_c__talk01 wwhd_daNpc_P2_c__talk01_022BC45C
+WWHD_GAME_FUNC(0x022BC544, s32, wwhd_daNpc_P2_c__wait_action_022BC544, (void* self, void* arg1));
+#define wwhd_daNpc_P2_c__wait_action wwhd_daNpc_P2_c__wait_action_022BC544
 WWHD_GAME_FUNC(0x022BC6BC, void, wwhd_daNpc_P2_c__demo_wait_022BC6BC, (void* self));
 #define wwhd_daNpc_P2_c__demo_wait wwhd_daNpc_P2_c__demo_wait_022BC6BC
 WWHD_GAME_FUNC(0x022BC738, void, wwhd_daNpc_P2_c__demo_intro_022BC738, (void* self));
@@ -15429,6 +16192,8 @@ WWHD_GAME_FUNC(0x022BD6B8, void, wwhd_daNpc_P2_c__demo_goal_2_022BD6B8, (void* s
 #define wwhd_daNpc_P2_c__demo_goal_2 wwhd_daNpc_P2_c__demo_goal_2_022BD6B8
 WWHD_GAME_FUNC(0x022BD780, void, wwhd_daNpc_P2_c__demo_bomb_get_022BD780, (void* self));
 #define wwhd_daNpc_P2_c__demo_bomb_get wwhd_daNpc_P2_c__demo_bomb_get_022BD780
+WWHD_GAME_FUNC(0x022BD7FC, s32, wwhd_daNpc_P2_c__intro_action_022BD7FC, (void* self, void* arg1));
+#define wwhd_daNpc_P2_c__intro_action wwhd_daNpc_P2_c__intro_action_022BD7FC
 WWHD_GAME_FUNC(0x022BDB70, void*, wwhd_daNpc_P2_childHIO_ct_022BDB70, (void* self));
 #define wwhd_daNpc_P2_childHIO_ct wwhd_daNpc_P2_childHIO_ct_022BDB70
 WWHD_GAME_FUNC(0x022BDD10, void*, wwhd_daNpc_P2_HIO_ct_022BDD10, (void* self));
@@ -15436,6 +16201,8 @@ WWHD_GAME_FUNC(0x022BDD10, void*, wwhd_daNpc_P2_HIO_ct_022BDD10, (void* self));
 WWHD_GAME_FUNC(0x022BDEC8, void, wwhd___sinit_d_a_npc_p2_cpp_022BDEC8, (void));
 #define wwhd___sinit_d_a_npc_p2_cpp wwhd___sinit_d_a_npc_p2_cpp_022BDEC8
 WWHD_GAME_FUNC(0x022BDF78, void, wwhd_SafeString_dtor_022BDF78, (void* self, u32 flags));
+WWHD_GAME_FUNC(0x022BDF8C, s32, wwhd_daNpc_P2IsDelete_022BDF8C, (void* arg0));
+#define wwhd_daNpc_P2IsDelete wwhd_daNpc_P2IsDelete_022BDF8C
 WWHD_GAME_FUNC(0x022BDF94, void, wwhd_daNpc_P2_dtor_022BDF94, (void* self, u32 flags));
 #define wwhd_daNpc_P2_dtor wwhd_daNpc_P2_dtor_022BDF94
 WWHD_GAME_FUNC(0x022BE030, void, wwhd_SafeString_assureTerminationImpl_022BE030, (void* self));
@@ -15689,6 +16456,7 @@ WWHD_GAME_FUNC(0x022C87A4, void, wwhd_SafeString_dt_022C87A4, (void* p, s32 flag
 WWHD_GAME_FUNC(0x022C87B8, s32, wwhd_daNpc_PeopleIsDelete_022C87B8, (void* i_this));
 WWHD_GAME_FUNC(0x022C87C0, void, wwhd_daNpcPeople_dt_022C87C0, (void* p, s32 flags));
 #define wwhd_daNpcPeople_dt wwhd_daNpcPeople_dt_022C87C0
+WWHD_GAME_FUNC(0x022C885C, void, wwhd_SafeString_assureTerminationImpl_022C885C, (void* arg0));
 WWHD_GAME_FUNC(0x022C8860, u32, wwhd_daObj_PrmAbstract_022C8860, (void* i_actor, u32 i_width, u32 i_shift));
 WWHD_GAME_FUNC(0x022C887C, void, wwhd_daNpc_Pf1_c___nodeCB_Head_022C887C, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Pf1_c___nodeCB_Head wwhd_daNpc_Pf1_c___nodeCB_Head_022C887C
@@ -15759,6 +16527,8 @@ WWHD_GAME_FUNC(0x022CA398, s32, wwhd_daNpc_Pf1_c___draw_022CA398, (void* self));
 #define wwhd_daNpc_Pf1_c___draw wwhd_daNpc_Pf1_c___draw_022CA398
 WWHD_GAME_FUNC(0x022CA52C, s32, wwhd_daNpc_Pf1_Draw_022CA52C, (void* i_this));
 #define wwhd_daNpc_Pf1_Draw wwhd_daNpc_Pf1_Draw_022CA52C
+WWHD_GAME_FUNC(0x022CA530, s32, wwhd_daNpc_Pf1_IsDelete_022CA530, (void* arg0));
+#define wwhd_daNpc_Pf1_IsDelete wwhd_daNpc_Pf1_IsDelete_022CA530
 WWHD_GAME_FUNC(0x022CA538, int, wwhd_daNpc_Pf1_c__bckResID_022CA538, (void* self, int i_bckNum));
 #define wwhd_daNpc_Pf1_c__bckResID wwhd_daNpc_Pf1_c__bckResID_022CA538
 WWHD_GAME_FUNC(0x022CA54C, void, wwhd_daNpc_Pf1_c__setAnm_anm_022CA54C, (void* self, void* i_anmPrmP));
@@ -15813,6 +16583,8 @@ WWHD_GAME_FUNC(0x022CB9D0, s32, wwhd_daNpc_Pf1_c__wait_3_022CB9D0, (void* self))
 #define wwhd_daNpc_Pf1_c__wait_3 wwhd_daNpc_Pf1_c__wait_3_022CB9D0
 WWHD_GAME_FUNC(0x022CBAE0, s32, wwhd_daNpc_Pf1_c__talk_1_022CBAE0, (void* self));
 #define wwhd_daNpc_Pf1_c__talk_1 wwhd_daNpc_Pf1_c__talk_1_022CBAE0
+WWHD_GAME_FUNC(0x022CBBE8, s32, wwhd_daNpc_Pf1_c__wait_action1_022CBBE8, (void* self, void* arg1));
+#define wwhd_daNpc_Pf1_c__wait_action1 wwhd_daNpc_Pf1_c__wait_action1_022CBBE8
 WWHD_GAME_FUNC(0x022CBD1C, void*, wwhd_daNpc_Pf1_HIO_c_ct_022CBD1C, (void* i_this));
 #define wwhd_daNpc_Pf1_HIO_c_ct wwhd_daNpc_Pf1_HIO_c_ct_022CBD1C
 WWHD_GAME_FUNC(0x022CBD88, void, wwhd___sinit_d_a_npc_pf1_cpp_022CBD88, (void));
@@ -15820,6 +16592,7 @@ WWHD_GAME_FUNC(0x022CBD88, void, wwhd___sinit_d_a_npc_pf1_cpp_022CBD88, (void));
 WWHD_GAME_FUNC(0x022CBE28, void, wwhd_SafeString_dt_022CBE28, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022CBE3C, void, wwhd_daNpc_Pf1_c_dt_022CBE3C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Pf1_c_dt wwhd_daNpc_Pf1_c_dt_022CBE3C
+WWHD_GAME_FUNC(0x022CBED8, void, wwhd_SafeString_assureTerminationImpl_022CBED8, (void* arg0));
 WWHD_GAME_FUNC(0x022CBEDC, s32, wwhd_daNpc_Photo_nodeCallBack_022CBEDC, (void* node, int calcTiming));
 #define wwhd_daNpc_Photo_nodeCallBack wwhd_daNpc_Photo_nodeCallBack_022CBEDC
 WWHD_GAME_FUNC(0x022CC034, s32, wwhd_daNpcPhoto_c__initTexPatternAnm_022CC034, (void* self, u32 i_modify, int i_param2));
@@ -15949,8 +16722,11 @@ WWHD_GAME_FUNC(0x022D0904, void, wwhd___sinit_d_a_npc_photo_cpp_022D0904, (void)
 #define wwhd___sinit_d_a_npc_photo_cpp wwhd___sinit_d_a_npc_photo_cpp_022D0904
 WWHD_GAME_FUNC(0x022D0AF8, void, wwhd_SafeString_dt_022D0AF8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x022D0B0C, void*, wwhd_dCcD_Cyl_ct_tu_022D0B0C, (void* p));
+WWHD_GAME_FUNC(0x022D0B98, s32, wwhd_daNpc_PhotoIsDelete_022D0B98, (void* arg0));
+#define wwhd_daNpc_PhotoIsDelete wwhd_daNpc_PhotoIsDelete_022D0B98
 WWHD_GAME_FUNC(0x022D0BA0, void, wwhd_daNpcPhoto_dt_022D0BA0, (void* p, s32 flags));
 #define wwhd_daNpcPhoto_dt wwhd_daNpcPhoto_dt_022D0BA0
+WWHD_GAME_FUNC(0x022D0C5C, void, wwhd_SafeString_assureTerminationImpl_022D0C5C, (void* arg0));
 WWHD_GAME_FUNC(0x022D0C60, u32, wwhd_daObj_PrmAbstract_022D0C60, (void* i_actor, u32 i_width, u32 i_shift));
 WWHD_GAME_FUNC(0x022D0C7C, s32, wwhd_nodeCallBack_Pm_022D0C7C, (void* i_node, int i_calcTiming));
 #define wwhd_nodeCallBack_Pm wwhd_nodeCallBack_Pm_022D0C7C
@@ -16007,6 +16783,8 @@ WWHD_GAME_FUNC(0x022D2128, s32, wwhd_daNpc_Pm1_c___draw_022D2128, (void* self));
 #define wwhd_daNpc_Pm1_c___draw wwhd_daNpc_Pm1_c___draw_022D2128
 WWHD_GAME_FUNC(0x022D2244, s32, wwhd_daNpc_Pm1_Draw_022D2244, (void* i_this));
 #define wwhd_daNpc_Pm1_Draw wwhd_daNpc_Pm1_Draw_022D2244
+WWHD_GAME_FUNC(0x022D2248, s32, wwhd_daNpc_Pm1_IsDelete_022D2248, (void* arg0));
+#define wwhd_daNpc_Pm1_IsDelete wwhd_daNpc_Pm1_IsDelete_022D2248
 WWHD_GAME_FUNC(0x022D2250, u8, wwhd_daNpc_Pm1_c__anmResID_022D2250, (void* self, int i_num, s32* o_bck_num, s32* o_bas_num));
 #define wwhd_daNpc_Pm1_c__anmResID wwhd_daNpc_Pm1_c__anmResID_022D2250
 WWHD_GAME_FUNC(0x022D2300, u32, wwhd_daNpc_Pm1_c__setAnm_tex_022D2300, (void* self, s8 i_param_1));
@@ -16023,6 +16801,8 @@ WWHD_GAME_FUNC(0x022D24D4, void, wwhd_daNpc_Pm1_c__anmAtr_022D24D4, (void* self,
 #define wwhd_daNpc_Pm1_c__anmAtr wwhd_daNpc_Pm1_c__anmAtr_022D24D4
 WWHD_GAME_FUNC(0x022D2594, void, wwhd_daNpc_Pm1_c__setStt_022D2594, (void* self, s8 param_1));
 #define wwhd_daNpc_Pm1_c__setStt wwhd_daNpc_Pm1_c__setStt_022D2594
+WWHD_GAME_FUNC(0x022D25C4, u16, wwhd_daNpc_Pm1_c__next_msgStatus_022D25C4, (void* self, u32* arg1));
+#define wwhd_daNpc_Pm1_c__next_msgStatus wwhd_daNpc_Pm1_c__next_msgStatus_022D25C4
 WWHD_GAME_FUNC(0x022D25CC, u32, wwhd_daNpc_Pm1_c__getMsg_022D25CC, (void* self));
 #define wwhd_daNpc_Pm1_c__getMsg wwhd_daNpc_Pm1_c__getMsg_022D25CC
 WWHD_GAME_FUNC(0x022D25D4, u8, wwhd_daNpc_Pm1_c__chkAttention_022D25D4, (void* self));
@@ -16033,6 +16813,8 @@ WWHD_GAME_FUNC(0x022D269C, s32, wwhd_daNpc_Pm1_c__wait01_022D269C, (void* self))
 #define wwhd_daNpc_Pm1_c__wait01 wwhd_daNpc_Pm1_c__wait01_022D269C
 WWHD_GAME_FUNC(0x022D275C, s32, wwhd_daNpc_Pm1_c__talk01_022D275C, (void* self));
 #define wwhd_daNpc_Pm1_c__talk01 wwhd_daNpc_Pm1_c__talk01_022D275C
+WWHD_GAME_FUNC(0x022D27DC, s32, wwhd_daNpc_Pm1_c__wait_action1_022D27DC, (void* self, void* arg1));
+#define wwhd_daNpc_Pm1_c__wait_action1 wwhd_daNpc_Pm1_c__wait_action1_022D27DC
 WWHD_GAME_FUNC(0x022D28A0, void*, wwhd_daNpc_Pm1_HIO_c_ct_022D28A0, (void* i_this));
 #define wwhd_daNpc_Pm1_HIO_c_ct wwhd_daNpc_Pm1_HIO_c_ct_022D28A0
 WWHD_GAME_FUNC(0x022D290C, void, wwhd___sinit_d_a_npc_pm1_cpp_022D290C, (void));
@@ -16040,6 +16822,7 @@ WWHD_GAME_FUNC(0x022D290C, void, wwhd___sinit_d_a_npc_pm1_cpp_022D290C, (void));
 WWHD_GAME_FUNC(0x022D29AC, void, wwhd_SafeString_dt_022D29AC, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022D29C0, void, wwhd_daNpc_Pm1_c_dt_022D29C0, (void* i_this, s32 flags));
 #define wwhd_daNpc_Pm1_c_dt wwhd_daNpc_Pm1_c_dt_022D29C0
+WWHD_GAME_FUNC(0x022D2A5C, void, wwhd_SafeString_assureTerminationImpl_022D2A5C, (void* arg0));
 WWHD_GAME_FUNC(0x022D2A60, s32, wwhd_daNpc_Roten_nodeCallBack_022D2A60, (void* node, int calcTiming));
 #define wwhd_daNpc_Roten_nodeCallBack wwhd_daNpc_Roten_nodeCallBack_022D2A60
 WWHD_GAME_FUNC(0x022D2BB8, s32, wwhd_daNpcRoten_c__initTexPatternAnm_022D2BB8, (void* self, u8 modify));
@@ -16160,10 +16943,13 @@ WWHD_GAME_FUNC(0x022D6304, u32, wwhd_daNpcRoten_c__getMsg_022D6304, (void* self)
 WWHD_GAME_FUNC(0x022D669C, void, wwhd___sinit_d_a_npc_roten_cpp_022D669C, (void));
 #define wwhd___sinit_d_a_npc_roten_cpp wwhd___sinit_d_a_npc_roten_cpp_022D669C
 WWHD_GAME_FUNC(0x022D6730, void, wwhd_SafeString_dt_022D6730, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x022D6744, s32, wwhd_daNpc_RotenIsDelete_022D6744, (void* arg0));
+#define wwhd_daNpc_RotenIsDelete wwhd_daNpc_RotenIsDelete_022D6744
 WWHD_GAME_FUNC(0x022D674C, s32, wwhd_daNpcRoten_c__executeTalkInit_022D674C, (void* self));
 #define wwhd_daNpcRoten_c__executeTalkInit wwhd_daNpcRoten_c__executeTalkInit_022D674C
 WWHD_GAME_FUNC(0x022D6754, void, wwhd_daNpcRoten_c_dt_022D6754, (void* i_this, s32 flags));
 #define wwhd_daNpcRoten_c_dt wwhd_daNpcRoten_c_dt_022D6754
+WWHD_GAME_FUNC(0x022D6808, void, wwhd_SafeString_assureTerminationImpl_022D6808, (void* arg0));
 WWHD_GAME_FUNC(0x022D680C, u32, wwhd_daObj_PrmAbstract_022D680C, (void* actor, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x022D6828, int, wwhd_daNpc_Rsh1_countShop_022D6828, (void));
 #define wwhd_daNpc_Rsh1_countShop wwhd_daNpc_Rsh1_countShop_022D6828
@@ -16220,6 +17006,8 @@ WWHD_GAME_FUNC(0x022D8A44, s32, wwhd_daNpc_Rsh1_c___draw_022D8A44, (void* self))
 #define wwhd_daNpc_Rsh1_c___draw wwhd_daNpc_Rsh1_c___draw_022D8A44
 WWHD_GAME_FUNC(0x022D8B14, s32, wwhd_daNpc_Rsh1_Draw_022D8B14, (void* i_this));
 #define wwhd_daNpc_Rsh1_Draw wwhd_daNpc_Rsh1_Draw_022D8B14
+WWHD_GAME_FUNC(0x022D8B18, s32, wwhd_daNpc_Rsh1_IsDelete_022D8B18, (void* arg0));
+#define wwhd_daNpc_Rsh1_IsDelete wwhd_daNpc_Rsh1_IsDelete_022D8B18
 WWHD_GAME_FUNC(0x022D8B20, void, wwhd_daNpc_Rsh1_c__setAnm_022D8B20, (void* self, s8 i_index));
 #define wwhd_daNpc_Rsh1_c__setAnm wwhd_daNpc_Rsh1_c__setAnm_022D8B20
 WWHD_GAME_FUNC(0x022D8B7C, void, wwhd_daNpc_Rsh1_c__setAnmFromMsgTag_022D8B7C, (void* self));
@@ -16246,6 +17034,12 @@ WWHD_GAME_FUNC(0x022DA1C4, u8, wwhd_daNpc_Rsh1_c__wait01_022DA1C4, (void* self))
 #define wwhd_daNpc_Rsh1_c__wait01 wwhd_daNpc_Rsh1_c__wait01_022DA1C4
 WWHD_GAME_FUNC(0x022DA4C4, u8, wwhd_daNpc_Rsh1_c__talk01_022DA4C4, (void* self));
 #define wwhd_daNpc_Rsh1_c__talk01 wwhd_daNpc_Rsh1_c__talk01_022DA4C4
+WWHD_GAME_FUNC(0x022DA748, s32, wwhd_daNpc_Rsh1_c__wait_action_022DA748, (void* self, void* arg1));
+#define wwhd_daNpc_Rsh1_c__wait_action wwhd_daNpc_Rsh1_c__wait_action_022DA748
+WWHD_GAME_FUNC(0x022DA818, s32, wwhd_daNpc_Rsh1_c__getdemo_action_022DA818, (void* self, void* arg1));
+#define wwhd_daNpc_Rsh1_c__getdemo_action wwhd_daNpc_Rsh1_c__getdemo_action_022DA818
+WWHD_GAME_FUNC(0x022DAA78, s32, wwhd_daNpc_Rsh1_c__pl_shop_out_action_022DAA78, (void* self, void* arg1));
+#define wwhd_daNpc_Rsh1_c__pl_shop_out_action wwhd_daNpc_Rsh1_c__pl_shop_out_action_022DAA78
 WWHD_GAME_FUNC(0x022DAF30, u8, wwhd_daNpc_Rsh1_c__evn_talk_init_022DAF30, (void* self, int i_staffIdx));
 #define wwhd_daNpc_Rsh1_c__evn_talk_init wwhd_daNpc_Rsh1_c__evn_talk_init_022DAF30
 WWHD_GAME_FUNC(0x022DAFD8, u8, wwhd_daNpc_Rsh1_c__evn_continue_talk_init_022DAFD8, (void* self, int i_staffIdx));
@@ -16260,6 +17054,10 @@ WWHD_GAME_FUNC(0x022DB29C, s32, wwhd_daNpc_Rsh1_c__evn_turn_022DB29C, (void* sel
 #define wwhd_daNpc_Rsh1_c__evn_turn wwhd_daNpc_Rsh1_c__evn_turn_022DB29C
 WWHD_GAME_FUNC(0x022DB314, u8, wwhd_daNpc_Rsh1_c__privateCut_022DB314, (void* self));
 #define wwhd_daNpc_Rsh1_c__privateCut wwhd_daNpc_Rsh1_c__privateCut_022DB314
+WWHD_GAME_FUNC(0x022DB4A4, s32, wwhd_daNpc_Rsh1_c__event_action_022DB4A4, (void* self, void* arg1));
+#define wwhd_daNpc_Rsh1_c__event_action wwhd_daNpc_Rsh1_c__event_action_022DB4A4
+WWHD_GAME_FUNC(0x022DB674, s32, wwhd_daNpc_Rsh1_c__dummy_action_022DB674, (void* self, void* arg1));
+#define wwhd_daNpc_Rsh1_c__dummy_action wwhd_daNpc_Rsh1_c__dummy_action_022DB674
 WWHD_GAME_FUNC(0x022DB690, void*, wwhd_daNpc_Rsh1_HIO_ct_022DB690, (void* self));
 #define wwhd_daNpc_Rsh1_HIO_ct wwhd_daNpc_Rsh1_HIO_ct_022DB690
 WWHD_GAME_FUNC(0x022DB824, void, wwhd___sinit_d_a_npc_rsh1_cpp_022DB824, (void));
@@ -16341,6 +17139,8 @@ WWHD_GAME_FUNC(0x022DDBD8, void, wwhd_fopNpc_npc_c_dt_022DDBD8, (void* i_this, s
 #define wwhd_fopNpc_npc_c_dt wwhd_fopNpc_npc_c_dt_022DDBD8
 WWHD_GAME_FUNC(0x022DDC74, void, wwhd_daNpc_Sarace_SafeString_empty_022DDC74, (void* self));
 #define wwhd_daNpc_Sarace_SafeString_empty wwhd_daNpc_Sarace_SafeString_empty_022DDC74
+WWHD_GAME_FUNC(0x022DDC74, void, wwhd_so_empty_022DDC74_022DDC74, (void* arg0));
+#define wwhd_so_empty_022DDC74 wwhd_so_empty_022DDC74_022DDC74
 WWHD_GAME_FUNC(0x022DDC78, void*, wwhd_daNpc_So_c___searchEsa_022DDC78, (void* self, void* arg1));
 #define wwhd_daNpc_So_c___searchEsa wwhd_daNpc_So_c___searchEsa_022DDC78
 WWHD_GAME_FUNC(0x022DDCA0, void*, wwhd_searchEsa_CB_022DDCA0, (void* arg1, void* i_this));
@@ -16377,6 +17177,8 @@ WWHD_GAME_FUNC(0x022DE6AC, void, wwhd_daNpc_So_c__offsetZero_022DE6AC, (void* se
 #define wwhd_daNpc_So_c__offsetZero wwhd_daNpc_So_c__offsetZero_022DE6AC
 WWHD_GAME_FUNC(0x022DE6D4, void, wwhd_daNpc_So_c__setAnm_022DE6D4, (void* self, s8 anmPrmIdx, u32 force));
 #define wwhd_daNpc_So_c__setAnm wwhd_daNpc_So_c__setAnm_022DE6D4
+WWHD_GAME_FUNC(0x022DE7D8, void, wwhd_daNpc_So_c__modeProc_022DE7D8, (void* self, s32 mode, int index));
+#define wwhd_daNpc_So_c__modeProc wwhd_daNpc_So_c__modeProc_022DE7D8
 WWHD_GAME_FUNC(0x022DE884, void, wwhd_daNpc_So_c__createInit_022DE884, (void* self));
 #define wwhd_daNpc_So_c__createInit wwhd_daNpc_So_c__createInit_022DE884
 WWHD_GAME_FUNC(0x022DED84, s32, wwhd_daNpc_So_c___create_022DED84, (void* self));
@@ -16573,8 +17375,22 @@ WWHD_GAME_FUNC(0x022E4B84, void, wwhd_so_empty_dt_022E4B84, (void* p, s32 flags)
 #define wwhd_so_empty_dt wwhd_so_empty_dt_022E4B84
 WWHD_GAME_FUNC(0x022E4B98, s32, wwhd_daNpc_SoIsDelete_022E4B98, (void* i_this));
 #define wwhd_daNpc_SoIsDelete wwhd_daNpc_SoIsDelete_022E4B98
+WWHD_GAME_FUNC(0x022E4BA0, void, wwhd_so_empty_022E4BA0_022E4BA0, (void* arg0));
+#define wwhd_so_empty_022E4BA0 wwhd_so_empty_022E4BA0_022E4BA0
+WWHD_GAME_FUNC(0x022E4BA4, void, wwhd_so_empty_022E4BA4_022E4BA4, (void* arg0));
+#define wwhd_so_empty_022E4BA4 wwhd_so_empty_022E4BA4_022E4BA4
+WWHD_GAME_FUNC(0x022E4BA8, void, wwhd_so_empty_022E4BA8_022E4BA8, (void* arg0));
+#define wwhd_so_empty_022E4BA8 wwhd_so_empty_022E4BA8_022E4BA8
+WWHD_GAME_FUNC(0x022E4BAC, void, wwhd_so_empty_022E4BAC_022E4BAC, (void* arg0));
+#define wwhd_so_empty_022E4BAC wwhd_so_empty_022E4BAC_022E4BAC
+WWHD_GAME_FUNC(0x022E4BB0, void, wwhd_so_empty_022E4BB0_022E4BB0, (void* arg0));
+#define wwhd_so_empty_022E4BB0 wwhd_so_empty_022E4BB0_022E4BB0
+WWHD_GAME_FUNC(0x022E4BB4, void, wwhd_so_empty_022E4BB4_022E4BB4, (void* arg0));
+#define wwhd_so_empty_022E4BB4 wwhd_so_empty_022E4BB4_022E4BB4
 WWHD_GAME_FUNC(0x022E4BB8, void, wwhd_daNpc_So_c_dt_022E4BB8, (void* i_this, s32 flags));
 #define wwhd_daNpc_So_c_dt wwhd_daNpc_So_c_dt_022E4BB8
+WWHD_GAME_FUNC(0x022E4C9C, void, wwhd_so_empty_022E4C9C_022E4C9C, (void* arg0));
+#define wwhd_so_empty_022E4C9C wwhd_so_empty_022E4C9C_022E4C9C
 WWHD_GAME_FUNC(0x022E4CA0, s32, wwhd_daNpc_People_nodeCallBack_022E4CA0, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x022E4DF8, s32, wwhd_daNpcSv_c__createHeap_022E4DF8, (void* self));
 #define wwhd_daNpcSv_c__createHeap wwhd_daNpcSv_c__createHeap_022E4DF8
@@ -16664,8 +17480,10 @@ WWHD_GAME_FUNC(0x022E7364, u32, wwhd_daNpcSv_c__getMsg_022E7364, (void* self));
 WWHD_GAME_FUNC(0x022E7438, void, wwhd___sinit_d_a_npc_sv_cpp_022E7438, (void));
 #define wwhd___sinit_d_a_npc_sv_cpp wwhd___sinit_d_a_npc_sv_cpp_022E7438
 WWHD_GAME_FUNC(0x022E74CC, void, wwhd_SafeString_dt_022E74CC, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x022E74E0, s32, wwhd_daNpc_PeopleIsDelete_022E74E0, (void* arg0));
 WWHD_GAME_FUNC(0x022E74E8, void, wwhd_daNpcSv_dt_022E74E8, (void* p, s32 flags));
 #define wwhd_daNpcSv_dt wwhd_daNpcSv_dt_022E74E8
+WWHD_GAME_FUNC(0x022E7584, void, wwhd_SafeString_assureTerminationImpl_022E7584, (void* arg0));
 WWHD_GAME_FUNC(0x022E7588, s32, wwhd_nodeCallBack_022E7588, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x022E7814, void*, wwhd_daNpc_Tc_c___searchTower_022E7814, (void* self, void* i_actor));
 #define wwhd_daNpc_Tc_c___searchTower wwhd_daNpc_Tc_c___searchTower_022E7814
@@ -16848,14 +17666,21 @@ WWHD_GAME_FUNC(0x022ECE84, void, wwhd_daNpc_Tc_c__statusMonumentComplete_022ECE8
 #define wwhd_daNpc_Tc_c__statusMonumentComplete wwhd_daNpc_Tc_c__statusMonumentComplete_022ECE84
 WWHD_GAME_FUNC(0x022ECEDC, void, wwhd_daNpc_Tc_c__statusDemoMonumentComplete_022ECEDC, (void* self));
 #define wwhd_daNpc_Tc_c__statusDemoMonumentComplete wwhd_daNpc_Tc_c__statusDemoMonumentComplete_022ECEDC
+WWHD_GAME_FUNC(0x022ECF4C, s32, wwhd_daNpc_Tc_c__wait_action_022ECF4C, (void* self, void* arg1));
+#define wwhd_daNpc_Tc_c__wait_action wwhd_daNpc_Tc_c__wait_action_022ECF4C
+WWHD_GAME_FUNC(0x022ED17C, s32, wwhd_daNpc_Tc_c__help_action_022ED17C, (void* self, void* arg1));
+#define wwhd_daNpc_Tc_c__help_action wwhd_daNpc_Tc_c__help_action_022ED17C
 WWHD_GAME_FUNC(0x022ED4A4, void*, wwhd_daNpc_Tc_HIO_c_ct_022ED4A4, (void* i_this));
 #define wwhd_daNpc_Tc_HIO_c_ct wwhd_daNpc_Tc_HIO_c_ct_022ED4A4
 WWHD_GAME_FUNC(0x022ED6A8, void, wwhd___sinit_d_a_npc_tc_cpp_022ED6A8, (void));
 #define wwhd___sinit_d_a_npc_tc_cpp wwhd___sinit_d_a_npc_tc_cpp_022ED6A8
 WWHD_GAME_FUNC(0x022ED778, void, wwhd_daNpc_Tc_HIO_c_dt_022ED778, (void* i_this, s32 flags));
 #define wwhd_daNpc_Tc_HIO_c_dt wwhd_daNpc_Tc_HIO_c_dt_022ED778
+WWHD_GAME_FUNC(0x022ED78C, s32, wwhd_daNpc_Tc_IsDelete_022ED78C, (void* arg0));
+#define wwhd_daNpc_Tc_IsDelete wwhd_daNpc_Tc_IsDelete_022ED78C
 WWHD_GAME_FUNC(0x022ED794, void, wwhd_daNpc_Tc_c_dt_022ED794, (void* i_this, s32 flags));
 #define wwhd_daNpc_Tc_c_dt wwhd_daNpc_Tc_c_dt_022ED794
+WWHD_GAME_FUNC(0x022ED830, void, wwhd_SafeString_assureTerminationImpl_022ED830, (void* arg0));
 WWHD_GAME_FUNC(0x022ED834, u32, wwhd_PrmAbstract_Smplbg_022ED834, (const void* a, s32 w, s32 s));
 #define wwhd_PrmAbstract_Smplbg wwhd_PrmAbstract_Smplbg_022ED834
 WWHD_GAME_FUNC(0x022ED850, u8, wwhd_cLib_calcTimer_c_022ED850, (u8* t));
@@ -16864,6 +17689,8 @@ WWHD_GAME_FUNC(0x022ED870, s16, wwhd_daNpc_Tt_c__XyCheckCB_022ED870, (void* self
 #define wwhd_daNpc_Tt_c__XyCheckCB wwhd_daNpc_Tt_c__XyCheckCB_022ED870
 WWHD_GAME_FUNC(0x022ED8B0, s16, wwhd_daNpc_tt_XyCheckCB_022ED8B0, (void* i_this, int i_itemBtn));
 #define wwhd_daNpc_tt_XyCheckCB wwhd_daNpc_tt_XyCheckCB_022ED8B0
+WWHD_GAME_FUNC(0x022ED8B4, s16, wwhd_daNpc_tt_XyEventCB_022ED8B4, (void* i_this, int arg1));
+#define wwhd_daNpc_tt_XyEventCB wwhd_daNpc_tt_XyEventCB_022ED8B4
 WWHD_GAME_FUNC(0x022ED8F8, s32, wwhd_nodeCallBack_Tt_022ED8F8, (void* node, int calcTiming));
 #define wwhd_nodeCallBack_Tt wwhd_nodeCallBack_Tt_022ED8F8
 WWHD_GAME_FUNC(0x022EDB94, s32, wwhd_daNpc_Tt_c__initTexPatternAnm_022EDB94, (void* self, u32 i_modify));
@@ -16909,6 +17736,8 @@ WWHD_GAME_FUNC(0x022EEF68, s32, wwhd_daNpc_Tt_c___draw_022EEF68, (void* self));
 #define wwhd_daNpc_Tt_c___draw wwhd_daNpc_Tt_c___draw_022EEF68
 WWHD_GAME_FUNC(0x022EF068, s32, wwhd_daNpc_Tt_Draw_022EF068, (void* i_this));
 #define wwhd_daNpc_Tt_Draw wwhd_daNpc_Tt_Draw_022EF068
+WWHD_GAME_FUNC(0x022EF06C, s32, wwhd_daNpc_Tt_IsDelete_022EF06C, (void* arg0));
+#define wwhd_daNpc_Tt_IsDelete wwhd_daNpc_Tt_IsDelete_022EF06C
 WWHD_GAME_FUNC(0x022EF074, void, wwhd_daNpc_Tt_c__danceInit_022EF074, (void* self, int param_1));
 #define wwhd_daNpc_Tt_c__danceInit wwhd_daNpc_Tt_c__danceInit_022EF074
 WWHD_GAME_FUNC(0x022EF0D8, void, wwhd_daNpc_Tt_c__setAnmStatus_022EF0D8, (void* self));
@@ -16963,11 +17792,14 @@ WWHD_GAME_FUNC(0x022F0514, u8, wwhd_daNpc_Tt_c__talk01_022F0514, (void* self));
 #define wwhd_daNpc_Tt_c__talk01 wwhd_daNpc_Tt_c__talk01_022F0514
 WWHD_GAME_FUNC(0x022F05CC, u8, wwhd_daNpc_Tt_c__tact00_022F05CC, (void* self));
 #define wwhd_daNpc_Tt_c__tact00 wwhd_daNpc_Tt_c__tact00_022F05CC
+WWHD_GAME_FUNC(0x022F0664, s32, wwhd_daNpc_Tt_c__wait_action_022F0664, (void* self, void* arg1));
+#define wwhd_daNpc_Tt_c__wait_action wwhd_daNpc_Tt_c__wait_action_022F0664
 WWHD_GAME_FUNC(0x022F0788, void, wwhd___sinit_d_a_npc_tt_cpp_022F0788, (void));
 #define wwhd___sinit_d_a_npc_tt_cpp wwhd___sinit_d_a_npc_tt_cpp_022F0788
 WWHD_GAME_FUNC(0x022F081C, void, wwhd_SafeString_dt_022F081C, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022F0830, void, wwhd_daNpc_Tt_c_dt_022F0830, (void* i_this, s32 flags));
 #define wwhd_daNpc_Tt_c_dt wwhd_daNpc_Tt_c_dt_022F0830
+WWHD_GAME_FUNC(0x022F08D8, void, wwhd_SafeString_assureTerminationImpl_022F08D8, (void* arg0));
 WWHD_GAME_FUNC(0x022F08DC, s32, wwhd_nodeCallBack_Uk_022F08DC, (void* node, int calcTiming));
 #define wwhd_nodeCallBack_Uk wwhd_nodeCallBack_Uk_022F08DC
 WWHD_GAME_FUNC(0x022F0B68, u32, wwhd_daNpc_Uk_c__getShapeType_022F0B68, (void* self));
@@ -17015,6 +17847,8 @@ WWHD_GAME_FUNC(0x022F2520, s32, wwhd_daNpc_Uk_c___draw_022F2520, (void* self));
 #define wwhd_daNpc_Uk_c___draw wwhd_daNpc_Uk_c___draw_022F2520
 WWHD_GAME_FUNC(0x022F26AC, s32, wwhd_daNpc_Uk_Draw_022F26AC, (void* i_this));
 #define wwhd_daNpc_Uk_Draw wwhd_daNpc_Uk_Draw_022F26AC
+WWHD_GAME_FUNC(0x022F26B0, s32, wwhd_daNpc_Uk_IsDelete_022F26B0, (void* arg0));
+#define wwhd_daNpc_Uk_IsDelete wwhd_daNpc_Uk_IsDelete_022F26B0
 WWHD_GAME_FUNC(0x022F26B8, u16, wwhd_daNpc_Uk_c__getFoundFlag_022F26B8, (void* self));
 #define wwhd_daNpc_Uk_c__getFoundFlag wwhd_daNpc_Uk_c__getFoundFlag_022F26B8
 WWHD_GAME_FUNC(0x022F2708, void, wwhd_daNpc_Uk_c__setAnmStatus_022F2708, (void* self));
@@ -17097,13 +17931,24 @@ WWHD_GAME_FUNC(0x022F5CEC, s32, wwhd_daNpc_Uk_c__jitanda01_022F5CEC, (void* self
 #define wwhd_daNpc_Uk_c__jitanda01 wwhd_daNpc_Uk_c__jitanda01_022F5CEC
 WWHD_GAME_FUNC(0x022F5D2C, s32, wwhd_daNpc_Uk_c__jitanda02_022F5D2C, (void* self));
 #define wwhd_daNpc_Uk_c__jitanda02 wwhd_daNpc_Uk_c__jitanda02_022F5D2C
+WWHD_GAME_FUNC(0x022F5DB0, s32, wwhd_daNpc_Uk_c__wait_action_022F5DB0, (void* self, void* arg1));
+#define wwhd_daNpc_Uk_c__wait_action wwhd_daNpc_Uk_c__wait_action_022F5DB0
+WWHD_GAME_FUNC(0x022F5E90, s32, wwhd_daNpc_Uk_c__hind_action_022F5E90, (void* self, void* arg1));
+#define wwhd_daNpc_Uk_c__hind_action wwhd_daNpc_Uk_c__hind_action_022F5E90
+WWHD_GAME_FUNC(0x022F6058, s32, wwhd_daNpc_Uk_c__visit_action_022F6058, (void* self, void* arg1));
+#define wwhd_daNpc_Uk_c__visit_action wwhd_daNpc_Uk_c__visit_action_022F6058
+WWHD_GAME_FUNC(0x022F6360, s32, wwhd_daNpc_Uk_c__seek_action_022F6360, (void* self, void* arg1));
+#define wwhd_daNpc_Uk_c__seek_action wwhd_daNpc_Uk_c__seek_action_022F6360
 WWHD_GAME_FUNC(0x022F6764, void, wwhd___sinit_d_a_npc_uk_cpp_022F6764, (void));
 #define wwhd___sinit_d_a_npc_uk_cpp wwhd___sinit_d_a_npc_uk_cpp_022F6764
 WWHD_GAME_FUNC(0x022F67F8, void, wwhd_SafeString_dt_022F67F8, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022F680C, void, wwhd_daNpc_Uk_c_dt_022F680C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Uk_c_dt wwhd_daNpc_Uk_c_dt_022F680C
+WWHD_GAME_FUNC(0x022F68A8, void, wwhd_SafeString_assureTerminationImpl_022F68A8, (void* arg0));
 WWHD_GAME_FUNC(0x022F68AC, void, wwhd_daNpc_Ym1_c__setKariFlg_022F68AC, (void* self));
 #define wwhd_daNpc_Ym1_c__setKariFlg wwhd_daNpc_Ym1_c__setKariFlg_022F68AC
+WWHD_GAME_FUNC(0x022F68B8, void, wwhd_area_check_022F68B8, (void* i_actor, void* arg1, u32 i_flag));
+#define wwhd_area_check wwhd_area_check_022F68B8
 WWHD_GAME_FUNC(0x022F68C4, void, wwhd_daNpc_Ym1_c___nodeCB_Head_022F68C4, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Ym1_c___nodeCB_Head wwhd_daNpc_Ym1_c___nodeCB_Head_022F68C4
 WWHD_GAME_FUNC(0x022F6A34, s32, wwhd_nodeCB_Head_022F6A34, (void* i_node, int i_timing));
@@ -17189,6 +18034,8 @@ WWHD_GAME_FUNC(0x022F8F30, s32, wwhd_daNpc_Ym1_c___draw_022F8F30, (void* self));
 #define wwhd_daNpc_Ym1_c___draw wwhd_daNpc_Ym1_c___draw_022F8F30
 WWHD_GAME_FUNC(0x022F9150, u32, wwhd_daNpc_Ym1_Draw_022F9150, (void* i_this));
 #define wwhd_daNpc_Ym1_Draw wwhd_daNpc_Ym1_Draw_022F9150
+WWHD_GAME_FUNC(0x022F9154, s32, wwhd_daNpc_Ym1_IsDelete_022F9154, (void* arg0));
+#define wwhd_daNpc_Ym1_IsDelete wwhd_daNpc_Ym1_IsDelete_022F9154
 WWHD_GAME_FUNC(0x022F915C, s32, wwhd_daNpc_Ym1_c__bckResID_022F915C, (void* self, int i_bckNum));
 #define wwhd_daNpc_Ym1_c__bckResID wwhd_daNpc_Ym1_c__bckResID_022F915C
 WWHD_GAME_FUNC(0x022F9170, void, wwhd_daNpc_Ym1_c__setAnm_anm_022F9170, (void* self, void* i_anmPrmP));
@@ -17245,6 +18092,16 @@ WWHD_GAME_FUNC(0x022FA5B8, s32, wwhd_daNpc_Ym1_c__NBTwai_022FA5B8, (void* self))
 #define wwhd_daNpc_Ym1_c__NBTwai wwhd_daNpc_Ym1_c__NBTwai_022FA5B8
 WWHD_GAME_FUNC(0x022FA70C, s32, wwhd_daNpc_Ym1_c__SITwai_022FA70C, (void* self));
 #define wwhd_daNpc_Ym1_c__SITwai wwhd_daNpc_Ym1_c__SITwai_022FA70C
+WWHD_GAME_FUNC(0x022FA828, s32, wwhd_daNpc_Ym1_c__wait_action1_022FA828, (void* self, void* arg1));
+#define wwhd_daNpc_Ym1_c__wait_action1 wwhd_daNpc_Ym1_c__wait_action1_022FA828
+WWHD_GAME_FUNC(0x022FA940, s32, wwhd_daNpc_Ym1_c__wait_action2_022FA940, (void* self, void* arg1));
+#define wwhd_daNpc_Ym1_c__wait_action2 wwhd_daNpc_Ym1_c__wait_action2_022FA940
+WWHD_GAME_FUNC(0x022FAA28, s32, wwhd_daNpc_Ym1_c__wait_action3_022FAA28, (void* self, void* arg1));
+#define wwhd_daNpc_Ym1_c__wait_action3 wwhd_daNpc_Ym1_c__wait_action3_022FAA28
+WWHD_GAME_FUNC(0x022FAB88, s32, wwhd_daNpc_Ym1_c__wait_action4_022FAB88, (void* self, void* arg1));
+#define wwhd_daNpc_Ym1_c__wait_action4 wwhd_daNpc_Ym1_c__wait_action4_022FAB88
+WWHD_GAME_FUNC(0x022FAC34, s32, wwhd_daNpc_Ym1_c__demo_action1_022FAC34, (void* self, void* arg1));
+#define wwhd_daNpc_Ym1_c__demo_action1 wwhd_daNpc_Ym1_c__demo_action1_022FAC34
 WWHD_GAME_FUNC(0x022FAC9C, void*, wwhd_daNpc_Ym1_childHIO_c_ct_022FAC9C, (void* i_this));
 #define wwhd_daNpc_Ym1_childHIO_c_ct wwhd_daNpc_Ym1_childHIO_c_ct_022FAC9C
 WWHD_GAME_FUNC(0x022FACDC, void*, wwhd_daNpc_Ym1_HIO_c_ct_022FACDC, (void* i_this));
@@ -17254,6 +18111,7 @@ WWHD_GAME_FUNC(0x022FAD8C, void, wwhd___sinit_d_a_npc_ym1_cpp_022FAD8C, (void));
 WWHD_GAME_FUNC(0x022FAE2C, void, wwhd_SafeString_dt_022FAE2C, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x022FAE40, void, wwhd_daNpc_Ym1_c_dt_022FAE40, (void* i_this, s32 flags));
 #define wwhd_daNpc_Ym1_c_dt wwhd_daNpc_Ym1_c_dt_022FAE40
+WWHD_GAME_FUNC(0x022FAEE8, void, wwhd_SafeString_assureTerminationImpl_022FAEE8, (void* arg0));
 WWHD_GAME_FUNC(0x022FAEEC, void, wwhd_daNpc_Yw1_c___nodeCB_Hair_022FAEEC, (void* self, void* node, void* model));
 #define wwhd_daNpc_Yw1_c___nodeCB_Hair wwhd_daNpc_Yw1_c___nodeCB_Hair_022FAEEC
 WWHD_GAME_FUNC(0x022FB0C8, s32, wwhd_nodeCB_Hair_022FB0C8, (void* node, int calcTiming));
@@ -17266,6 +18124,8 @@ WWHD_GAME_FUNC(0x022FB2D0, void, wwhd_daNpc_Yw1_c___nodeCB_BackBone_022FB2D0, (v
 WWHD_GAME_FUNC(0x022FB3F4, s32, wwhd_nodeCB_BackBone_022FB3F4, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x022FB43C, s32, wwhd_daNpc_Yw1_c__bodyCreateHeap_022FB43C, (void* self));
 #define wwhd_daNpc_Yw1_c__bodyCreateHeap wwhd_daNpc_Yw1_c__bodyCreateHeap_022FB43C
+WWHD_GAME_FUNC(0x022FB6C0, s32, wwhd_daNpc_Yw1_c__btpResID_022FB6C0, (void* self, int arg1));
+#define wwhd_daNpc_Yw1_c__btpResID wwhd_daNpc_Yw1_c__btpResID_022FB6C0
 WWHD_GAME_FUNC(0x022FB6CC, s32, wwhd_daNpc_Yw1_c__init_texPttrnAnm_022FB6CC, (void* self, s8 num, s32 modify));
 #define wwhd_daNpc_Yw1_c__init_texPttrnAnm wwhd_daNpc_Yw1_c__init_texPttrnAnm_022FB6CC
 WWHD_GAME_FUNC(0x022FB7BC, s32, wwhd_daNpc_Yw1_c__headCreateHeap_022FB7BC, (void* self));
@@ -17273,6 +18133,7 @@ WWHD_GAME_FUNC(0x022FB7BC, s32, wwhd_daNpc_Yw1_c__headCreateHeap_022FB7BC, (void
 WWHD_GAME_FUNC(0x022FBA48, s32, wwhd_daNpc_Yw1_c__CreateHeap_022FBA48, (void* self));
 #define wwhd_daNpc_Yw1_c__CreateHeap wwhd_daNpc_Yw1_c__CreateHeap_022FBA48
 WWHD_GAME_FUNC(0x022FBB00, s32, wwhd_CheckCreateHeap_022FBB00, (void* i_this));
+WWHD_GAME_FUNC(0x022FBB04, void*, wwhd_searchActor_Bm1_022FBB04, (void* p, void* arg1));
 WWHD_GAME_FUNC(0x022FBB84, u8, wwhd_daNpc_Yw1_c__decideType_022FBB84, (void* self, int type));
 #define wwhd_daNpc_Yw1_c__decideType wwhd_daNpc_Yw1_c__decideType_022FBB84
 WWHD_GAME_FUNC(0x022FBBD8, s32, wwhd_daNpc_Yw1_c__set_action_022FBBD8, (void* self, void* action, void* arg));
@@ -17339,6 +18200,8 @@ WWHD_GAME_FUNC(0x022FDD68, s32, wwhd_daNpc_Yw1_c___draw_022FDD68, (void* self));
 #define wwhd_daNpc_Yw1_c___draw wwhd_daNpc_Yw1_c___draw_022FDD68
 WWHD_GAME_FUNC(0x022FDEFC, s32, wwhd_daNpc_Yw1_Draw_022FDEFC, (void* i_this));
 #define wwhd_daNpc_Yw1_Draw wwhd_daNpc_Yw1_Draw_022FDEFC
+WWHD_GAME_FUNC(0x022FDF00, s32, wwhd_daNpc_Yw1_IsDelete_022FDF00, (void* arg0));
+#define wwhd_daNpc_Yw1_IsDelete wwhd_daNpc_Yw1_IsDelete_022FDF00
 WWHD_GAME_FUNC(0x022FDF08, s32, wwhd_daNpc_Yw1_c__bckResID_022FDF08, (void* self, int num));
 #define wwhd_daNpc_Yw1_c__bckResID wwhd_daNpc_Yw1_c__bckResID_022FDF08
 WWHD_GAME_FUNC(0x022FDF1C, void, wwhd_daNpc_Yw1_c__setAnm_anm_022FDF1C, (void* self, void* prm));
@@ -17393,6 +18256,10 @@ WWHD_GAME_FUNC(0x022FF190, s32, wwhd_daNpc_Yw1_c__turn_1_022FF190, (void* self))
 #define wwhd_daNpc_Yw1_c__turn_1 wwhd_daNpc_Yw1_c__turn_1_022FF190
 WWHD_GAME_FUNC(0x022FF290, s32, wwhd_daNpc_Yw1_c__talk_1_022FF290, (void* self));
 #define wwhd_daNpc_Yw1_c__talk_1 wwhd_daNpc_Yw1_c__talk_1_022FF290
+WWHD_GAME_FUNC(0x022FF4FC, s32, wwhd_daNpc_Yw1_c__wait_action1_022FF4FC, (void* self, void* arg1));
+#define wwhd_daNpc_Yw1_c__wait_action1 wwhd_daNpc_Yw1_c__wait_action1_022FF4FC
+WWHD_GAME_FUNC(0x022FF698, s32, wwhd_daNpc_Yw1_c__wait_action2_022FF698, (void* self, void* arg1));
+#define wwhd_daNpc_Yw1_c__wait_action2 wwhd_daNpc_Yw1_c__wait_action2_022FF698
 WWHD_GAME_FUNC(0x022FF748, void*, wwhd_daNpc_Yw1_childHIO_ct_022FF748, (void* p));
 #define wwhd_daNpc_Yw1_childHIO_ct wwhd_daNpc_Yw1_childHIO_ct_022FF748
 WWHD_GAME_FUNC(0x022FF788, void*, wwhd_daNpc_Yw1_HIO_ct_022FF788, (void* p));
@@ -17402,12 +18269,15 @@ WWHD_GAME_FUNC(0x022FF814, void, wwhd___sinit_d_a_npc_yw1_cpp_022FF814, (void));
 WWHD_GAME_FUNC(0x022FF8F8, void, wwhd_SafeString_dt_022FF8F8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x022FF90C, void, wwhd_daNpc_Yw1_dt_022FF90C, (void* p, s32 flags));
 #define wwhd_daNpc_Yw1_dt wwhd_daNpc_Yw1_dt_022FF90C
+WWHD_GAME_FUNC(0x022FF9A8, void, wwhd_SafeString_assureTerminationImpl_022FF9A8, (void* arg0));
 WWHD_GAME_FUNC(0x022FF9AC, void, wwhd_daNpc_Zk1_c___nodeCB_Head_022FF9AC, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Zk1_c___nodeCB_Head wwhd_daNpc_Zk1_c___nodeCB_Head_022FF9AC
 WWHD_GAME_FUNC(0x022FFB24, s32, wwhd_nodeCB_Head_022FFB24, (void* i_node, int i_calcTiming));
 WWHD_GAME_FUNC(0x022FFB6C, void, wwhd_daNpc_Zk1_c___nodeCB_BackBone_022FFB6C, (void* self, void* i_node, void* i_model));
 #define wwhd_daNpc_Zk1_c___nodeCB_BackBone wwhd_daNpc_Zk1_c___nodeCB_BackBone_022FFB6C
 WWHD_GAME_FUNC(0x022FFC90, s32, wwhd_nodeCB_BackBone_022FFC90, (void* i_node, int i_calcTiming));
+WWHD_GAME_FUNC(0x022FFCD8, s32, wwhd_daNpc_Zk1_c__btpResID_022FFCD8, (void* self, int arg1));
+#define wwhd_daNpc_Zk1_c__btpResID wwhd_daNpc_Zk1_c__btpResID_022FFCD8
 WWHD_GAME_FUNC(0x022FFCE4, u8, wwhd_daNpc_Zk1_c__setBtp_022FFCE4, (void* self, s32 i_btpNum, u32 i_modify));
 #define wwhd_daNpc_Zk1_c__setBtp wwhd_daNpc_Zk1_c__setBtp_022FFCE4
 WWHD_GAME_FUNC(0x022FFDD0, u32, wwhd_daNpc_Zk1_c__init_texPttrnAnm_022FFDD0, (void* self, s32 i_btpNum, u32 i_modify));
@@ -17467,6 +18337,8 @@ WWHD_GAME_FUNC(0x023013E4, s32, wwhd_daNpc_Zk1_c___draw_023013E4, (void* self));
 #define wwhd_daNpc_Zk1_c___draw wwhd_daNpc_Zk1_c___draw_023013E4
 WWHD_GAME_FUNC(0x02301518, s32, wwhd_daNpc_Zk1_Draw_02301518, (void* i_this));
 #define wwhd_daNpc_Zk1_Draw wwhd_daNpc_Zk1_Draw_02301518
+WWHD_GAME_FUNC(0x0230151C, s32, wwhd_daNpc_Zk1_IsDelete_0230151C, (void* arg0));
+#define wwhd_daNpc_Zk1_IsDelete wwhd_daNpc_Zk1_IsDelete_0230151C
 WWHD_GAME_FUNC(0x02301524, s32, wwhd_daNpc_Zk1_c__bckResID_02301524, (void* self, int i_idx));
 #define wwhd_daNpc_Zk1_c__bckResID wwhd_daNpc_Zk1_c__bckResID_02301524
 WWHD_GAME_FUNC(0x02301538, void, wwhd_daNpc_Zk1_c__setAnm_anm_02301538, (void* self, void* i_prm));
@@ -17497,6 +18369,8 @@ WWHD_GAME_FUNC(0x02301BBC, s32, wwhd_daNpc_Zk1_c__wait_1_02301BBC, (void* self))
 #define wwhd_daNpc_Zk1_c__wait_1 wwhd_daNpc_Zk1_c__wait_1_02301BBC
 WWHD_GAME_FUNC(0x02301D34, u32, wwhd_daNpc_Zk1_c__talk_1_02301D34, (void* self));
 #define wwhd_daNpc_Zk1_c__talk_1 wwhd_daNpc_Zk1_c__talk_1_02301D34
+WWHD_GAME_FUNC(0x02301E80, s32, wwhd_daNpc_Zk1_c__wait_action1_02301E80, (void* self, void* arg1));
+#define wwhd_daNpc_Zk1_c__wait_action1 wwhd_daNpc_Zk1_c__wait_action1_02301E80
 WWHD_GAME_FUNC(0x02301F38, void*, wwhd_daNpc_Zk1_HIO_c_ct_02301F38, (void* i_this));
 #define wwhd_daNpc_Zk1_HIO_c_ct wwhd_daNpc_Zk1_HIO_c_ct_02301F38
 WWHD_GAME_FUNC(0x02301FA4, void, wwhd___sinit_d_a_npc_zk1_cpp_02301FA4, (void));
@@ -17504,6 +18378,7 @@ WWHD_GAME_FUNC(0x02301FA4, void, wwhd___sinit_d_a_npc_zk1_cpp_02301FA4, (void));
 WWHD_GAME_FUNC(0x02302044, void, wwhd_SafeString_dt_02302044, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x02302058, void, wwhd_daNpc_Zk1_c_dt_02302058, (void* i_this, s32 flags));
 #define wwhd_daNpc_Zk1_c_dt wwhd_daNpc_Zk1_c_dt_02302058
+WWHD_GAME_FUNC(0x023020F4, void, wwhd_SafeString_assureTerminationImpl_023020F4, (void* arg0));
 WWHD_GAME_FUNC(0x023020F8, void, wwhd_daNpc_Zl1_c___nodeCB_Head_023020F8, (void* self, void* i_node, void* i_pModel));
 #define wwhd_daNpc_Zl1_c___nodeCB_Head wwhd_daNpc_Zl1_c___nodeCB_Head_023020F8
 WWHD_GAME_FUNC(0x02302278, s32, wwhd_nodeCB_Head_02302278, (void* i_node, int i_param));
@@ -17531,6 +18406,9 @@ WWHD_GAME_FUNC(0x02303400, s32, wwhd_daNpc_Zl1_c__itemCreateHeap_02303400, (void
 WWHD_GAME_FUNC(0x023034DC, s32, wwhd_daNpc_Zl1_c__CreateHeap_023034DC, (void* self));
 #define wwhd_daNpc_Zl1_c__CreateHeap wwhd_daNpc_Zl1_c__CreateHeap_023034DC
 WWHD_GAME_FUNC(0x023035B8, s32, wwhd_CheckCreateHeap_023035B8, (void* i_this));
+WWHD_GAME_FUNC(0x023035BC, void*, wwhd_searchActor_Branch_023035BC, (void* i_actorP, void* arg1));
+#define wwhd_searchActor_Branch wwhd_searchActor_Branch_023035BC
+WWHD_GAME_FUNC(0x0230363C, void*, wwhd_searchActor_Bm1_0230363C, (void* i_actorP, void* arg1));
 WWHD_GAME_FUNC(0x023036BC, void, wwhd_destroy_arr_10468B24_023036BC, (void));
 #define wwhd_destroy_arr_10468B24 wwhd_destroy_arr_10468B24_023036BC
 WWHD_GAME_FUNC(0x023036E0, void, wwhd_destroy_arr_10468B34_023036E0, (void));
@@ -17627,8 +18505,18 @@ WWHD_GAME_FUNC(0x02306458, void, wwhd_daNpc_Zl1_c__setAnm_ATR_02306458, (void* s
 #define wwhd_daNpc_Zl1_c__setAnm_ATR wwhd_daNpc_Zl1_c__setAnm_ATR_02306458
 WWHD_GAME_FUNC(0x023064C0, void, wwhd_daNpc_Zl1_c__cut_init_CHG_ANM_ATR_023064C0, (void* self, int i_staffIdx));
 #define wwhd_daNpc_Zl1_c__cut_init_CHG_ANM_ATR wwhd_daNpc_Zl1_c__cut_init_CHG_ANM_ATR_023064C0
+WWHD_GAME_FUNC(0x02306528, void, wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_PARTNER_02306528, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_PARTNER wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_PARTNER_02306528
+WWHD_GAME_FUNC(0x023065D4, void, wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_TETRA_023065D4, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_TETRA wwhd_daNpc_Zl1_c__cut_init_PLYER_TRN_TETRA_023065D4
+WWHD_GAME_FUNC(0x02306624, void, wwhd_daNpc_Zl1_c__cut_init_MAJYU_START_02306624, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_MAJYU_START wwhd_daNpc_Zl1_c__cut_init_MAJYU_START_02306624
+WWHD_GAME_FUNC(0x023066B4, void, wwhd_daNpc_Zl1_c__cut_init_OKIRU_023066B4, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_OKIRU wwhd_daNpc_Zl1_c__cut_init_OKIRU_023066B4
 WWHD_GAME_FUNC(0x023066D0, void, wwhd_daNpc_Zl1_c__setAnm_NUM_023066D0, (void* self, int param_1, int param_2));
 #define wwhd_daNpc_Zl1_c__setAnm_NUM wwhd_daNpc_Zl1_c__setAnm_NUM_023066D0
+WWHD_GAME_FUNC(0x02306740, void, wwhd_daNpc_Zl1_c__cut_init_OKIRU_2_02306740, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_OKIRU_2 wwhd_daNpc_Zl1_c__cut_init_OKIRU_2_02306740
 WWHD_GAME_FUNC(0x0230674C, void, wwhd_daNpc_Zl1_c__cut_init_DRW_ONOFF_0230674C, (void* self, int i_staffIdx));
 #define wwhd_daNpc_Zl1_c__cut_init_DRW_ONOFF wwhd_daNpc_Zl1_c__cut_init_DRW_ONOFF_0230674C
 WWHD_GAME_FUNC(0x023067B4, void, wwhd_daNpc_Zl1_c__cut_init_PLYER_DRW_ONOFF_023067B4, (void* self, int i_staffIdx));
@@ -17643,6 +18531,8 @@ WWHD_GAME_FUNC(0x02306A40, void, wwhd_daNpc_Zl1_c__set_LightPos_02306A40, (void*
 #define wwhd_daNpc_Zl1_c__set_LightPos wwhd_daNpc_Zl1_c__set_LightPos_02306A40
 WWHD_GAME_FUNC(0x02306BD8, void, wwhd_daNpc_Zl1_c__cut_init_OMAMORI_ONOFF_02306BD8, (void* self, int i_staffIdx));
 #define wwhd_daNpc_Zl1_c__cut_init_OMAMORI_ONOFF wwhd_daNpc_Zl1_c__cut_init_OMAMORI_ONOFF_02306BD8
+WWHD_GAME_FUNC(0x02306CDC, void, wwhd_daNpc_Zl1_c__cut_init_SURPRISED_02306CDC, (void* self, int arg1));
+#define wwhd_daNpc_Zl1_c__cut_init_SURPRISED wwhd_daNpc_Zl1_c__cut_init_SURPRISED_02306CDC
 WWHD_GAME_FUNC(0x02306D34, u32, wwhd_daNpc_Zl1_c__cut_move_OKIRU_02306D34, (void* self));
 #define wwhd_daNpc_Zl1_c__cut_move_OKIRU wwhd_daNpc_Zl1_c__cut_move_OKIRU_02306D34
 WWHD_GAME_FUNC(0x02306D48, u32, wwhd_daNpc_Zl1_c__cut_move_OKIRU_2_02306D48, (void* self));
@@ -17677,6 +18567,8 @@ WWHD_GAME_FUNC(0x02308090, s32, wwhd_daNpc_Zl1_c___draw_02308090, (void* self));
 #define wwhd_daNpc_Zl1_c___draw wwhd_daNpc_Zl1_c___draw_02308090
 WWHD_GAME_FUNC(0x023086F0, s32, wwhd_daNpc_Zl1_Draw_023086F0, (void* i_this));
 #define wwhd_daNpc_Zl1_Draw wwhd_daNpc_Zl1_Draw_023086F0
+WWHD_GAME_FUNC(0x023086F4, s32, wwhd_daNpc_Zl1_IsDelete_023086F4, (void* arg0));
+#define wwhd_daNpc_Zl1_IsDelete wwhd_daNpc_Zl1_IsDelete_023086F4
 WWHD_GAME_FUNC(0x023086FC, void, wwhd_daNpc_Zl1_matAnm_c_calc_023086FC, (void* i_this, void* i_material));
 #define wwhd_daNpc_Zl1_matAnm_c_calc wwhd_daNpc_Zl1_matAnm_c_calc_023086FC
 WWHD_GAME_FUNC(0x0230883C, void, wwhd_daNpc_Zl1_c__chngAnmAtr_0230883C, (void* self, u8 param_1));
@@ -17719,6 +18611,14 @@ WWHD_GAME_FUNC(0x023099F4, s32, wwhd_daNpc_Zl1_c__optn_2_023099F4, (void* self))
 #define wwhd_daNpc_Zl1_c__optn_2 wwhd_daNpc_Zl1_c__optn_2_023099F4
 WWHD_GAME_FUNC(0x02309CC4, s32, wwhd_daNpc_Zl1_c__optn_3_02309CC4, (void* self));
 #define wwhd_daNpc_Zl1_c__optn_3 wwhd_daNpc_Zl1_c__optn_3_02309CC4
+WWHD_GAME_FUNC(0x02309CEC, s32, wwhd_daNpc_Zl1_c__wait_action1_02309CEC, (void* self, void* arg1));
+#define wwhd_daNpc_Zl1_c__wait_action1 wwhd_daNpc_Zl1_c__wait_action1_02309CEC
+WWHD_GAME_FUNC(0x02309E10, s32, wwhd_daNpc_Zl1_c__demo_action1_02309E10, (void* self, void* arg1));
+#define wwhd_daNpc_Zl1_c__demo_action1 wwhd_daNpc_Zl1_c__demo_action1_02309E10
+WWHD_GAME_FUNC(0x02309EB8, s32, wwhd_daNpc_Zl1_c__demo_action2_02309EB8, (void* self, void* arg1));
+#define wwhd_daNpc_Zl1_c__demo_action2 wwhd_daNpc_Zl1_c__demo_action2_02309EB8
+WWHD_GAME_FUNC(0x02309FC8, s32, wwhd_daNpc_Zl1_c__optn_action1_02309FC8, (void* self, void* arg1));
+#define wwhd_daNpc_Zl1_c__optn_action1 wwhd_daNpc_Zl1_c__optn_action1_02309FC8
 WWHD_GAME_FUNC(0x0230A0EC, void*, wwhd_daNpc_Zl1_HIO_c_ct_0230A0EC, (void* i_this));
 #define wwhd_daNpc_Zl1_HIO_c_ct wwhd_daNpc_Zl1_HIO_c_ct_0230A0EC
 WWHD_GAME_FUNC(0x0230A158, void, wwhd___sinit_d_a_npc_zl1_cpp_0230A158, (void));
@@ -17726,6 +18626,7 @@ WWHD_GAME_FUNC(0x0230A158, void, wwhd___sinit_d_a_npc_zl1_cpp_0230A158, (void));
 WWHD_GAME_FUNC(0x0230A228, void, wwhd_SafeString_dt_0230A228, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0230A23C, void, wwhd_daNpc_Zl1_c_dt_0230A23C, (void* i_this, s32 flags));
 #define wwhd_daNpc_Zl1_c_dt wwhd_daNpc_Zl1_c_dt_0230A23C
+WWHD_GAME_FUNC(0x0230A308, void, wwhd_SafeString_assureTerminationImpl_0230A308, (void* arg0));
 WWHD_GAME_FUNC(0x0230A30C, s32, wwhd_nodeCallBack_tail_0230A30C, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x0230A3C0, void, wwhd_tail_control_0230A3C0, (void* i_this));
 WWHD_GAME_FUNC(0x0230A828, s32, wwhd_nodeCallBack_head_0230A828, (void* node, int calcTiming));
@@ -17738,6 +18639,7 @@ WWHD_GAME_FUNC(0x0230AE30, s32, wwhd_daNZ_Draw_0230AE30, (void* i_this));
 #define wwhd_daNZ_Draw wwhd_daNZ_Draw_0230AE30
 WWHD_GAME_FUNC(0x0230B108, void, wwhd_item_poi_0230B108, (void* i_this));
 #define wwhd_item_poi wwhd_item_poi_0230B108
+WWHD_GAME_FUNC(0x0230B230, void*, wwhd_s_a_d_sub_0230B230, (void* ac1, void* arg1));
 WWHD_GAME_FUNC(0x0230B320, void*, wwhd_search_get_obj_0230B320, (void* i_this));
 #define wwhd_search_get_obj wwhd_search_get_obj_0230B320
 WWHD_GAME_FUNC(0x0230B6CC, void*, wwhd_s_ana_sub_0230B6CC, (void* ac1, void* ac2));
@@ -17750,6 +18652,8 @@ WWHD_GAME_FUNC(0x0230BD24, int, wwhd_nezumi_move_0230BD24, (void* i_this, s16 an
 #define wwhd_nezumi_move wwhd_nezumi_move_0230BD24
 WWHD_GAME_FUNC(0x0230BEF4, s32, wwhd_daNZ_Execute_0230BEF4, (void* i_this));
 #define wwhd_daNZ_Execute wwhd_daNZ_Execute_0230BEF4
+WWHD_GAME_FUNC(0x0230EDC8, s32, wwhd_daNZ_IsDelete_0230EDC8, (void* arg0));
+#define wwhd_daNZ_IsDelete wwhd_daNZ_IsDelete_0230EDC8
 WWHD_GAME_FUNC(0x0230EDD0, s32, wwhd_daNZ_Delete_0230EDD0, (void* i_this));
 #define wwhd_daNZ_Delete wwhd_daNZ_Delete_0230EDD0
 WWHD_GAME_FUNC(0x0230EE58, s32, wwhd_useHeapInit_0230EE58, (void* a_this));
@@ -17782,6 +18686,8 @@ WWHD_GAME_FUNC(0x023111D8, s32, wwhd_daNZG_Draw_023111D8, (void* i_this));
 #define wwhd_daNZG_Draw wwhd_daNZG_Draw_023111D8
 WWHD_GAME_FUNC(0x02311240, s32, wwhd_daNZG_Execute_02311240, (void* i_this));
 #define wwhd_daNZG_Execute wwhd_daNZG_Execute_02311240
+WWHD_GAME_FUNC(0x023115B4, s32, wwhd_daNZG_IsDelete_023115B4, (void* arg0));
+#define wwhd_daNZG_IsDelete wwhd_daNZG_IsDelete_023115B4
 WWHD_GAME_FUNC(0x023115BC, s32, wwhd_daNZG_Delete_023115BC, (void* i_this));
 #define wwhd_daNZG_Delete wwhd_daNZG_Delete_023115BC
 WWHD_GAME_FUNC(0x023115EC, s32, wwhd_useHeapInit_023115EC, (void* i_ac));
@@ -17792,6 +18698,7 @@ WWHD_GAME_FUNC(0x023119A0, void, wwhd___sinit_d_a_nzg_cpp_023119A0, (void));
 WWHD_GAME_FUNC(0x02311A34, void, wwhd_SafeString_dt_02311A34, (void* s, s32 flags));
 WWHD_GAME_FUNC(0x02311A48, void, wwhd_nzg_class_dt_02311A48, (void* i_this, s32 flags));
 #define wwhd_nzg_class_dt wwhd_nzg_class_dt_02311A48
+WWHD_GAME_FUNC(0x02311AB4, void, wwhd_SafeString_assureTermination_02311AB4, (void* arg0));
 WWHD_GAME_FUNC(0x02311AB8, void, wwhd_posMoveF_resist_acc_02311AB8, (void* out, void* actor, const void* stream, f32 linear, f32 quadratic));
 #define wwhd_posMoveF_resist_acc wwhd_posMoveF_resist_acc_02311AB8
 WWHD_GAME_FUNC(0x02311B94, void, wwhd_posMoveF_grade_acc_02311B94, (void* out, void* actor, const void* normal, f32 friction, f32 noGradeCos, const void* acceleration, const void* extra));
@@ -18113,6 +19020,9 @@ WWHD_GAME_FUNC(0x0231AD58, s32, wwhd_Mthd_IsDelete_0231AD58, (void* i_this));
 WWHD_GAME_FUNC(0x0231AD68, void, wwhd___sinit_d_a_obj_aygr_cpp_0231AD68, (void));
 #define wwhd___sinit_d_a_obj_aygr_cpp wwhd___sinit_d_a_obj_aygr_cpp_0231AD68
 WWHD_GAME_FUNC(0x0231ADFC, void, wwhd_trivial_dt_0231ADFC, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0231AE10, s32, wwhd_MoveBgActor_IsDelete_0231AE10, (void* arg0));
+WWHD_GAME_FUNC(0x0231AE18, void, wwhd_SafeString_empty_0231AE18, (void* arg0));
+WWHD_GAME_FUNC(0x0231AE1C, s32, wwhd_Act_c_Delete_0231AE1C, (void* arg0));
 WWHD_GAME_FUNC(0x0231AE24, void, wwhd_Act_c_dt_0231AE24, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0231AE78, u32, wwhd_PrmAbstract_0231AE78, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0231AE94, s32, wwhd_ride_actor_check_0231AE94, (void* actor));
@@ -18943,6 +19853,9 @@ WWHD_GAME_FUNC(0x0233A104, s32, wwhd_Mthd_IsDelete_0233A104, (void* i_this));
 WWHD_GAME_FUNC(0x0233A114, void, wwhd___sinit_d_a_obj_ebomzo_cpp_0233A114, (void));
 #define wwhd___sinit_d_a_obj_ebomzo_cpp wwhd___sinit_d_a_obj_ebomzo_cpp_0233A114
 WWHD_GAME_FUNC(0x0233A1A8, void, wwhd_SafeString_dt_0233A1A8, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0233A1BC, s32, wwhd_MoveBgActor_IsDelete_0233A1BC, (void* arg0));
+WWHD_GAME_FUNC(0x0233A1C4, void, wwhd_SafeString_assureTermination_0233A1C4, (void* arg0));
+WWHD_GAME_FUNC(0x0233A1C8, s32, wwhd_Act_c_Delete_0233A1C8, (void* arg0));
 WWHD_GAME_FUNC(0x0233A1D0, void, wwhd_Act_c_dt_0233A1D0, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x0233A23C, u32, wwhd_PrmAbstract_0233A23C, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0233A258, void*, wwhd_eff_barrelCallbackCtor_0233A258, (void* callback));
@@ -20189,9 +21102,11 @@ WWHD_GAME_FUNC(0x0235A004, u8, wwhd_Act_c___execute_0235A004, (void* self));
 WWHD_GAME_FUNC(0x0235A270, s32, wwhd_Mthd_Create_0235A270, (void* i_this));
 WWHD_GAME_FUNC(0x0235A274, u8, wwhd_Mthd_Delete_0235A274, (void* i_this));
 WWHD_GAME_FUNC(0x0235A278, u8, wwhd_Mthd_Execute_0235A278, (void* i_this));
+WWHD_GAME_FUNC(0x0235A27C, s32, wwhd_Mthd_Draw_0235A27C, (void* arg0));
 WWHD_GAME_FUNC(0x0235A284, void, wwhd___sinit_d_a_obj_homensmoke_cpp_0235A284, (void));
 #define wwhd___sinit_d_a_obj_homensmoke_cpp wwhd___sinit_d_a_obj_homensmoke_cpp_0235A284
 WWHD_GAME_FUNC(0x0235A318, void, wwhd_Act_c_dt_0235A318, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x0235A36C, s32, wwhd_Mthd_IsDelete_0235A36C, (void* arg0));
 WWHD_GAME_FUNC(0x0235A374, s16, wwhd_daObj_hsh_c__XyCheckCB_0235A374, (void* self, s32 button));
 #define wwhd_daObj_hsh_c__XyCheckCB wwhd_daObj_hsh_c__XyCheckCB_0235A374
 WWHD_GAME_FUNC(0x0235A3B4, s16, wwhd_check_cb_0235A3B4, (void* a, s32 button));
@@ -20563,7 +21478,9 @@ WWHD_GAME_FUNC(0x02365B44, s32, wwhd_Mthd_Draw_02365B44, (void* i_this));
 WWHD_GAME_FUNC(0x02365B48, void, wwhd___sinit_d_a_obj_Itnak_cpp_02365B48, (void));
 #define wwhd___sinit_d_a_obj_Itnak_cpp wwhd___sinit_d_a_obj_Itnak_cpp_02365B48
 WWHD_GAME_FUNC(0x02365BDC, void, wwhd_SafeString_dt_02365BDC, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02365BF0, void, wwhd_SafeString_assureTerminationImpl_02365BF0, (void* arg0));
 WWHD_GAME_FUNC(0x02365BF4, void, wwhd_Act_c_dt_02365BF4, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x02365C90, s32, wwhd_Mthd_IsDelete_02365C90, (void* arg0));
 WWHD_GAME_FUNC(0x02365C98, s32, wwhd_Act_c__Mthd_Create_02365C98, (void* self));
 WWHD_GAME_FUNC(0x02365D8C, s32, wwhd_Act_c__Mthd_Delete_02365D8C, (void* self));
 WWHD_GAME_FUNC(0x02365DD8, s32, wwhd_jnodeCB_lower_02365DD8, (void * node, s32 timing));
@@ -20638,6 +21555,7 @@ WWHD_GAME_FUNC(0x02367318, void, wwhd___sinit_d_a_obj_kanat_cpp_02367318, (void)
 WWHD_GAME_FUNC(0x023673AC, void, wwhd_SafeString_dt_023673AC, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x023673C0, s32, wwhd_Act_c_IsDelete_023673C0, (void* i_this));
 #define wwhd_Act_c_IsDelete wwhd_Act_c_IsDelete_023673C0
+WWHD_GAME_FUNC(0x023673C8, void, wwhd_SafeString_assureTerminationImpl_023673C8, (void* arg0));
 WWHD_GAME_FUNC(0x023673CC, void, wwhd_Act_c_dt_023673CC, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x02367420, u32, wwhd_PrmAbstract_02367420, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0236743C, s32, wwhd_createHeap_0236743C, (void* a));
@@ -21024,6 +21942,8 @@ WWHD_GAME_FUNC(0x02372688, s16, wwhd_Act_c__XyCheckCB_02372688, (void* self, int
 #define wwhd_Act_c__XyCheckCB wwhd_Act_c__XyCheckCB_02372688
 WWHD_GAME_FUNC(0x023726C8, s16, wwhd_daObjMknjD_XyCheckCB_023726C8, (void* i_this, int i_itemBtn));
 #define wwhd_daObjMknjD_XyCheckCB wwhd_daObjMknjD_XyCheckCB_023726C8
+WWHD_GAME_FUNC(0x023726CC, s16, wwhd_Act_c__XyEventCB_023726CC, (void* self, int arg1));
+#define wwhd_Act_c__XyEventCB wwhd_Act_c__XyEventCB_023726CC
 WWHD_GAME_FUNC(0x023726D4, s16, wwhd_daObjMknjD_XyEventCB_023726D4, (void* i_this, int i_param));
 #define wwhd_daObjMknjD_XyEventCB wwhd_daObjMknjD_XyEventCB_023726D4
 WWHD_GAME_FUNC(0x023726D8, u32, wwhd_smokeEcallBack_ct_023726D8, (void* p));
@@ -21121,7 +22041,9 @@ WWHD_GAME_FUNC(0x02376150, s32, wwhd_Mthd_Draw_02376150, (void* i_this));
 WWHD_GAME_FUNC(0x02376154, void, wwhd___sinit_d_a_obj_monument_cpp_02376154, (void));
 #define wwhd___sinit_d_a_obj_monument_cpp wwhd___sinit_d_a_obj_monument_cpp_02376154
 WWHD_GAME_FUNC(0x023761E8, void, wwhd_trivial_dt_023761E8, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023761FC, void, wwhd_SafeString_empty_023761FC, (void* arg0));
 WWHD_GAME_FUNC(0x02376200, void, wwhd_Act_c_dt_02376200, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02376254, s32, wwhd_Mthd_IsDelete_02376254, (void* arg0));
 WWHD_GAME_FUNC(0x0237625C, u32, wwhd_PrmAbstract_0237625C, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x02376278, void*, wwhd_Bgc_ct_02376278, (void* p));
 #define wwhd_Bgc_ct wwhd_Bgc_ct_02376278
@@ -21248,6 +22170,8 @@ WWHD_GAME_FUNC(0x0237B648, s32, wwhd_Mthd_Execute_0237B648, (void* i_this));
 WWHD_GAME_FUNC(0x0237B64C, void, wwhd___sinit_d_a_obj_msdan2_cpp_0237B64C, (void));
 #define wwhd___sinit_d_a_obj_msdan2_cpp wwhd___sinit_d_a_obj_msdan2_cpp_0237B64C
 WWHD_GAME_FUNC(0x0237B6E0, void, wwhd_Act_c_dt_0237B6E0, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x0237B734, s32, wwhd_Mthd_Draw_0237B734, (void* arg0));
+WWHD_GAME_FUNC(0x0237B73C, s32, wwhd_Mthd_IsDelete_0237B73C, (void* arg0));
 WWHD_GAME_FUNC(0x0237B744, u32, wwhd_PrmAbstract_0237B744, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0237B760, s32, wwhd_Act_c__Mthd_Create_0237B760, (void* self));
 WWHD_GAME_FUNC(0x0237B834, s32, wwhd_Act_c__Mthd_Delete_0237B834, (void* self));
@@ -21265,6 +22189,9 @@ WWHD_GAME_FUNC(0x0237C394, s32, wwhd_Mthd_IsDelete_0237C394, (void* i_this));
 WWHD_GAME_FUNC(0x0237C3A4, void, wwhd___sinit_d_a_obj_msdan_sub_cpp_0237C3A4, (void));
 #define wwhd___sinit_d_a_obj_msdan_sub_cpp wwhd___sinit_d_a_obj_msdan_sub_cpp_0237C3A4
 WWHD_GAME_FUNC(0x0237C438, void, wwhd_trivial_dt_0237C438, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0237C44C, s32, wwhd_MoveBgActor_IsDelete_0237C44C, (void* arg0));
+WWHD_GAME_FUNC(0x0237C454, void, wwhd_SafeString_empty_0237C454, (void* arg0));
+WWHD_GAME_FUNC(0x0237C458, s32, wwhd_Act_c_Delete_0237C458, (void* arg0));
 WWHD_GAME_FUNC(0x0237C460, void, wwhd_Act_c_dt_0237C460, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0237C4B4, u32, wwhd_PrmAbstract_0237C4B4, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0237C4D0, s32, wwhd_Act_c__Mthd_Create_0237C4D0, (void* self));
@@ -21283,6 +22210,9 @@ WWHD_GAME_FUNC(0x0237CD4C, s32, wwhd_Mthd_IsDelete_0237CD4C, (void* i_this));
 WWHD_GAME_FUNC(0x0237CD5C, void, wwhd___sinit_d_a_obj_msdan_sub2_cpp_0237CD5C, (void));
 #define wwhd___sinit_d_a_obj_msdan_sub2_cpp wwhd___sinit_d_a_obj_msdan_sub2_cpp_0237CD5C
 WWHD_GAME_FUNC(0x0237CDF0, void, wwhd_trivial_dt_0237CDF0, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x0237CE04, s32, wwhd_MoveBgActor_IsDelete_0237CE04, (void* arg0));
+WWHD_GAME_FUNC(0x0237CE0C, void, wwhd_SafeString_empty_0237CE0C, (void* arg0));
+WWHD_GAME_FUNC(0x0237CE10, s32, wwhd_Act_c_Delete_0237CE10, (void* arg0));
 WWHD_GAME_FUNC(0x0237CE18, void, wwhd_Act_c_dt_0237CE18, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0237CE6C, u32, wwhd_PrmAbstract_0237CE6C, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x0237CE88, u8, wwhd_daObjMshokki_c__create_heap_0237CE88, (void* self));
@@ -21440,6 +22370,9 @@ WWHD_GAME_FUNC(0x02380170, s32, wwhd_Mthd_IsDelete_02380170, (void* i_this));
 WWHD_GAME_FUNC(0x02380180, void, wwhd___sinit_d_a_obj_ojtree_cpp_02380180, (void));
 #define wwhd___sinit_d_a_obj_ojtree_cpp wwhd___sinit_d_a_obj_ojtree_cpp_02380180
 WWHD_GAME_FUNC(0x02380214, void, wwhd_trivial_dt_02380214, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02380228, s32, wwhd_MoveBgActor_IsDelete_02380228, (void* arg0));
+WWHD_GAME_FUNC(0x02380230, void, wwhd_SafeString_empty_02380230, (void* arg0));
+WWHD_GAME_FUNC(0x02380234, s32, wwhd_Act_c_Delete_02380234, (void* arg0));
 WWHD_GAME_FUNC(0x0238023C, void, wwhd_Act_c_dt_0238023C, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0238023C, void, wwhd_movebg_dtor_0238023C, (void* a, s32 flags));
 #define wwhd_movebg_dtor wwhd_movebg_dtor_0238023C
@@ -22106,6 +23039,7 @@ WWHD_GAME_FUNC(0x023904E4, void, wwhd___sinit_d_a_obj_smplbg_cpp_023904E4, (void
 #define wwhd___sinit_d_a_obj_smplbg_cpp wwhd___sinit_d_a_obj_smplbg_cpp_023904E4
 WWHD_GAME_FUNC(0x02390578, void, wwhd_SafeString_dt_02390578, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0239058C, s32, wwhd_MoveBgActor_IsDelete_0239058C, (void* i_this));
+WWHD_GAME_FUNC(0x02390594, void, wwhd_SafeString_assureTerminationImpl_02390594, (void* arg0));
 WWHD_GAME_FUNC(0x02390598, s32, wwhd_Act_c_Delete_02390598, (void* i_this));
 WWHD_GAME_FUNC(0x023905A0, void, wwhd_Act_c_dt_023905A0, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x023905F4, void, wwhd_ride_call_back_023905F4, (void* i_arg0, void* i_arg1, void* i_arg2));
@@ -22580,6 +23514,9 @@ WWHD_GAME_FUNC(0x023A02DC, s32, wwhd_Mthd_IsDelete_023A02DC, (void* i_this));
 WWHD_GAME_FUNC(0x023A02EC, void, wwhd___sinit_d_a_obj_tenmado_cpp_023A02EC, (void));
 #define wwhd___sinit_d_a_obj_tenmado_cpp wwhd___sinit_d_a_obj_tenmado_cpp_023A02EC
 WWHD_GAME_FUNC(0x023A0380, void, wwhd_trivial_dt_023A0380, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023A0394, s32, wwhd_MoveBgActor_IsDelete_023A0394, (void* arg0));
+WWHD_GAME_FUNC(0x023A039C, void, wwhd_SafeString_empty_023A039C, (void* arg0));
+WWHD_GAME_FUNC(0x023A03A0, s32, wwhd_Act_c_Delete_023A03A0, (void* arg0));
 WWHD_GAME_FUNC(0x023A03A8, void, wwhd_Act_c_dt_023A03A8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x023A03FC, u32, wwhd_PrmAbstract_023A03FC, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x023A0418, void, wwhd_tide_soundInit_023A0418, (void* tide));
@@ -22861,8 +23798,11 @@ WWHD_GAME_FUNC(0x023A6304, s32, wwhd_daObj_TousekikiDraw_023A6304, (void* v_this
 WWHD_GAME_FUNC(0x023A6370, void, wwhd___sinit_d_a_obj_tousekiki_cpp_023A6370, (void));
 #define wwhd___sinit_d_a_obj_tousekiki_cpp wwhd___sinit_d_a_obj_tousekiki_cpp_023A6370
 WWHD_GAME_FUNC(0x023A6404, void, wwhd_SafeString_dt_023A6404, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023A6418, s32, wwhd_daObj_TousekikiIsDelete_023A6418, (void* arg0));
+#define wwhd_daObj_TousekikiIsDelete wwhd_daObj_TousekikiIsDelete_023A6418
 WWHD_GAME_FUNC(0x023A6420, void, wwhd_daObj_Tousekiki_c_dt_023A6420, (void* i_this, s32 flags));
 #define wwhd_daObj_Tousekiki_c_dt wwhd_daObj_Tousekiki_c_dt_023A6420
+WWHD_GAME_FUNC(0x023A648C, void, wwhd_SafeString_assureTerminationImpl_023A648C, (void* arg0));
 WWHD_GAME_FUNC(0x023A6490, s32, wwhd_tower_createHeap_023A6490, (void* tower));
 #define wwhd_tower_createHeap wwhd_tower_createHeap_023A6490
 WWHD_GAME_FUNC(0x023A65C8, s32, wwhd_tower_heapCallback_023A65C8, (void* tower));
@@ -23187,6 +24127,9 @@ WWHD_GAME_FUNC(0x023AECFC, s32, wwhd_Mthd_IsDelete_023AECFC, (void* i_this));
 WWHD_GAME_FUNC(0x023AED0C, void, wwhd___sinit_d_a_obj_usovmc_cpp_023AED0C, (void));
 #define wwhd___sinit_d_a_obj_usovmc_cpp wwhd___sinit_d_a_obj_usovmc_cpp_023AED0C
 WWHD_GAME_FUNC(0x023AEDA0, void, wwhd_trivial_dt_023AEDA0, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023AEDB4, s32, wwhd_MoveBgActor_IsDelete_023AEDB4, (void* arg0));
+WWHD_GAME_FUNC(0x023AEDBC, void, wwhd_SafeString_empty_023AEDBC, (void* arg0));
+WWHD_GAME_FUNC(0x023AEDC0, s32, wwhd_Act_c_Delete_023AEDC0, (void* arg0));
 WWHD_GAME_FUNC(0x023AEDC8, void, wwhd_Act_c_dt_023AEDC8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x023AEE1C, void*, wwhd_vds_construct_023AEE1C, (void* actor));
 #define wwhd_vds_construct wwhd_vds_construct_023AEE1C
@@ -23270,6 +24213,7 @@ WWHD_GAME_FUNC(0x023B0A00, void, wwhd_Act_c__ParticleSet_023B0A00, (void* self))
 #define wwhd_Act_c__ParticleSet wwhd_Act_c__ParticleSet_023B0A00
 WWHD_GAME_FUNC(0x023B0CB8, s32, wwhd_Act_c__Execute_023B0CB8, (void* self, void* mtx));
 WWHD_GAME_FUNC(0x023B0F10, s32, wwhd_Act_c__Draw_023B0F10, (void* self));
+WWHD_GAME_FUNC(0x023B0FB4, s32, wwhd_Act_c_Delete_023B0FB4, (void* arg0));
 WWHD_GAME_FUNC(0x023B0FBC, s32, wwhd_Mthd_Create_023B0FBC, (void* i_this));
 WWHD_GAME_FUNC(0x023B0FC0, s32, wwhd_Mthd_Delete_023B0FC0, (void* i_this));
 WWHD_GAME_FUNC(0x023B0FC4, s32, wwhd_Mthd_Execute_023B0FC4, (void* i_this));
@@ -23278,6 +24222,8 @@ WWHD_GAME_FUNC(0x023B0FD8, s32, wwhd_Mthd_IsDelete_023B0FD8, (void* i_this));
 WWHD_GAME_FUNC(0x023B0FE8, void, wwhd___sinit_d_a_obj_vfan_cpp_023B0FE8, (void));
 #define wwhd___sinit_d_a_obj_vfan_cpp wwhd___sinit_d_a_obj_vfan_cpp_023B0FE8
 WWHD_GAME_FUNC(0x023B107C, void, wwhd_SafeString_dt_023B107C, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023B1090, s32, wwhd_MoveBgActor_IsDelete_023B1090, (void* arg0));
+WWHD_GAME_FUNC(0x023B1098, void, wwhd_SafeString_assureTermination_023B1098, (void* arg0));
 WWHD_GAME_FUNC(0x023B109C, void, wwhd_Act_c_dt_023B109C, (void* i_this, s32 flags));
 WWHD_GAME_FUNC(0x023B1108, u32, wwhd_PrmAbstract_023B1108, (void* a, s32 width, s32 shift));
 WWHD_GAME_FUNC(0x023B1124, s32, wwhd_check_fin_023B1124, (void* a));
@@ -23891,7 +24837,9 @@ WWHD_GAME_FUNC(0x023BFEE8, u8, wwhd_Mthd_Draw_023BFEE8, (void* i_this));
 WWHD_GAME_FUNC(0x023BFEEC, void, wwhd___sinit_d_a_obj_zouK_cpp_023BFEEC, (void));
 #define wwhd___sinit_d_a_obj_zouK_cpp wwhd___sinit_d_a_obj_zouK_cpp_023BFEEC
 WWHD_GAME_FUNC(0x023BFF80, void, wwhd_SafeString_dt_023BFF80, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x023BFF94, void, wwhd_SafeString_assureTermination_023BFF94, (void* arg0));
 WWHD_GAME_FUNC(0x023BFF98, void, wwhd_Act_c_dt_023BFF98, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x023C0034, s32, wwhd_Mthd_IsDelete_023C0034, (void* arg0));
 WWHD_GAME_FUNC(0x023C003C, s32, wwhd_nodeCallBack_023C003C, (void* i_node, int calcTiming));
 WWHD_GAME_FUNC(0x023C024C, void, wwhd_draw_SUB_023C024C, (void* i_this));
 WWHD_GAME_FUNC(0x023C039C, s32, wwhd_daOQ_Draw_023C039C, (void* i_this));
@@ -23904,6 +24852,8 @@ WWHD_GAME_FUNC(0x023C1324, void, wwhd_search_y_check_023C1324, (void* i_this, sh
 #define wwhd_search_y_check wwhd_search_y_check_023C1324
 WWHD_GAME_FUNC(0x023C1380, s32, wwhd_daOQ_Execute_023C1380, (void* i_this));
 #define wwhd_daOQ_Execute wwhd_daOQ_Execute_023C1380
+WWHD_GAME_FUNC(0x023C38A4, s32, wwhd_daOQ_IsDelete_023C38A4, (void* arg0));
+#define wwhd_daOQ_IsDelete wwhd_daOQ_IsDelete_023C38A4
 WWHD_GAME_FUNC(0x023C38AC, s32, wwhd_daOQ_Delete_023C38AC, (void* i_this));
 #define wwhd_daOQ_Delete wwhd_daOQ_Delete_023C38AC
 WWHD_GAME_FUNC(0x023C3928, s32, wwhd_useHeapInit_023C3928, (void* a_this));
@@ -23920,6 +24870,7 @@ WWHD_GAME_FUNC(0x023C49B4, void, wwhd_action_wakidasi_023C49B4, (void* i_this));
 #define wwhd_action_wakidasi wwhd_action_wakidasi_023C49B4
 WWHD_GAME_FUNC(0x023C4F24, void, wwhd_oq_class_dt_023C4F24, (void* self, s32 flags));
 #define wwhd_oq_class_dt wwhd_oq_class_dt_023C4F24
+WWHD_GAME_FUNC(0x023C5050, void, wwhd_SafeString_assureTermination_023C5050, (void* arg0));
 WWHD_GAME_FUNC(0x023C5054, void, wwhd_OshipNodeControl_023C5054, (void* ship, void* node, void* model));
 #define wwhd_OshipNodeControl wwhd_OshipNodeControl_023C5054
 WWHD_GAME_FUNC(0x023C52D8, s32, wwhd_OshipNodeCallback_023C52D8, (void* node, s32 timing));
@@ -24129,6 +25080,8 @@ WWHD_GAME_FUNC(0x023CBF44, void, wwhd_DW_draw_SUB_023CBF44, (void* i_this));
 #define wwhd_DW_draw_SUB wwhd_DW_draw_SUB_023CBF44
 WWHD_GAME_FUNC(0x023CC070, s32, wwhd_daPH_Execute_023CC070, (void* i_this));
 #define wwhd_daPH_Execute wwhd_daPH_Execute_023CC070
+WWHD_GAME_FUNC(0x023CEEFC, s32, wwhd_daPH_IsDelete_023CEEFC, (void* arg0));
+#define wwhd_daPH_IsDelete wwhd_daPH_IsDelete_023CEEFC
 WWHD_GAME_FUNC(0x023CEF04, s32, wwhd_daPH_Delete_023CEF04, (void* i_this));
 #define wwhd_daPH_Delete wwhd_daPH_Delete_023CEF04
 WWHD_GAME_FUNC(0x023CEF6C, s32, wwhd_useHeapInit_023CEF6C, (void* a_this));
@@ -24146,6 +25099,8 @@ WWHD_GAME_FUNC(0x023D051C, void, wwhd_ph_water_move_023D051C, (void* i_this));
 #define wwhd_ph_water_move wwhd_ph_water_move_023D051C
 WWHD_GAME_FUNC(0x023D0B08, void, wwhd_ph_class_dt_023D0B08, (void* self, s32 flags));
 #define wwhd_ph_class_dt wwhd_ph_class_dt_023D0B08
+WWHD_GAME_FUNC(0x023D0C4C, void, wwhd_empty_virtual_023D0C4C_023D0C4C, (void* arg0));
+#define wwhd_empty_virtual_023D0C4C wwhd_empty_virtual_023D0C4C_023D0C4C
 WWHD_GAME_FUNC(0x023D0C50, void, wwhd_pirate_copy_matrix_023D0C50, (void* dest, void* source));
 #define wwhd_pirate_copy_matrix wwhd_pirate_copy_matrix_023D0C50
 WWHD_GAME_FUNC(0x023D0CF0, void, wwhd_pirate_color_s16_023D0CF0, (void* dest, void* source));
@@ -25072,6 +26027,8 @@ WWHD_GAME_FUNC(0x0240CDD0, s32, wwhd_daPy_lk_c__execute_0240CDD0, (void* self));
 #define wwhd_daPy_lk_c__execute wwhd_daPy_lk_c__execute_0240CDD0
 WWHD_GAME_FUNC(0x0240EBB0, s32, wwhd_daPy_Execute_0240EBB0, (void* i_this));
 #define wwhd_daPy_Execute wwhd_daPy_Execute_0240EBB0
+WWHD_GAME_FUNC(0x0240EBB4, s32, wwhd_daPy_IsDelete_0240EBB4, (void* arg0));
+#define wwhd_daPy_IsDelete wwhd_daPy_IsDelete_0240EBB4
 WWHD_GAME_FUNC(0x0240EBBC, void, wwhd_daPy_swimTailEcallBack_remove_0240EBBC, (void* cb));
 #define wwhd_daPy_swimTailEcallBack_remove wwhd_daPy_swimTailEcallBack_remove_0240EBBC
 WWHD_GAME_FUNC(0x0240EBF0, s32, wwhd_daPy_lk_c__playerDelete_0240EBF0, (void* self));
@@ -25113,10 +26070,16 @@ WWHD_GAME_FUNC(0x02413E6C, s32, wwhd_daPy_Create_02413E6C, (void* i_this));
 #define wwhd_daPy_Create wwhd_daPy_Create_02413E6C
 WWHD_GAME_FUNC(0x02413E80, void, wwhd_daPy_matAnm_calc_02413E80, (void* self, void* mat));
 #define wwhd_daPy_matAnm_calc wwhd_daPy_matAnm_calc_02413E80
+WWHD_GAME_FUNC(0x02414048, void, wwhd_daPy_waterDropPcallBack_execute_02414048, (void* cb, void* arg1, void* ptcl));
+#define wwhd_daPy_waterDropPcallBack_execute wwhd_daPy_waterDropPcallBack_execute_02414048
 WWHD_GAME_FUNC(0x024140F8, void, wwhd_daPy_followEcallBack_execute_024140F8, (void* cb, void* emitter));
 #define wwhd_daPy_followEcallBack_execute wwhd_daPy_followEcallBack_execute_024140F8
+WWHD_GAME_FUNC(0x0241413C, void, wwhd_daPy_followEcallBack_setup_0241413C, (void* cb, void* emitter, const void* arg2, const void* arg3, s8 arg4));
+#define wwhd_daPy_followEcallBack_setup wwhd_daPy_followEcallBack_setup_0241413C
 WWHD_GAME_FUNC(0x02414144, void, wwhd_daPy_waterDropEcallBack_execute_02414144, (void* cb, void* emitter));
 #define wwhd_daPy_waterDropEcallBack_execute wwhd_daPy_waterDropEcallBack_execute_02414144
+WWHD_GAME_FUNC(0x024141A0, void, wwhd_daPy_waterDropEcallBack_setup_024141A0, (void* cb, void* emitter, const void* arg2, const void* arg3, s8 arg4));
+#define wwhd_daPy_waterDropEcallBack_setup wwhd_daPy_waterDropEcallBack_setup_024141A0
 WWHD_GAME_FUNC(0x024141B4, void, wwhd_daPy_fanSwingEcallBack_execute_024141B4, (void* cb, void* emitter));
 #define wwhd_daPy_fanSwingEcallBack_execute wwhd_daPy_fanSwingEcallBack_execute_024141B4
 WWHD_GAME_FUNC(0x02414250, void, wwhd_lk_mtxCopy_02414250, (void* dst, const void* src));
@@ -25129,6 +26092,10 @@ WWHD_GAME_FUNC(0x02414DD8, void, wwhd_daPy_swimTailEcallBack_getMaxWaterY_02414D
 #define wwhd_daPy_swimTailEcallBack_getMaxWaterY wwhd_daPy_swimTailEcallBack_getMaxWaterY_02414DD8
 WWHD_GAME_FUNC(0x02414E8C, void, wwhd_daPy_swimTailEcallBack_execute_02414E8C, (void* cb, void* emitter));
 #define wwhd_daPy_swimTailEcallBack_execute wwhd_daPy_swimTailEcallBack_execute_02414E8C
+WWHD_GAME_FUNC(0x02415134, void, wwhd_daPy_swimTailEcallBack_draw_02415134, (void* arg0, void* arg1));
+#define wwhd_daPy_swimTailEcallBack_draw wwhd_daPy_swimTailEcallBack_draw_02415134
+WWHD_GAME_FUNC(0x02415138, void, wwhd_daPy_swimTailEcallBack_setup_02415138, (void* cb, void* emitter, const void* pos, const void* angle, s8 arg4));
+#define wwhd_daPy_swimTailEcallBack_setup wwhd_daPy_swimTailEcallBack_setup_02415138
 WWHD_GAME_FUNC(0x024151B8, void, wwhd_daPy_mtxPosFollowEcallBack_execute_024151B8, (void* cb, void* emitter));
 #define wwhd_daPy_mtxPosFollowEcallBack_execute wwhd_daPy_mtxPosFollowEcallBack_execute_024151B8
 WWHD_GAME_FUNC(0x02415238, void, wwhd_daPy_dmEcallBack_execute_02415238, (void* cb, void* emitter));
@@ -26271,13 +27238,20 @@ WWHD_GAME_FUNC(0x02445DB0, s32, wwhd_daPy_npc_virtual_02445DB0_02445DB0, (void* 
 #define wwhd_daPy_npc_virtual_02445DB0 wwhd_daPy_npc_virtual_02445DB0_02445DB0
 WWHD_GAME_FUNC(0x02445DB8, void, wwhd_daPy_npc_virtual_02445DB8_02445DB8, (void* actor));
 #define wwhd_daPy_npc_virtual_02445DB8 wwhd_daPy_npc_virtual_02445DB8_02445DB8
+WWHD_GAME_FUNC(0x02445DB8, void, wwhd_empty_virtual_02445DB8_02445DB8, (void* arg0));
+#define wwhd_empty_virtual_02445DB8 wwhd_empty_virtual_02445DB8_02445DB8
 WWHD_GAME_FUNC(0x02445DBC, void, wwhd_anm_init_02445DBC, (void* i_this, int bckFileIdx, f32 morf, unsigned char loopMode, f32 playSpeed, int soundFileIdx));
 WWHD_GAME_FUNC(0x02445EE4, s32, wwhd_daPt_Draw_02445EE4, (void* i_this));
 #define wwhd_daPt_Draw wwhd_daPt_Draw_02445EE4
+WWHD_GAME_FUNC(0x02445F98, void, wwhd_smoke_set_02445F98, (void* i_this, signed char type));
 WWHD_GAME_FUNC(0x02446074, s16, wwhd_get_z_ang_02446074, (void* i_this));
 #define wwhd_get_z_ang wwhd_get_z_ang_02446074
+WWHD_GAME_FUNC(0x02446324, void*, wwhd_esa_s_sub_02446324, (void* ac1, void* arg1));
+#define wwhd_esa_s_sub wwhd_esa_s_sub_02446324
 WWHD_GAME_FUNC(0x02446374, s32, wwhd_daPt_Execute_02446374, (void* i_this));
 #define wwhd_daPt_Execute wwhd_daPt_Execute_02446374
+WWHD_GAME_FUNC(0x024468DC, s32, wwhd_daPt_IsDelete_024468DC, (void* arg0));
+#define wwhd_daPt_IsDelete wwhd_daPt_IsDelete_024468DC
 WWHD_GAME_FUNC(0x024468E4, s32, wwhd_daPt_Delete_024468E4, (void* i_this));
 #define wwhd_daPt_Delete wwhd_daPt_Delete_024468E4
 WWHD_GAME_FUNC(0x02446A4C, s32, wwhd_useHeapInit_02446A4C, (void* a_this));
@@ -26295,6 +27269,8 @@ WWHD_GAME_FUNC(0x02447300, void, wwhd_action_02447300, (void* i_this));
 #define wwhd_action wwhd_action_02447300
 WWHD_GAME_FUNC(0x02449B54, void, wwhd_pt_class_dt_02449B54, (void* self, s32 flags));
 #define wwhd_pt_class_dt wwhd_pt_class_dt_02449B54
+WWHD_GAME_FUNC(0x02449C5C, void, wwhd_empty_virtual_02449C5C_02449C5C, (void* arg0));
+#define wwhd_empty_virtual_02449C5C wwhd_empty_virtual_02449C5C_02449C5C
 WWHD_GAME_FUNC(0x02449C60, s32, wwhd_pw_node_callback_02449C60, (u32 joint, s32 phase));
 #define wwhd_pw_node_callback wwhd_pw_node_callback_02449C60
 WWHD_GAME_FUNC(0x02449DA8, void, wwhd_pw_draw_sub_02449DA8, (void* actor));
@@ -26522,8 +27498,11 @@ WWHD_GAME_FUNC(0x02458C04, u8*, wwhd_daPz_HIO_c_ct_02458C04, (u8* i_this));
 WWHD_GAME_FUNC(0x02458EA4, void, wwhd___sinit_d_a_pz_cpp_02458EA4, (void));
 #define wwhd___sinit_d_a_pz_cpp wwhd___sinit_d_a_pz_cpp_02458EA4
 WWHD_GAME_FUNC(0x02458F74, void, wwhd_SafeString_dt_02458F74, (void* i_this, s32 flags));
+WWHD_GAME_FUNC(0x02458F88, s32, wwhd_daPzIsDelete_02458F88, (void* arg0));
+#define wwhd_daPzIsDelete wwhd_daPzIsDelete_02458F88
 WWHD_GAME_FUNC(0x02458F90, void, wwhd_daPz_c_dt_02458F90, (void* i_this, s32 flags));
 #define wwhd_daPz_c_dt wwhd_daPz_c_dt_02458F90
+WWHD_GAME_FUNC(0x024590F8, void, wwhd_SafeString_assureTerminationImpl_024590F8, (void* arg0));
 WWHD_GAME_FUNC(0x024590FC, s32, wwhd_daRaceItem_Draw_024590FC, (void* p));
 #define wwhd_daRaceItem_Draw wwhd_daRaceItem_Draw_024590FC
 WWHD_GAME_FUNC(0x0245910C, void, wwhd_daRaceItem_c__checkGet_0245910C, (void* self));
@@ -26584,6 +27563,8 @@ WWHD_GAME_FUNC(0x0245AB98, void, wwhd_daRd_c__getArg_0245AB98, (void* self));
 #define wwhd_daRd_c__getArg wwhd_daRd_c__getArg_0245AB98
 WWHD_GAME_FUNC(0x0245AC14, void, wwhd_daRd_c__setBtkAnm_0245AC14, (void* self, s8 idx));
 #define wwhd_daRd_c__setBtkAnm wwhd_daRd_c__setBtkAnm_0245AC14
+WWHD_GAME_FUNC(0x0245ADB0, void, wwhd_daRd_c__modeProc_0245ADB0, (void* self, s32 proc, int newMode));
+#define wwhd_daRd_c__modeProc wwhd_daRd_c__modeProc_0245ADB0
 WWHD_GAME_FUNC(0x0245AF80, void, wwhd_daRd_c__setBrkAnm_0245AF80, (void* self, s8 idx));
 #define wwhd_daRd_c__setBrkAnm wwhd_daRd_c__setBrkAnm_0245AF80
 WWHD_GAME_FUNC(0x0245B050, void, wwhd_daRd_c__setAnm_0245B050, (void* self, s8 anmPrmIdx, u8 force));
@@ -26684,6 +27665,8 @@ WWHD_GAME_FUNC(0x0245F254, void, wwhd_daRd_c__modeSilentPrayInit_0245F254, (void
 #define wwhd_daRd_c__modeSilentPrayInit wwhd_daRd_c__modeSilentPrayInit_0245F254
 WWHD_GAME_FUNC(0x0245F258, void, wwhd_daRd_c_dt_0245F258, (void* self, s32 flags));
 #define wwhd_daRd_c_dt wwhd_daRd_c_dt_0245F258
+WWHD_GAME_FUNC(0x0245F360, void, wwhd_rd_SafeString_assureTermination_0245F360, (void* arg0));
+#define wwhd_rd_SafeString_assureTermination wwhd_rd_SafeString_assureTermination_0245F360
 WWHD_GAME_FUNC(0x0245F364, s32, wwhd_daRct_Draw_0245F364, (void* i_this));
 #define wwhd_daRct_Draw wwhd_daRct_Draw_0245F364
 WWHD_GAME_FUNC(0x0245F36C, s32, wwhd_daRct_Execute_0245F36C, (void* i_this));
@@ -27082,6 +28065,10 @@ WWHD_GAME_FUNC(0x0246CAEC, s32, wwhd_daSea_Draw_0246CAEC, (void* i_this));
 #define wwhd_daSea_Draw wwhd_daSea_Draw_0246CAEC
 WWHD_GAME_FUNC(0x0246CC44, s32, wwhd_daSea_Execute_0246CC44, (void* i_this));
 #define wwhd_daSea_Execute wwhd_daSea_Execute_0246CC44
+WWHD_GAME_FUNC(0x0246CCAC, s32, wwhd_daSea_IsDelete_0246CCAC, (void* arg0));
+#define wwhd_daSea_IsDelete wwhd_daSea_IsDelete_0246CCAC
+WWHD_GAME_FUNC(0x0246CCC4, s32, wwhd_daSea_Delete_0246CCC4, (void* arg0));
+#define wwhd_daSea_Delete wwhd_daSea_Delete_0246CCC4
 WWHD_GAME_FUNC(0x0246CCCC, void, wwhd_daSea_WaterHeightInfo_Mng__SetInf_0246CCCC, (void* self));
 #define wwhd_daSea_WaterHeightInfo_Mng__SetInf wwhd_daSea_WaterHeightInfo_Mng__SetInf_0246CCCC
 WWHD_GAME_FUNC(0x0246CD74, void, wwhd_daSea_packet_c__CleanUp_0246CD74, (void* self));
@@ -27116,6 +28103,15 @@ WWHD_GAME_FUNC(0x0246F8BC, void, wwhd_sea_class_dt_0246F8BC, (void* i_this, s32 
 #define wwhd_sea_class_dt wwhd_sea_class_dt_0246F8BC
 WWHD_GAME_FUNC(0x0246F910, void, wwhd_daSea_packet_c_dt_0246F910, (void* i_this, s32 flags));
 #define wwhd_daSea_packet_c_dt wwhd_daSea_packet_c_dt_0246F910
+WWHD_GAME_FUNC(0x0246F97C, void, wwhd_daSea_packet_c_v14_0246F97C, (void* arg0));
+#define wwhd_daSea_packet_c_v14 wwhd_daSea_packet_c_v14_0246F97C
+WWHD_GAME_FUNC(0x0246F980, void, wwhd_SafeString_assureTerminationImpl_0246F980, (void* arg0));
+WWHD_GAME_FUNC(0x0246F984, s32, wwhd_daSea_true_0_0246F984, (void* arg0));
+#define wwhd_daSea_true_0 wwhd_daSea_true_0_0246F984
+WWHD_GAME_FUNC(0x0246F984, s32, wwhd_daSeatag_IsDelete_0246F984, (void* arg0));
+#define wwhd_daSeatag_IsDelete wwhd_daSeatag_IsDelete_0246F984
+WWHD_GAME_FUNC(0x0246F98C, s32, wwhd_daSea_true_1_0246F98C, (void* arg0));
+#define wwhd_daSea_true_1 wwhd_daSea_true_1_0246F98C
 WWHD_GAME_FUNC(0x0246F98C, s32, wwhd_daSeatag_Delete_0246F98C, (void* i_this));
 #define wwhd_daSeatag_Delete wwhd_daSeatag_Delete_0246F98C
 WWHD_GAME_FUNC(0x0246F994, s32, wwhd_daSeatag_Create_0246F994, (void* i_this));
@@ -27132,6 +28128,8 @@ WWHD_GAME_FUNC(0x0246FAEC, s32, wwhd_daShand_Draw_0246FAEC, (void* i_this));
 #define wwhd_daShand_Draw wwhd_daShand_Draw_0246FAEC
 WWHD_GAME_FUNC(0x0246FB78, s32, wwhd_daShand_Execute_0246FB78, (void* i_this));
 #define wwhd_daShand_Execute wwhd_daShand_Execute_0246FB78
+WWHD_GAME_FUNC(0x02470D34, s32, wwhd_daShand_IsDelete_02470D34, (void* arg0));
+#define wwhd_daShand_IsDelete wwhd_daShand_IsDelete_02470D34
 WWHD_GAME_FUNC(0x02470D3C, s32, wwhd_daShand_Delete_02470D3C, (void* i_this));
 #define wwhd_daShand_Delete wwhd_daShand_Delete_02470D3C
 WWHD_GAME_FUNC(0x02470DA0, s32, wwhd_useHeapInit_02470DA0, (void* i_this));
@@ -27145,6 +28143,7 @@ WWHD_GAME_FUNC(0x0247115C, void, wwhd_SafeString_dt_0247115C, (void* p, s32 flag
 WWHD_GAME_FUNC(0x02471170, void*, wwhd_dCcD_Cyl_ct_tu_02471170, (void* c));
 WWHD_GAME_FUNC(0x024711FC, void, wwhd_shand_class_dt_024711FC, (void* i_this, s32 flags));
 #define wwhd_shand_class_dt wwhd_shand_class_dt_024711FC
+WWHD_GAME_FUNC(0x02471294, void, wwhd_SafeString_assureTerminationImpl_02471294, (void* arg0));
 WWHD_GAME_FUNC(0x02471298, s32, wwhd_daShip_c__bodyJointCallBack_02471298, (void* self, int jno));
 #define wwhd_daShip_c__bodyJointCallBack wwhd_daShip_c__bodyJointCallBack_02471298
 WWHD_GAME_FUNC(0x0247187C, s32, wwhd_daShip_bodyJointCallBack_0247187C, (void* node, int calcTiming));
@@ -27241,6 +28240,8 @@ WWHD_GAME_FUNC(0x02477A24, s32, wwhd_daShip_c__execute_02477A24, (void* self));
 #define wwhd_daShip_c__execute wwhd_daShip_c__execute_02477A24
 WWHD_GAME_FUNC(0x0247AE78, s32, wwhd_daShip_Execute_0247AE78, (void* i_this));
 #define wwhd_daShip_Execute wwhd_daShip_Execute_0247AE78
+WWHD_GAME_FUNC(0x0247AE7C, s32, wwhd_daShip_IsDelete_0247AE7C, (void* arg0));
+#define wwhd_daShip_IsDelete wwhd_daShip_IsDelete_0247AE7C
 WWHD_GAME_FUNC(0x0247AE84, s32, wwhd_daShip_c__shipDelete_0247AE84, (void* self));
 #define wwhd_daShip_c__shipDelete wwhd_daShip_c__shipDelete_0247AE84
 WWHD_GAME_FUNC(0x0247AF74, s32, wwhd_daShip_Delete_0247AF74, (void* i_this));
@@ -27417,10 +28418,16 @@ WWHD_GAME_FUNC(0x02483E24, void, wwhd_daShopItem_c__settingBeforeDraw_02483E24, 
 #define wwhd_daShopItem_c__settingBeforeDraw wwhd_daShopItem_c__settingBeforeDraw_02483E24
 WWHD_GAME_FUNC(0x02483E98, void, wwhd_shop_item_sinit_02483E98, (void));
 #define wwhd_shop_item_sinit wwhd_shop_item_sinit_02483E98
+WWHD_GAME_FUNC(0x02483F2C, s32, wwhd_daShopItem_IsDelete_02483F2C, (void* arg0));
+#define wwhd_daShopItem_IsDelete wwhd_daShopItem_IsDelete_02483F2C
 WWHD_GAME_FUNC(0x02483F34, void, wwhd_shop_item_SafeString_dtor_02483F34, (void* p, s32 flags));
 #define wwhd_shop_item_SafeString_dtor wwhd_shop_item_SafeString_dtor_02483F34
+WWHD_GAME_FUNC(0x02483F48, void, wwhd_shop_item_setListStart_02483F48, (void* arg0));
+#define wwhd_shop_item_setListStart wwhd_shop_item_setListStart_02483F48
 WWHD_GAME_FUNC(0x02483F4C, void, wwhd_shop_item_dtor_02483F4C, (void* p, s32 flags));
 #define wwhd_shop_item_dtor wwhd_shop_item_dtor_02483F4C
+WWHD_GAME_FUNC(0x02483FA0, void, wwhd_shop_item_SafeString_v14_02483FA0, (void* arg0));
+#define wwhd_shop_item_SafeString_v14 wwhd_shop_item_SafeString_v14_02483FA0
 WWHD_GAME_FUNC(0x02483FA4, void*, wwhd_daShopItem_c__getScaleP_02483FA4, (void* self));
 #define wwhd_daShopItem_c__getScaleP wwhd_daShopItem_c__getScaleP_02483FA4
 WWHD_GAME_FUNC(0x02483FAC, void*, wwhd_daShopItem_c__getRotateP_02483FAC, (void* self));
@@ -27461,6 +28468,8 @@ WWHD_GAME_FUNC(0x02484DC8, u8, wwhd_daShutter_Execute_02484DC8, (void* i_this));
 WWHD_GAME_FUNC(0x02484DCC, void, wwhd___sinit_d_a_shutter_cpp_02484DCC, (void));
 #define wwhd___sinit_d_a_shutter_cpp wwhd___sinit_d_a_shutter_cpp_02484DCC
 WWHD_GAME_FUNC(0x02484E60, void, wwhd_deleting_dtor_empty_02484E60, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02484E74, s32, wwhd_daShutter_IsDelete_02484E74, (void* arg0));
+#define wwhd_daShutter_IsDelete wwhd_daShutter_IsDelete_02484E74
 WWHD_GAME_FUNC(0x02484E7C, void, wwhd_daShutter_dtor_02484E7C, (void* p, s32 flags));
 #define wwhd_daShutter_dtor wwhd_daShutter_dtor_02484E7C
 WWHD_GAME_FUNC(0x02484ED0, void, wwhd_shutter_empty_virtual_02484ED0, (void* p));
@@ -27493,9 +28502,13 @@ WWHD_GAME_FUNC(0x02485790, s32, wwhd_daShutter2_c__Delete_02485790, (void* self)
 #define wwhd_daShutter2_c__Delete wwhd_daShutter2_c__Delete_02485790
 WWHD_GAME_FUNC(0x024857C0, void, wwhd___sinit_d_a_shutter2_cpp_024857C0, (void));
 #define wwhd___sinit_d_a_shutter2_cpp wwhd___sinit_d_a_shutter2_cpp_024857C0
+WWHD_GAME_FUNC(0x02485854, s32, wwhd_daShutter2_IsDelete_02485854, (void* arg0));
+#define wwhd_daShutter2_IsDelete wwhd_daShutter2_IsDelete_02485854
 WWHD_GAME_FUNC(0x0248585C, void, wwhd_SafeString_dt_0248585C, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02485870, s32, wwhd_MoveBgActor_IsDelete_02485870, (void* arg0));
 WWHD_GAME_FUNC(0x02485878, void, wwhd_daShutter2_c_dt_02485878, (void* i_this, s32 flags));
 #define wwhd_daShutter2_c_dt wwhd_daShutter2_c_dt_02485878
+WWHD_GAME_FUNC(0x024858CC, void, wwhd_SafeString_assureTerminationImpl_024858CC, (void* arg0));
 WWHD_GAME_FUNC(0x024858D0, s32, wwhd_daSie_Flag_c__CreateHeap_024858D0, (void* self));
 #define wwhd_daSie_Flag_c__CreateHeap wwhd_daSie_Flag_c__CreateHeap_024858D0
 WWHD_GAME_FUNC(0x024859F4, s32, wwhd_CheckCreateHeap_024859F4, (void* i_actor));
@@ -27526,8 +28539,11 @@ WWHD_GAME_FUNC(0x024861C0, void*, wwhd_daSie_Flag_HIO_c_ct_024861C0, (void* h));
 WWHD_GAME_FUNC(0x0248621C, void, wwhd___sinit_d_a_sie_flag_cpp_0248621C, (void));
 #define wwhd___sinit_d_a_sie_flag_cpp wwhd___sinit_d_a_sie_flag_cpp_0248621C
 WWHD_GAME_FUNC(0x024862F8, void, wwhd_SafeString_dt_024862F8, (void* s, s32 flags));
+WWHD_GAME_FUNC(0x0248630C, s32, wwhd_daSie_FlagIsDelete_0248630C, (void* arg0));
+#define wwhd_daSie_FlagIsDelete wwhd_daSie_FlagIsDelete_0248630C
 WWHD_GAME_FUNC(0x02486314, void, wwhd_daSie_Flag_c_dt_02486314, (void* i_this, s32 flags));
 #define wwhd_daSie_Flag_c_dt wwhd_daSie_Flag_c_dt_02486314
+WWHD_GAME_FUNC(0x0248638C, void, wwhd_SafeString_assureTermination_0248638C, (void* arg0));
 WWHD_GAME_FUNC(0x02486390, s32, wwhd_daSitem_Draw_02486390, (void* i_this));
 #define wwhd_daSitem_Draw wwhd_daSitem_Draw_02486390
 WWHD_GAME_FUNC(0x024864A0, void, wwhd_hand_mtx_set_024864A0, (void* i_this));
@@ -27535,6 +28551,8 @@ WWHD_GAME_FUNC(0x024865CC, void, wwhd_my_break_024865CC, (void* i_this));
 #define wwhd_my_break wwhd_my_break_024865CC
 WWHD_GAME_FUNC(0x024867D0, s32, wwhd_daSitem_Execute_024867D0, (void* i_this));
 #define wwhd_daSitem_Execute wwhd_daSitem_Execute_024867D0
+WWHD_GAME_FUNC(0x02487E94, s32, wwhd_daSitem_IsDelete_02487E94, (void* arg0));
+#define wwhd_daSitem_IsDelete wwhd_daSitem_IsDelete_02487E94
 WWHD_GAME_FUNC(0x02487E9C, s32, wwhd_daSitem_Delete_02487E9C, (void* i_this));
 #define wwhd_daSitem_Delete wwhd_daSitem_Delete_02487E9C
 WWHD_GAME_FUNC(0x02487F00, s32, wwhd_useHeapInit_02487F00, (void* i_this));
@@ -27555,6 +28573,8 @@ WWHD_GAME_FUNC(0x02488668, s32, wwhd_daSk_Draw_02488668, (void* i_this));
 #define wwhd_daSk_Draw wwhd_daSk_Draw_02488668
 WWHD_GAME_FUNC(0x024886D0, s32, wwhd_daSk_Execute_024886D0, (void* i_this));
 #define wwhd_daSk_Execute wwhd_daSk_Execute_024886D0
+WWHD_GAME_FUNC(0x02488B80, s32, wwhd_daSk_IsDelete_02488B80, (void* arg0));
+#define wwhd_daSk_IsDelete wwhd_daSk_IsDelete_02488B80
 WWHD_GAME_FUNC(0x02488B88, s32, wwhd_daSk_Delete_02488B88, (void* i_this));
 #define wwhd_daSk_Delete wwhd_daSk_Delete_02488B88
 WWHD_GAME_FUNC(0x02488BB8, s32, wwhd_useHeapInit_02488BB8, (void* a_this));
@@ -27565,6 +28585,7 @@ WWHD_GAME_FUNC(0x02488F6C, void, wwhd___sinit_d_a_sk_cpp_02488F6C, (void));
 WWHD_GAME_FUNC(0x02489000, void, wwhd_SafeString_dt_02489000, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x02489014, void, wwhd_sk_class_dt_02489014, (void* i_this, s32 flags));
 #define wwhd_sk_class_dt wwhd_sk_class_dt_02489014
+WWHD_GAME_FUNC(0x02489094, void, wwhd_SafeString_assureTerminationImpl_02489094, (void* arg0));
 WWHD_GAME_FUNC(0x02489098, s32, wwhd_nodeCallBack_02489098, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x024891F4, s32, wwhd_daSk2_Draw_024891F4, (void* i_this));
 #define wwhd_daSk2_Draw wwhd_daSk2_Draw_024891F4
@@ -27572,6 +28593,8 @@ WWHD_GAME_FUNC(0x02489290, void, wwhd_dousa_move_02489290, (void* i_this));
 #define wwhd_dousa_move wwhd_dousa_move_02489290
 WWHD_GAME_FUNC(0x024895C8, s32, wwhd_daSk2_Execute_024895C8, (void* i_this));
 #define wwhd_daSk2_Execute wwhd_daSk2_Execute_024895C8
+WWHD_GAME_FUNC(0x02489710, s32, wwhd_daSk2_IsDelete_02489710, (void* arg0));
+#define wwhd_daSk2_IsDelete wwhd_daSk2_IsDelete_02489710
 WWHD_GAME_FUNC(0x02489718, s32, wwhd_daSk2_Delete_02489718, (void* i_this));
 #define wwhd_daSk2_Delete wwhd_daSk2_Delete_02489718
 WWHD_GAME_FUNC(0x02489770, s32, wwhd_useHeapInit_02489770, (void* a_this));
@@ -27580,8 +28603,11 @@ WWHD_GAME_FUNC(0x02489A00, s32, wwhd_daSk2_Create_02489A00, (void* a_this));
 WWHD_GAME_FUNC(0x02489CF4, void, wwhd___sinit_d_a_sk2_cpp_02489CF4, (void));
 #define wwhd___sinit_d_a_sk2_cpp wwhd___sinit_d_a_sk2_cpp_02489CF4
 WWHD_GAME_FUNC(0x02489D88, void, wwhd_SafeString_dt_02489D88, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x02489D9C, void, wwhd_dBgWDeform_empty_v_02489D9C, (void* arg0));
+#define wwhd_dBgWDeform_empty_v wwhd_dBgWDeform_empty_v_02489D9C
 WWHD_GAME_FUNC(0x02489DA0, void, wwhd_sk2_class_dt_02489DA0, (void* i_this, s32 flags));
 #define wwhd_sk2_class_dt wwhd_sk2_class_dt_02489DA0
+WWHD_GAME_FUNC(0x02489E24, void, wwhd_SafeString_assureTerminationImpl_02489E24, (void* arg0));
 WWHD_GAME_FUNC(0x02489E28, s32, wwhd_daSpcItem01_c___draw_02489E28, (void* self));
 #define wwhd_daSpcItem01_c___draw wwhd_daSpcItem01_c___draw_02489E28
 WWHD_GAME_FUNC(0x02489E38, s32, wwhd_daSpcItem01_Draw_02489E38, (void* i_this));
@@ -27602,6 +28628,8 @@ WWHD_GAME_FUNC(0x0248A1F4, s32, wwhd_daSpcItem01_c___execute_0248A1F4, (void* se
 #define wwhd_daSpcItem01_c___execute wwhd_daSpcItem01_c___execute_0248A1F4
 WWHD_GAME_FUNC(0x0248A27C, s32, wwhd_daSpcItem01_Execute_0248A27C, (void* i_this));
 #define wwhd_daSpcItem01_Execute wwhd_daSpcItem01_Execute_0248A27C
+WWHD_GAME_FUNC(0x0248A280, s32, wwhd_daSpcItem01_IsDelete_0248A280, (void* arg0));
+#define wwhd_daSpcItem01_IsDelete wwhd_daSpcItem01_IsDelete_0248A280
 WWHD_GAME_FUNC(0x0248A288, s32, wwhd_daSpcItem01_c___delete_0248A288, (void* self));
 #define wwhd_daSpcItem01_c___delete wwhd_daSpcItem01_c___delete_0248A288
 WWHD_GAME_FUNC(0x0248A2A0, s32, wwhd_daSpcItem01_Delete_0248A2A0, (void* i_this));
@@ -27638,6 +28666,8 @@ WWHD_GAME_FUNC(0x0248AC00, s32, wwhd_daSs_Draw_0248AC00, (void* i_this));
 WWHD_GAME_FUNC(0x0248ACB8, void, wwhd_anm_init_0248ACB8, (void* i_this, int anmResIdx, f32 morf, unsigned char loopMode, f32 speed, int soundAnmResIdx));
 WWHD_GAME_FUNC(0x0248ADE8, s32, wwhd_daSs_Execute_0248ADE8, (void* i_this));
 #define wwhd_daSs_Execute wwhd_daSs_Execute_0248ADE8
+WWHD_GAME_FUNC(0x0248D1B8, s32, wwhd_daSs_IsDelete_0248D1B8, (void* arg0));
+#define wwhd_daSs_IsDelete wwhd_daSs_IsDelete_0248D1B8
 WWHD_GAME_FUNC(0x0248D1C0, s32, wwhd_daSs_Delete_0248D1C0, (void* i_this));
 #define wwhd_daSs_Delete wwhd_daSs_Delete_0248D1C0
 WWHD_GAME_FUNC(0x0248D1F0, s32, wwhd_useHeapInit_0248D1F0, (void* a_this));
@@ -27666,6 +28696,8 @@ WWHD_GAME_FUNC(0x0248DB4C, s32, wwhd_daSsk_Draw_0248DB4C, (void* i_this));
 #define wwhd_daSsk_Draw wwhd_daSsk_Draw_0248DB4C
 WWHD_GAME_FUNC(0x0248DC20, s32, wwhd_daSsk_Execute_0248DC20, (void* i_this));
 #define wwhd_daSsk_Execute wwhd_daSsk_Execute_0248DC20
+WWHD_GAME_FUNC(0x0248E4FC, s32, wwhd_daSsk_IsDelete_0248E4FC, (void* arg0));
+#define wwhd_daSsk_IsDelete wwhd_daSsk_IsDelete_0248E4FC
 WWHD_GAME_FUNC(0x0248E504, s32, wwhd_daSsk_Delete_0248E504, (void* i_this));
 #define wwhd_daSsk_Delete wwhd_daSsk_Delete_0248E504
 WWHD_GAME_FUNC(0x0248E554, s32, wwhd_useHeapInit_0248E554, (void* a_this));
@@ -27756,15 +28788,22 @@ WWHD_GAME_FUNC(0x0249A378, u8, wwhd_daSteamTag_c__endEmitter_0249A378, (void* se
 #define wwhd_daSteamTag_c__endEmitter wwhd_daSteamTag_c__endEmitter_0249A378
 WWHD_GAME_FUNC(0x0249A390, s32, wwhd_daSteamTag_Execute_0249A390, (void* i_this));
 #define wwhd_daSteamTag_Execute wwhd_daSteamTag_Execute_0249A390
+WWHD_GAME_FUNC(0x0249A5E8, s32, wwhd_daSteamTag_IsDelete_0249A5E8, (void* arg0));
+#define wwhd_daSteamTag_IsDelete wwhd_daSteamTag_IsDelete_0249A5E8
+WWHD_GAME_FUNC(0x0249A5F0, s32, wwhd_daSteamTag_Delete_0249A5F0, (void* arg0));
+#define wwhd_daSteamTag_Delete wwhd_daSteamTag_Delete_0249A5F0
 WWHD_GAME_FUNC(0x0249A5F8, s32, wwhd_daSteamTag_c__CreateInit_0249A5F8, (void* self));
 #define wwhd_daSteamTag_c__CreateInit wwhd_daSteamTag_c__CreateInit_0249A5F8
 WWHD_GAME_FUNC(0x0249A78C, s32, wwhd_daSteamTag_Create_0249A78C, (void* i_this));
 #define wwhd_daSteamTag_Create wwhd_daSteamTag_Create_0249A78C
 WWHD_GAME_FUNC(0x0249A9B8, void, wwhd___sinit_d_a_steam_tag_cpp_0249A9B8, (void));
 #define wwhd___sinit_d_a_steam_tag_cpp wwhd___sinit_d_a_steam_tag_cpp_0249A9B8
+WWHD_GAME_FUNC(0x0249AA4C, s32, wwhd_daSteamTag_Draw_0249AA4C, (void* arg0));
+#define wwhd_daSteamTag_Draw wwhd_daSteamTag_Draw_0249AA4C
 WWHD_GAME_FUNC(0x0249AA54, void, wwhd_SafeString_dt_0249AA54, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x0249AA68, void, wwhd_daSteamTag_c_dt_0249AA68, (void* i_this, s32 flags));
 #define wwhd_daSteamTag_c_dt wwhd_daSteamTag_c_dt_0249AA68
+WWHD_GAME_FUNC(0x0249AB1C, void, wwhd_SafeString_assureTermination_0249AB1C, (void* arg0));
 WWHD_GAME_FUNC(0x0249AB20, s32, wwhd_chk_appear_0249AB20, (void* actor));
 WWHD_GAME_FUNC(0x0249ABE8, s32, wwhd_create_heap_0249ABE8, (void* actor));
 WWHD_GAME_FUNC(0x0249ADFC, s32, wwhd_create_heap_callback_0249ADFC, (void* actor));
@@ -28035,8 +29074,11 @@ WWHD_GAME_FUNC(0x024A3520, s32, wwhd_daSwProp_Execute_024A3520, (void* i_this));
 WWHD_GAME_FUNC(0x024A3524, void, wwhd___sinit_d_a_swpropeller_cpp_024A3524, (void));
 #define wwhd___sinit_d_a_swpropeller_cpp wwhd___sinit_d_a_swpropeller_cpp_024A3524
 WWHD_GAME_FUNC(0x024A35B8, void, wwhd_SafeString_dt_024A35B8, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x024A35CC, s32, wwhd_daSwProp_IsDelete_024A35CC, (void* arg0));
+#define wwhd_daSwProp_IsDelete wwhd_daSwProp_IsDelete_024A35CC
 WWHD_GAME_FUNC(0x024A35D4, void, wwhd_daSwProp_c_dt_024A35D4, (void* i_this, s32 flags));
 #define wwhd_daSwProp_c_dt wwhd_daSwProp_c_dt_024A35D4
+WWHD_GAME_FUNC(0x024A3670, void, wwhd_SafeString_assureTerminationImpl_024A3670, (void* arg0));
 WWHD_GAME_FUNC(0x024A3674, s32, wwhd_daSwTact_c__CreateHeap_024A3674, (void* self));
 #define wwhd_daSwTact_c__CreateHeap wwhd_daSwTact_c__CreateHeap_024A3674
 WWHD_GAME_FUNC(0x024A3710, s32, wwhd_CheckCreateHeap_024A3710, (void* i_this));
@@ -28069,6 +29111,7 @@ WWHD_GAME_FUNC(0x024A3CFC, s32, wwhd_daSwTact_IsDelete_024A3CFC, (void* i_this))
 #define wwhd_daSwTact_IsDelete wwhd_daSwTact_IsDelete_024A3CFC
 WWHD_GAME_FUNC(0x024A3D04, void, wwhd_daSwTact_c_dt_024A3D04, (void* i_this, s32 flags));
 #define wwhd_daSwTact_c_dt wwhd_daSwTact_c_dt_024A3D04
+WWHD_GAME_FUNC(0x024A3D58, void, wwhd_SafeString_assureTermination_024A3D58, (void* arg0));
 WWHD_GAME_FUNC(0x024A3D5C, s32, wwhd_daSwtdoor_Draw_024A3D5C, (void* i_this));
 #define wwhd_daSwtdoor_Draw wwhd_daSwtdoor_Draw_024A3D5C
 WWHD_GAME_FUNC(0x024A3DB0, s32, wwhd_daSwtdoor_Execute_024A3DB0, (void* i_this));
@@ -28085,6 +29128,7 @@ WWHD_GAME_FUNC(0x024A4198, void, wwhd___sinit_d_a_swtdoor_cpp_024A4198, (void));
 WWHD_GAME_FUNC(0x024A422C, void, wwhd_SafeString_dt_024A422C, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x024A4240, void, wwhd_swtdoor_class_dt_024A4240, (void* i_this, s32 flags));
 #define wwhd_swtdoor_class_dt wwhd_swtdoor_class_dt_024A4240
+WWHD_GAME_FUNC(0x024A4294, void, wwhd_SafeString_assureTerminationImpl_024A4294, (void* arg0));
 WWHD_GAME_FUNC(0x024A4298, s32, wwhd_nodeCallBack_024A4298, (void* node, int calcTiming));
 WWHD_GAME_FUNC(0x024A450C, s32, wwhd_daSyan_Draw_024A450C, (void* i_this));
 #define wwhd_daSyan_Draw wwhd_daSyan_Draw_024A450C
@@ -28108,6 +29152,7 @@ WWHD_GAME_FUNC(0x024A543C, void, wwhd_SafeString_dt_024A543C, (void* p, s32 flag
 WWHD_GAME_FUNC(0x024A5450, void, wwhd_followEcallBack_dt_024A5450, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x024A5464, void, wwhd_syan_class_dt_024A5464, (void* i_this, s32 flags));
 #define wwhd_syan_class_dt wwhd_syan_class_dt_024A5464
+WWHD_GAME_FUNC(0x024A54D8, void, wwhd_SafeString_assureTerminationImpl_024A54D8, (void* arg0));
 WWHD_GAME_FUNC(0x024A54DC, s32, wwhd_Act_c___create_024A54DC, (void* self));
 WWHD_GAME_FUNC(0x024A5598, u8, wwhd_Act_c___execute_024A5598, (void* self));
 WWHD_GAME_FUNC(0x024A5800, s32, wwhd_Mthd_Create_024A5800, (void* i_this));
@@ -28123,6 +29168,8 @@ WWHD_GAME_FUNC(0x024A593C, s16, wwhd_daTag_Ba1_c__XyCheck_cB_024A593C, (void* se
 #define wwhd_daTag_Ba1_c__XyCheck_cB wwhd_daTag_Ba1_c__XyCheck_cB_024A593C
 WWHD_GAME_FUNC(0x024A597C, s16, wwhd_daTag_Ba1_XyCheck_cB_024A597C, (void* i_this, int i_itemBtn));
 #define wwhd_daTag_Ba1_XyCheck_cB wwhd_daTag_Ba1_XyCheck_cB_024A597C
+WWHD_GAME_FUNC(0x024A5980, s16, wwhd_daTag_Ba1_c__XyEvent_cB_024A5980, (void* self, int arg1));
+#define wwhd_daTag_Ba1_c__XyEvent_cB wwhd_daTag_Ba1_c__XyEvent_cB_024A5980
 WWHD_GAME_FUNC(0x024A5994, s16, wwhd_daTag_Ba1_XyEvent_cB_024A5994, (void* i_this, int i_itemBtn));
 #define wwhd_daTag_Ba1_XyEvent_cB wwhd_daTag_Ba1_XyEvent_cB_024A5994
 WWHD_GAME_FUNC(0x024A5998, u8, wwhd_daTag_Ba1_c__createInit_024A5998, (void* self));
@@ -28141,6 +29188,8 @@ WWHD_GAME_FUNC(0x024A5C14, s32, wwhd_daTag_Ba1_Execute_024A5C14, (void* i_this))
 #define wwhd_daTag_Ba1_Execute wwhd_daTag_Ba1_Execute_024A5C14
 WWHD_GAME_FUNC(0x024A5C18, s32, wwhd_daTag_Ba1_Draw_024A5C18, (void* i_this));
 #define wwhd_daTag_Ba1_Draw wwhd_daTag_Ba1_Draw_024A5C18
+WWHD_GAME_FUNC(0x024A5C20, s32, wwhd_daTag_Ba1_IsDelete_024A5C20, (void* arg0));
+#define wwhd_daTag_Ba1_IsDelete wwhd_daTag_Ba1_IsDelete_024A5C20
 WWHD_GAME_FUNC(0x024A5C28, void*, wwhd_daTag_Ba1_HIO_c_ct_024A5C28, (void* hio));
 #define wwhd_daTag_Ba1_HIO_c_ct wwhd_daTag_Ba1_HIO_c_ct_024A5C28
 WWHD_GAME_FUNC(0x024A5C94, void, wwhd___sinit_d_a_tag_ba1_cpp_024A5C94, (void));
@@ -28270,6 +29319,8 @@ WWHD_GAME_FUNC(0x024A869C, s32, wwhd_daTag_GshipCreate_024A869C, (void* i_this))
 #define wwhd_daTag_GshipCreate wwhd_daTag_GshipCreate_024A869C
 WWHD_GAME_FUNC(0x024A86A0, s32, wwhd_daTag_GshipDelete_024A86A0, (void* i_this));
 #define wwhd_daTag_GshipDelete wwhd_daTag_GshipDelete_024A86A0
+WWHD_GAME_FUNC(0x024A86A8, void, wwhd_daTag_Gship_c__modeProc_024A86A8, (void* self, s32 proc, int param_2));
+#define wwhd_daTag_Gship_c__modeProc wwhd_daTag_Gship_c__modeProc_024A86A8
 WWHD_GAME_FUNC(0x024A8754, u8, wwhd_daTag_Gship_c___execute_024A8754, (void* self));
 #define wwhd_daTag_Gship_c___execute wwhd_daTag_Gship_c___execute_024A8754
 WWHD_GAME_FUNC(0x024A8780, s32, wwhd_daTag_GshipExecute_024A8780, (void* i_this));
@@ -28855,6 +29906,8 @@ WWHD_GAME_FUNC(0x024B2C74, void*, wwhd_daTag_So_HIO_c_ct_024B2C74, (void* i_this
 #define wwhd_daTag_So_HIO_c_ct wwhd_daTag_So_HIO_c_ct_024B2C74
 WWHD_GAME_FUNC(0x024B2CC4, void, wwhd___sinit_d_a_tag_so_cpp_024B2CC4, (void));
 #define wwhd___sinit_d_a_tag_so_cpp wwhd___sinit_d_a_tag_so_cpp_024B2CC4
+WWHD_GAME_FUNC(0x024B2D64, s32, wwhd_daTag_SoIsDelete_024B2D64, (void* arg0));
+#define wwhd_daTag_SoIsDelete wwhd_daTag_SoIsDelete_024B2D64
 WWHD_GAME_FUNC(0x024B2D6C, void, wwhd_daTag_So_c_dt_024B2D6C, (void* i_this, s32 flags));
 #define wwhd_daTag_So_c_dt wwhd_daTag_So_c_dt_024B2D6C
 WWHD_GAME_FUNC(0x024B2DC0, s32, wwhd_Act_c__Create_024B2DC0, (void* self));
@@ -29030,8 +30083,11 @@ WWHD_GAME_FUNC(0x024B909C, void, wwhd___sinit_d_a_title_cpp_024B909C, (void));
 WWHD_GAME_FUNC(0x024B9130, s32, wwhd_daTitle_IsDelete_024B9130, (void* i_this));
 #define wwhd_daTitle_IsDelete wwhd_daTitle_IsDelete_024B9130
 WWHD_GAME_FUNC(0x024B9138, void, wwhd_SafeString_dt_024B9138, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x024B914C, void, wwhd_daTitle_proc_draw_024B914C, (void* arg0));
+#define wwhd_daTitle_proc_draw wwhd_daTitle_proc_draw_024B914C
 WWHD_GAME_FUNC(0x024B9150, void, wwhd_daTitle_c_dt_024B9150, (void* p, s32 flags));
 #define wwhd_daTitle_c_dt wwhd_daTitle_c_dt_024B9150
+WWHD_GAME_FUNC(0x024B91E0, void, wwhd_SafeString_assureTerminationImpl_024B91E0, (void* arg0));
 WWHD_GAME_FUNC(0x024B91E4, void, wwhd_anm_init_024B91E4, (void* actor, int animationIndex, f32 blend, s32 loopMode, f32 speed, int soundIndex));
 WWHD_GAME_FUNC(0x024B931C, void, wwhd_tate_anm_init_024B931C, (void* actor, int animationIndex, f32 blend, s32 loopMode, f32 speed));
 #define wwhd_tate_anm_init wwhd_tate_anm_init_024B931C
@@ -29150,8 +30206,11 @@ WWHD_GAME_FUNC(0x024C79B4, s32, wwhd_daToge_Execute_024C79B4, (void* i_this));
 WWHD_GAME_FUNC(0x024C79B8, void, wwhd___sinit_d_a_toge_cpp_024C79B8, (void));
 #define wwhd___sinit_d_a_toge_cpp wwhd___sinit_d_a_toge_cpp_024C79B8
 WWHD_GAME_FUNC(0x024C7A4C, void, wwhd_SafeString_dt_024C7A4C, (void* s, s32 flags));
+WWHD_GAME_FUNC(0x024C7A60, s32, wwhd_daToge_IsDelete_024C7A60, (void* arg0));
+#define wwhd_daToge_IsDelete wwhd_daToge_IsDelete_024C7A60
 WWHD_GAME_FUNC(0x024C7A68, void, wwhd_daToge_c_dt_024C7A68, (void* i_this, s32 flags));
 #define wwhd_daToge_c_dt wwhd_daToge_c_dt_024C7A68
+WWHD_GAME_FUNC(0x024C7AD4, void, wwhd_SafeString_assureTermination_024C7AD4, (void* arg0));
 WWHD_GAME_FUNC(0x024C7AD8, s32, wwhd_daTori_Flag_c__CreateHeap_024C7AD8, (void* self));
 #define wwhd_daTori_Flag_c__CreateHeap wwhd_daTori_Flag_c__CreateHeap_024C7AD8
 WWHD_GAME_FUNC(0x024C7BFC, s32, wwhd_CheckCreateHeap_024C7BFC, (void* i_this));
@@ -29360,6 +30419,38 @@ WWHD_GAME_FUNC(0x024CFAB8, void, wwhd_mode_sink_024CFAB8, (void* a));
 WWHD_GAME_FUNC(0x024CFB20, void, wwhd_calc_afl_param_024CFB20, (void* a, f32* o1, f32* o2, f32* o3));
 #define wwhd_calc_afl_param wwhd_calc_afl_param_024CFB20
 WWHD_GAME_FUNC(0x024CFD3C, void, wwhd_mode_afl_024CFD3C, (void* a));
+WWHD_GAME_FUNC(0x024CFE88, void, wwhd_moment_small_024CFE88, (void* a, const void* arg1));
+#define wwhd_moment_small wwhd_moment_small_024CFE88
+WWHD_GAME_FUNC(0x024CFE8C, void, wwhd_moment_big_024CFE8C, (void* a, const void* arg1));
+#define wwhd_moment_big wwhd_moment_big_024CFE8C
+WWHD_GAME_FUNC(0x024CFE90, void, wwhd_moment_water_024CFE90, (void* a, const void* arg1));
+#define wwhd_moment_water wwhd_moment_water_024CFE90
+WWHD_GAME_FUNC(0x024CFE94, void, wwhd_moment_barrel_024CFE94, (void* a, const void* arg1));
+#define wwhd_moment_barrel wwhd_moment_barrel_024CFE94
+WWHD_GAME_FUNC(0x024CFE98, void, wwhd_moment_stool_024CFE98, (void* a, const void* arg1));
+#define wwhd_moment_stool wwhd_moment_stool_024CFE98
+WWHD_GAME_FUNC(0x024CFE9C, void, wwhd_moment_skull_024CFE9C, (void* a, const void* arg1));
+#define wwhd_moment_skull wwhd_moment_skull_024CFE9C
+WWHD_GAME_FUNC(0x024CFEA0, void, wwhd_moment_pail_024CFEA0, (void* a, const void* arg1));
+#define wwhd_moment_pail wwhd_moment_pail_024CFEA0
+WWHD_GAME_FUNC(0x024CFEA4, void, wwhd_moment_spine_024CFEA4, (void* a, const void* arg1));
+#define wwhd_moment_spine wwhd_moment_spine_024CFEA4
+WWHD_GAME_FUNC(0x024CFEA8, void, wwhd_moment_hbox2S_024CFEA8, (void* a, const void* arg1));
+#define wwhd_moment_hbox2S wwhd_moment_hbox2S_024CFEA8
+WWHD_GAME_FUNC(0x024CFEAC, void, wwhd_moment_tryColSun_024CFEAC, (void* a, const void* arg1));
+#define wwhd_moment_tryColSun wwhd_moment_tryColSun_024CFEAC
+WWHD_GAME_FUNC(0x024CFEB0, void, wwhd_moment_tryColMer_024CFEB0, (void* a, const void* arg1));
+#define wwhd_moment_tryColMer wwhd_moment_tryColMer_024CFEB0
+WWHD_GAME_FUNC(0x024CFEB4, void, wwhd_moment_tryColJup_024CFEB4, (void* a, const void* arg1));
+#define wwhd_moment_tryColJup wwhd_moment_tryColJup_024CFEB4
+WWHD_GAME_FUNC(0x024CFEB8, void, wwhd_moment_tryKeyGate_024CFEB8, (void* a, const void* arg1));
+#define wwhd_moment_tryKeyGate wwhd_moment_tryKeyGate_024CFEB8
+WWHD_GAME_FUNC(0x024CFEBC, void, wwhd_moment_pinecone_024CFEBC, (void* a, const void* arg1));
+#define wwhd_moment_pinecone wwhd_moment_pinecone_024CFEBC
+WWHD_GAME_FUNC(0x024CFEC0, void, wwhd_moment_kutani_024CFEC0, (void* a, const void* arg1));
+#define wwhd_moment_kutani wwhd_moment_kutani_024CFEC0
+WWHD_GAME_FUNC(0x024CFEC4, void, wwhd_moment_woodS_024CFEC4, (void* a, const void* arg1));
+#define wwhd_moment_woodS wwhd_moment_woodS_024CFEC4
 WWHD_GAME_FUNC(0x024CFEC8, void, wwhd_set_tensor_wait_024CFEC8, (void* a));
 #define wwhd_set_tensor_wait wwhd_set_tensor_wait_024CFEC8
 WWHD_GAME_FUNC(0x024CFF40, void, wwhd_set_tensor_hide_024CFF40, (void* a));
@@ -29428,6 +30519,7 @@ WWHD_GAME_FUNC(0x024D1B44, void, wwhd___sinit_d_a_vrbox_cpp_024D1B44, (void));
 WWHD_GAME_FUNC(0x024D1BD8, void, wwhd_SafeString_dt_024D1BD8, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x024D1BEC, void, wwhd_vrbox_class_dt_024D1BEC, (void* i_this, s32 flags));
 #define wwhd_vrbox_class_dt wwhd_vrbox_class_dt_024D1BEC
+WWHD_GAME_FUNC(0x024D1C40, void, wwhd_SafeString_assureTerminationImpl_024D1C40, (void* arg0));
 WWHD_GAME_FUNC(0x024D1C44, void, wwhd_texScrollCheck_024D1C44, (f32* v));
 #define wwhd_texScrollCheck wwhd_texScrollCheck_024D1C44
 WWHD_GAME_FUNC(0x024D1C90, void, wwhd_Color4f_setGXColor_024D1C90, (void* out, void* c));
@@ -29436,6 +30528,10 @@ WWHD_GAME_FUNC(0x024D1D44, s32, wwhd_daVrbox2_Draw_024D1D44, (void* i_this));
 #define wwhd_daVrbox2_Draw wwhd_daVrbox2_Draw_024D1D44
 WWHD_GAME_FUNC(0x024D3248, s32, wwhd_daVrbox2_Execute_024D3248, (void* i_this));
 #define wwhd_daVrbox2_Execute wwhd_daVrbox2_Execute_024D3248
+WWHD_GAME_FUNC(0x024D3920, s32, wwhd_daVrbox2_IsDelete_024D3920, (void* arg0));
+#define wwhd_daVrbox2_IsDelete wwhd_daVrbox2_IsDelete_024D3920
+WWHD_GAME_FUNC(0x024D3928, s32, wwhd_daVrbox2_Delete_024D3928, (void* arg0));
+#define wwhd_daVrbox2_Delete wwhd_daVrbox2_Delete_024D3928
 WWHD_GAME_FUNC(0x024D3930, s32, wwhd_daVrbox2_solidHeapCB_024D3930, (void* i_actor));
 #define wwhd_daVrbox2_solidHeapCB wwhd_daVrbox2_solidHeapCB_024D3930
 WWHD_GAME_FUNC(0x024D3A48, s32, wwhd_daVrbox2_Create_024D3A48, (void* i_actor));
@@ -29445,6 +30541,7 @@ WWHD_GAME_FUNC(0x024D3AD4, void, wwhd___sinit_d_a_vrbox2_cpp_024D3AD4, (void));
 WWHD_GAME_FUNC(0x024D3B68, void, wwhd_SafeString_dt_024D3B68, (void* p, s32 flags));
 WWHD_GAME_FUNC(0x024D3B7C, void, wwhd_vrbox2_class_dt_024D3B7C, (void* i_this, s32 flags));
 #define wwhd_vrbox2_class_dt wwhd_vrbox2_class_dt_024D3B7C
+WWHD_GAME_FUNC(0x024D3BD0, void, wwhd_SafeString_assureTerminationImpl_024D3BD0, (void* arg0));
 WWHD_GAME_FUNC(0x024D3BD4, void, wwhd_setMoveBGMtx_024D3BD4, (u32 actor));
 WWHD_GAME_FUNC(0x024D3C44, s32, wwhd_CreateHeap_024D3C44, (u32 actor));
 WWHD_GAME_FUNC(0x024D3D6C, s32, wwhd_CheckCreateHeap_024D3D6C, (u32 actor));
@@ -29624,6 +30721,8 @@ WWHD_GAME_FUNC(0x024D7F68, s32, wwhd_daWarpf_c__actWarpMode_3_024D7F68, (void* s
 WWHD_GAME_FUNC(0x024D8080, void, wwhd_sinit_d_a_warpf_024D8080, (void));
 #define wwhd_sinit_d_a_warpf wwhd_sinit_d_a_warpf_024D8080
 WWHD_GAME_FUNC(0x024D8114, void, wwhd_SafeString_dtor_024D8114, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x024D8128, s32, wwhd_daWarpf_IsDelete_024D8128, (void* arg0));
+#define wwhd_daWarpf_IsDelete wwhd_daWarpf_IsDelete_024D8128
 WWHD_GAME_FUNC(0x024D8130, s32, wwhd_daWarpf_c__actWarpStart_024D8130, (void* self, int staffIdx));
 #define wwhd_daWarpf_c__actWarpStart wwhd_daWarpf_c__actWarpStart_024D8130
 WWHD_GAME_FUNC(0x024D8138, void, wwhd_daWarpf_c__initEndWait_024D8138, (void* self, int staffIdx));
@@ -29632,6 +30731,8 @@ WWHD_GAME_FUNC(0x024D813C, s32, wwhd_daWarpf_c__actEndWait_024D813C, (void* self
 #define wwhd_daWarpf_c__actEndWait wwhd_daWarpf_c__actEndWait_024D813C
 WWHD_GAME_FUNC(0x024D8144, void, wwhd_daWarpf_c_dtor_024D8144, (void* p, s32 flags));
 #define wwhd_daWarpf_c_dtor wwhd_daWarpf_c_dtor_024D8144
+WWHD_GAME_FUNC(0x024D8198, void, wwhd_warpfoutOrderNoop_024D8198, (void* a));
+#define wwhd_warpfoutOrderNoop wwhd_warpfoutOrderNoop_024D8198
 WWHD_GAME_FUNC(0x024D819C, void, wwhd_warpfoutCreateInit_024D819C, (void* a));
 #define wwhd_warpfoutCreateInit wwhd_warpfoutCreateInit_024D819C
 WWHD_GAME_FUNC(0x024D81A8, s32, wwhd_warpfoutCreate_024D81A8, (void* a));
@@ -29922,6 +31023,10 @@ WWHD_GAME_FUNC(0x024DE930, void, wwhd_daWbird_c__calcMtx_024DE930, (void* self))
 #define wwhd_daWbird_c__calcMtx wwhd_daWbird_c__calcMtx_024DE930
 WWHD_GAME_FUNC(0x024DE958, s32, wwhd_daWbird_Execute_024DE958, (void* i_this));
 #define wwhd_daWbird_Execute wwhd_daWbird_Execute_024DE958
+WWHD_GAME_FUNC(0x024DE9E0, s32, wwhd_daWbird_IsDelete_024DE9E0, (void* arg0));
+#define wwhd_daWbird_IsDelete wwhd_daWbird_IsDelete_024DE9E0
+WWHD_GAME_FUNC(0x024DE9E8, s32, wwhd_daWbird_Delete_024DE9E8, (void* arg0));
+#define wwhd_daWbird_Delete wwhd_daWbird_Delete_024DE9E8
 WWHD_GAME_FUNC(0x024DE9F0, s32, wwhd_daWbird_c__CreateInit_024DE9F0, (void* self));
 #define wwhd_daWbird_c__CreateInit wwhd_daWbird_c__CreateInit_024DE9F0
 WWHD_GAME_FUNC(0x024DEA54, s32, wwhd_daWbird_c__create_024DEA54, (void* self));
@@ -29930,6 +31035,8 @@ WWHD_GAME_FUNC(0x024DEABC, s32, wwhd_daWbird_Create_024DEABC, (void* i_this));
 #define wwhd_daWbird_Create wwhd_daWbird_Create_024DEABC
 WWHD_GAME_FUNC(0x024DEAC0, void, wwhd___sinit_d_a_wbird_cpp_024DEAC0, (void));
 #define wwhd___sinit_d_a_wbird_cpp wwhd___sinit_d_a_wbird_cpp_024DEAC0
+WWHD_GAME_FUNC(0x024DEB54, s32, wwhd_daWbird_Draw_024DEB54, (void* arg0));
+#define wwhd_daWbird_Draw wwhd_daWbird_Draw_024DEB54
 WWHD_GAME_FUNC(0x024DEB5C, void, wwhd_daWbird_c_dt_024DEB5C_024DEB5C, (void* p, s32 flags));
 #define wwhd_daWbird_c_dt_024DEB5C wwhd_daWbird_c_dt_024DEB5C_024DEB5C
 WWHD_GAME_FUNC(0x024DEBB0, void*, wwhd_daWindTag_ct_024DEBB0, (void* p));
@@ -29976,6 +31083,9 @@ WWHD_GAME_FUNC(0x024E0A70, s32, wwhd_daWindTag_Execute_024E0A70, (void* i_ac));
 WWHD_GAME_FUNC(0x024E0A74, void, wwhd___sinit_d_a_wind_tag_cpp_024E0A74, (void));
 #define wwhd___sinit_d_a_wind_tag_cpp wwhd___sinit_d_a_wind_tag_cpp_024E0A74
 WWHD_GAME_FUNC(0x024E0B08, void, wwhd_SafeString_dt_024E0B08, (void* p, s32 flags));
+WWHD_GAME_FUNC(0x024E0B1C, s32, wwhd_daWindTag_IsDelete_024E0B1C, (void* arg0));
+#define wwhd_daWindTag_IsDelete wwhd_daWindTag_IsDelete_024E0B1C
+WWHD_GAME_FUNC(0x024E0B24, void, wwhd_SafeString_assureTerminationImpl_024E0B24, (void* arg0));
 WWHD_GAME_FUNC(0x024E0B28, void, wwhd_daWindTag_c_dt_024E0B28, (void* p, s32 flags));
 #define wwhd_daWindTag_c_dt wwhd_daWindTag_c_dt_024E0B28
 WWHD_GAME_FUNC(0x024E0BA0, s32, wwhd_windmill_create_heap_024E0BA0, (void* a));
@@ -30043,6 +31153,8 @@ WWHD_GAME_FUNC(0x024E3950, void, wwhd_next_tama_move_024E3950, (void* i_this, co
 #define wwhd_next_tama_move wwhd_next_tama_move_024E3950
 WWHD_GAME_FUNC(0x024E398C, s32, wwhd_daWZ_Execute_024E398C, (void* i_this));
 #define wwhd_daWZ_Execute wwhd_daWZ_Execute_024E398C
+WWHD_GAME_FUNC(0x024E61D8, s32, wwhd_daWZ_IsDelete_024E61D8, (void* arg0));
+#define wwhd_daWZ_IsDelete wwhd_daWZ_IsDelete_024E61D8
 WWHD_GAME_FUNC(0x024E61E0, s32, wwhd_daWZ_Delete_024E61E0, (void* i_this));
 #define wwhd_daWZ_Delete wwhd_daWZ_Delete_024E61E0
 WWHD_GAME_FUNC(0x024E6420, s32, wwhd_useHeapInit_024E6420, (void* a_this));
@@ -30146,6 +31258,8 @@ WWHD_GAME_FUNC(0x024EB88C, s32, wwhd_sound_attention_024EB88C, (u32 actor, u32 u
 #define wwhd_sound_attention wwhd_sound_attention_024EB88C
 WWHD_GAME_FUNC(0x024EB904, u32, wwhd_dAttParam_c_ct0_024EB904, (u32 i_this));
 #define wwhd_dAttParam_c_ct0 wwhd_dAttParam_c_ct0_024EB904
+WWHD_GAME_FUNC(0x024EB984, u32, wwhd_dAttParam_c_ct_024EB984, (u32 i_this, s32 arg1));
+#define wwhd_dAttParam_c_ct wwhd_dAttParam_c_ct_024EB984
 WWHD_GAME_FUNC(0x024EBA14, u32, wwhd_dAttList_c_getActor_024EBA14, (u32 i_this));
 #define wwhd_dAttList_c_getActor wwhd_dAttList_c_getActor_024EBA14
 WWHD_GAME_FUNC(0x024EBA54, u32, wwhd_dAttHint_c_getPId_024EBA54, (u32 i_this, u32 proc));
@@ -30706,6 +31820,8 @@ WWHD_GAME_FUNC(0x024FB930, void, wwhd_dCamera_c__forwardCheckAngle_024FB930, (vo
 #define wwhd_dCamera_c__forwardCheckAngle wwhd_dCamera_c__forwardCheckAngle_024FB930
 WWHD_GAME_FUNC(0x024FBF9C, s32, wwhd_dCamera_c__defaultTriming_024FBF9C, (void* self));
 #define wwhd_dCamera_c__defaultTriming wwhd_dCamera_c__defaultTriming_024FBF9C
+WWHD_GAME_FUNC(0x024FC0A8, u8, wwhd_dCamera_c__demoCamera_024FC0A8, (void* self, s32 arg1));
+#define wwhd_dCamera_c__demoCamera wwhd_dCamera_c__demoCamera_024FC0A8
 WWHD_GAME_FUNC(0x024FC0B0, void*, wwhd_dCamera_c__eyePos_024FC0B0, (void* self, void* ret, void* actor));
 #define wwhd_dCamera_c__eyePos wwhd_dCamera_c__eyePos_024FC0B0
 WWHD_GAME_FUNC(0x024FC108, f32, wwhd_dCamera_c__shakeCamera_024FC108, (void* self));
@@ -30726,6 +31842,8 @@ WWHD_GAME_FUNC(0x024FE3D8, void*, wwhd_dCamera_c__getDMCAngle_024FE3D8, (void* s
 #define wwhd_dCamera_c__getDMCAngle wwhd_dCamera_c__getDMCAngle_024FE3D8
 WWHD_GAME_FUNC(0x024FE3E8, u32, wwhd_dCamera_c__Run_024FE3E8, (void* self));
 #define wwhd_dCamera_c__Run wwhd_dCamera_c__Run_024FE3E8
+WWHD_GAME_FUNC(0x024FF164, u8, wwhd_dCamera_c__eventCamera_024FF164, (void* self, s32 arg1));
+#define wwhd_dCamera_c__eventCamera wwhd_dCamera_c__eventCamera_024FF164
 WWHD_GAME_FUNC(0x024FF6C0, u8, wwhd_dCamera_c__NotRun_024FF6C0, (void* self));
 #define wwhd_dCamera_c__NotRun wwhd_dCamera_c__NotRun_024FF6C0
 WWHD_GAME_FUNC(0x024FF8A0, void, wwhd_dCamera_c__CalcTrimSize_024FF8A0, (void* self));
@@ -30761,10 +31879,14 @@ WWHD_GAME_FUNC(0x025021A4, s32, wwhd_camera_create_025021A4, (u32 i_this));
 WWHD_GAME_FUNC(0x025021B8, void, wwhd_dCamera_dt_025021B8, (void* i_this, s32 flags));
 #define wwhd_dCamera_dt wwhd_dCamera_dt_025021B8
 WWHD_GAME_FUNC(0x02502288, s32, wwhd_camera_delete_02502288, (void* i_this));
+WWHD_GAME_FUNC(0x0250235C, s32, wwhd_is_camera_delete_0250235C, (void* arg0));
+#define wwhd_is_camera_delete wwhd_is_camera_delete_0250235C
 WWHD_GAME_FUNC(0x02502364, u32, wwhd_dCamera_hdTableEntry_02502364, (void));
 #define wwhd_dCamera_hdTableEntry wwhd_dCamera_hdTableEntry_02502364
 WWHD_GAME_FUNC(0x025023C4, s32, wwhd_dCamera_hdTableIndex_025023C4, (void));
 #define wwhd_dCamera_hdTableIndex wwhd_dCamera_hdTableIndex_025023C4
+WWHD_GAME_FUNC(0x02502424, u8, wwhd_dCamera_c__letCamera_02502424, (void* self, s32 arg1));
+#define wwhd_dCamera_c__letCamera wwhd_dCamera_c__letCamera_02502424
 WWHD_GAME_FUNC(0x0250242C, void, wwhd_dCamera_c__relationalPos_0250242C, (void* self, void* ret, void* actor, void* offset));
 #define wwhd_dCamera_c__relationalPos wwhd_dCamera_c__relationalPos_0250242C
 WWHD_GAME_FUNC(0x0250252C, void*, wwhd_dCamera_c__calcPeepAngle_0250252C, (void* self, void* ret));
@@ -30883,6 +32005,8 @@ WWHD_GAME_FUNC(0x02515578, void, wwhd_d_camera_string_destructor_02515578, (void
 #define wwhd_d_camera_string_destructor wwhd_d_camera_string_destructor_02515578
 WWHD_GAME_FUNC(0x0251558C, void*, wwhd_dCamera_PosSet_ct_0251558C, (void* p));
 #define wwhd_dCamera_PosSet_ct wwhd_dCamera_PosSet_ct_0251558C
+WWHD_GAME_FUNC(0x025155D4, void, wwhd_d_camera_string_terminate_025155D4, (void* arg0));
+#define wwhd_d_camera_string_terminate wwhd_d_camera_string_terminate_025155D4
 WWHD_GAME_FUNC(0x025155D8, f32, wwhd_sead_Vector3_normalize_025155D8, (void* v));
 #define wwhd_sead_Vector3_normalize wwhd_sead_Vector3_normalize_025155D8
 WWHD_GAME_FUNC(0x02515644, void, wwhd_sead_Quat_setAxisAngle_02515644, (f32* q, void* axis, f32 angle));
@@ -39073,6 +40197,15 @@ WWHD_GAME_FUNC(0x02615198, u32, wwhd_getParamB_02615198, (u32 self));
 #define wwhd_getParamB wwhd_getParamB_02615198
 WWHD_GAME_FUNC(0x026151A0, u32, wwhd_getHover_026151A0, (u32 self));
 #define wwhd_getHover wwhd_getHover_026151A0
+/* Public Pair32 ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x026151A8, wwhd_gpr_pair, wwhd_touchFromStart_026151A8, (u32 self));
+#define wwhd_touchFromStart wwhd_touchFromStart_026151A8
+/* Public Pair32 ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x02615260, wwhd_gpr_pair, wwhd_padTouchFromStart_02615260, (u32 self));
+#define wwhd_padTouchFromStart wwhd_padTouchFromStart_02615260
+/* Public Pair32 ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x026152FC, wwhd_gpr_pair, wwhd_padTouchFromPrev_026152FC, (u32 self));
+#define wwhd_padTouchFromPrev wwhd_padTouchFromPrev_026152FC
 WWHD_GAME_FUNC(0x02615398, u32, wwhd_getId_02615398, (u32 self));
 #define wwhd_getId wwhd_getId_02615398
 WWHD_GAME_FUNC(0x026153B4, u32, wwhd_dispatch_026153B4, (u32 self, u32 ev));
@@ -40110,6 +41243,9 @@ WWHD_GAME_FUNC(0x02721A68, void, wwhd_saveMgrSessionCounter_02721A68, (void));
 #define wwhd_saveMgrSessionCounter wwhd_saveMgrSessionCounter_02721A68
 WWHD_GAME_FUNC(0x02721A8C, void, wwhd_saveMgrStampTime_02721A8C, (void));
 #define wwhd_saveMgrStampTime wwhd_saveMgrStampTime_02721A8C
+/* Public Pair32 ABI: explicit r3/r4 result, not a C struct return. */
+WWHD_GAME_FUNC(0x02721AC4, wwhd_gpr_pair, wwhd_saveMgrChecksum_02721AC4, (u32 p, u32 data, u32 count));
+#define wwhd_saveMgrChecksum wwhd_saveMgrChecksum_02721AC4
 WWHD_GAME_FUNC(0x02721AFC, void, wwhd_saveMgrChecksumSlot_02721AFC, (u32 p, u32 data, u32 slot));
 #define wwhd_saveMgrChecksumSlot wwhd_saveMgrChecksumSlot_02721AFC
 WWHD_GAME_FUNC(0x02721B34, void, wwhd_saveMgrSyncSlot_02721B34, (u32 p, u32 slot));
