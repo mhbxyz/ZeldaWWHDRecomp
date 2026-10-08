@@ -1,6 +1,6 @@
 # Builds the example guest mods: mod.c -> mod.elf (PowerPC relocatable ELF, platform independent).
 # Needs a clang with the PowerPC target and ld.lld, e.g. Homebrew `llvm` + `lld` on macOS, the LLVM
-# release on Windows/Linux. Apple's clang has no PowerPC target.
+# MSYS2 CLANG64 build on Windows or distro LLVM on Linux. Apple's clang has no PowerPC target.
 CLANG ?= clang
 LLD ?= ld.lld
 SDK ?= ../../runtime/guest/include
@@ -12,6 +12,6 @@ all: $(MODS:%=%/mod.elf)
 %/mod.o: %/mod.c $(SDK)/wwhd_guest.h
 	$(CLANG) $(CFLAGS) -c $< -o $@
 %/mod.elf: %/mod.o
-	$(LLD) -r $< -o $@
+	$(LLD) -m elf32ppc -r $< -o $@
 clean:
 	rm -f $(MODS:%=%/mod.o) $(MODS:%=%/mod.elf)

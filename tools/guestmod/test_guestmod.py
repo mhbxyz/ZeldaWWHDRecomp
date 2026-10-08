@@ -45,7 +45,7 @@ class GuestModTest(unittest.TestCase):
         with open(src, "w") as f:
             f.write(src_text)
         subprocess.run([CLANG] + FLAGS + ["-c", src, "-o", os.path.join(d, "mod.o")], check=True)
-        subprocess.run([LLD, "-r", os.path.join(d, "mod.o"), "-o", os.path.join(d, "mod.elf")], check=True)
+        subprocess.run([LLD, "-m", "elf32ppc", "-r", os.path.join(d, "mod.o"), "-o", os.path.join(d, "mod.elf")], check=True)
         return os.path.join(d, "mod.elf")
 
     def test_examples_build(self):

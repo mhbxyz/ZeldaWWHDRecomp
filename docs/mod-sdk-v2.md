@@ -151,7 +151,7 @@ function runs, and mods hook the game's code below them.
   -fno-jump-tables -ffunction-sections -fdata-sections`. `-mcpu=750` keeps to instructions
   of the game's CPU family (no AltiVec, no `isel`); clang does not use small-data (r2/r13)
   addressing for this target, so the game's r2/r13 stay untouched.
-- **Output**: one relocatable ELF per mod (`ld.lld -r *.o -o mod.elf`), not linked to an
+- **Output**: one relocatable ELF per mod (`ld.lld -m elf32ppc -r *.o -o mod.elf`), not linked to an
   address. Relocations and undefined symbols are resolved on install.
 - **References to the game** by address, so no symbol database is needed:
   `WWHD_GAME_FUNC(0x0200ED84, void, cLib_addCalc2, (f32*, f32, f32, f32))` declares a game
@@ -225,7 +225,8 @@ The original `--cc` interface remains supported for catalogue integrations.
 
 On Windows, the standard LLVM installer and llvm-mingw do not include the PowerPC
 backend. Modders should use the MSYS2 CLANG64 clang/lld packages (an all-target build),
-while players' host modules still compile with setup's pinned llvm-mingw. The
+while players' host modules still compile with setup's pinned llvm-mingw. Pass
+`-m elf32ppc` to lld to select ELF output on Windows, where MSYS2 defaults to PE. The
 [MSYS2 LLVM package recipe](https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-llvm/PKGBUILD)
 selects all targets for its clang build. CI verifies the actual PowerPC compilation.
 

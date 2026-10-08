@@ -5,7 +5,7 @@
  *
  *   clang --target=powerpc-unknown-eabi -mcpu=750 -O2 -G0 -ffreestanding -fno-builtin -nostdlib
  *         -fno-jump-tables -ffunction-sections -fdata-sections -I<sdk>/include -c mod.c -o mod.o
- *   ld.lld -r mod.o [more.o ...] -o mod.elf          (one relocatable ELF per mod)
+ *   ld.lld -m elf32ppc -r mod.o [more.o ...] -o mod.elf          (one relocatable ELF per mod)
  *
  * The player's installation translates mod.elf to C and compiles it with its local compiler
  * (tools/guestmod/build_guest_mod.py). Nothing from the game is part of this header: declare the game
