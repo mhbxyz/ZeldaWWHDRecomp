@@ -345,6 +345,20 @@ python3 tools/guestmod/build_guest_mod.py <ModManager>/Mods/<id> --out <ModManag
 - Requires game code built with `--mod-hooks`; setup passes it by default once the decision is
   made. Without it the runtime logs that guest mods are unavailable.
 
+## Save states
+
+Full states capture the complete guest mod region (`0x7F000000`–`0x80000000`),
+including module data and guest heap metadata. Zero chunks remain sparse. Restoring a
+full state restores allocations as well as the bytes in those allocations.
+
+Both full states and portable `.wwstate` files record the loaded guest mods by ID and
+version. Loading a state with a different set displays a warning and continues; ordering
+alone does not cause a warning. Older states without this metadata count as an empty mod
+set. Portable states restore game progress and position, rather than mod memory.
+
+Guest modules remain selected at startup. Loading a state does not install, build, enable
+or disable mods. Use the same mod versions that created a state when reproducing gameplay.
+
 ## Prototype: what exists and how to run it
 
 | Part | File |

@@ -98,7 +98,7 @@ WWHD_REPLACE(0x02005678, void, repl, (void)) { ptr = helper; orig_fn(); wwhd_log
             self.assertGreaterEqual(len(t.entries), 2)  # helper is address-taken: its own function
 
     def test_host_services_compile(self):
-        src = r''' 
+        src = r'''
 #include "wwhd_guest.h"
 WWHD_HOOK(0x02000000, all_services, (void)) {
     char* p = wwhd_malloc(64);

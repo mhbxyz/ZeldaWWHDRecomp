@@ -252,6 +252,10 @@ void init() {
     if(getenv("WWHD_GUEST_MODS"))LOG("[guestmods] WWHD_GUEST_MODS is retired; install and trust guest packages in the mod manager");
 }
 
+std::vector<ModIdentity> enabled_mods() {
+    std::vector<ModIdentity> mods;for(const auto& mod:g_loaded)mods.push_back({mod.id,mod.version});return mods;
+}
+
 void frame(uint64_t step) {g_logic_step.store(step,std::memory_order_relaxed);}
 
 }  // namespace guestmods
