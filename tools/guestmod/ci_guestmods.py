@@ -25,8 +25,9 @@ def main():
         os.environ.update(tc.env)
     os.environ["CC"] = shlex.join(tc.cc)
     if sys.platform == "win32":
-        bin_dir = Path(tc.cc[0]).parent
-        os.environ["WWHD_PPC_CLANG"] = tc.cc[0]
+        # llvm-mingw is the native module compiler, not the modder's PowerPC toolchain.
+        bin_dir = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "LLVM" / "bin"
+        os.environ["WWHD_PPC_CLANG"] = str(bin_dir / "clang.exe")
         os.environ["WWHD_PPC_LLD"] = str(bin_dir / "ld.lld.exe")
     elif sys.platform == "darwin":
         prefix = subprocess.check_output(["brew", "--prefix", "llvm"], text=True).strip()
@@ -39,6 +40,8 @@ def main():
     sys.path.insert(0, str(REPO / "tools" / "guestmod"))
     import test_guestmod
     if not test_guestmod.ppc_ok():
+        for name in ("WWHD_PPC_CLANG", "WWHD_PPC_LLD"):
+            print(name, os.environ[name], "exists:", Path(os.environ[name]).exists(), flush=True)
         raise SystemExit("PowerPC clang/lld unavailable: refusing to skip module compile tests in CI")
     print("Host module compiler:", tc.desc, flush=True)
     subprocess.run([sys.executable, str(REPO / "tools" / "guestmod" / "test_guestmod.py"), "-v"], check=True)

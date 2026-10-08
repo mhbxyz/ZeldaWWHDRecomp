@@ -17,7 +17,7 @@ struct Option {
 struct View {
     std::string id,name,version,author,description,kind,reason,status;
     bool enabled=false,active=false,compatible=false,restart_required=false,pending_restart=false;
-    bool native_confirmed=true; // false: native code the player has not confirmed (for this library build)
+    bool native_confirmed=true; // false: code the player has not confirmed (native library or guest ELF)
     std::vector<Option> options;
     std::vector<std::string> dependencies,conflicts;
 };
@@ -31,7 +31,7 @@ bool enable(const std::string& id,bool on,std::string& error); // refuses unconf
 // code the player has not confirmed yet, as {id, name}. Empty: enable() needs no confirmation.
 std::vector<std::pair<std::string,std::string>> unconfirmed_native(const std::string& id);
 // One-time player acknowledgement that a native package may run: remembered in profiles.json for
-// this package ID and the SHA-256 of its current platform library (a changed library asks again).
+// this package ID and the SHA-256 of its current platform library or guest ELF (changed code asks again).
 bool confirm_native(const std::string& id,std::string& error);
 bool configure(const std::string& id,const std::string& option,const json::Value& value,std::string& error);
 void disable_all();

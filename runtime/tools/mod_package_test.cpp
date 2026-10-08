@@ -64,6 +64,33 @@ int restart_check(const char* storage) {
 int main(int argc, char** argv) {
     namespace fs=std::filesystem;
     using namespace mods::packages;
+    if(argc==2&&std::string(argv[1])=="--guest-metadata") {
+        auto root=fs::temp_directory_path()/("wwhd-guest-metadata-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+        fs::create_directories(root/"source");
+        env("WWHD_NO_HOST_INPUT","1");env("WWHD_MOD_MANAGER_DIR",(root/"manager").string().c_str());
+        env("WWHD_TEST_TRUST_NATIVE_MODS",nullptr);
+        std::ofstream(root/"source/manifest.json") << R"({"format_version":1,"id":"guest-fixture","name":"Guest fixture","version":"1.0.0","game_id":"wwhd-usa","kind":"guest","guest":{"api_version":1,"elf":"mod.elf"},"options":[{"id":"amount","name":"Amount","type":"number","min":1,"max":10,"default":3}]})";
+        {std::ofstream elf(root/"source/mod.elf",std::ios::binary);elf.write("\x7f" "ELF\x01\x02",6);}
+        initialize();std::string error;
+        assert(install((root/"source").string(),error));
+        assert(view("guest-fixture").compatible&&view("guest-fixture").restart_required);
+        assert(!view("guest-fixture").native_confirmed);
+        assert(unconfirmed_native("guest-fixture").size()==1);
+        assert(!enable("guest-fixture",true,error));
+        assert(confirm_native("guest-fixture",error));
+        assert(enable("guest-fixture",true,error));
+        assert(view("guest-fixture").pending_restart);
+        assert(configure("guest-fixture","amount",4,error));
+        assert(!configure("guest-fixture","amount",99,error));
+        frame(1);assert(!view("guest-fixture").active); // never load a PowerPC ELF as a host library
+        assert(enable("guest-fixture",false,error));
+        {std::ofstream elf(root/"source/mod.elf",std::ios::binary|std::ios::app);elf << "changed";}
+        assert(install((root/"source").string(),error));
+        assert(!view("guest-fixture").native_confirmed); // trust fingerprints the ELF, not its name
+        {std::ofstream(root/"source/manifest.json") << R"({"format_version":1,"id":"guest-fixture","name":"Guest fixture","version":"1.0.0","game_id":"wwhd-usa","kind":"guest","guest":{"api_version":2}})";}
+        assert(!install((root/"source").string(),error));
+        fs::remove_all(root);std::cout << "guest package metadata/trust passed\n";return 0;
+    }
     if(argc == 3 && std::string(argv[1]) == "--restart") return restart_check(argv[2]);
     if(argc==2&&(std::string(argv[1])=="--cemu-startup"||std::string(argv[1])=="--cemu-backend")){
         bool backend=std::string(argv[1])=="--cemu-backend";

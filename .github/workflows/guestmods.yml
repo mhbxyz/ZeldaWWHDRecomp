@@ -21,5 +21,8 @@ jobs:
       - name: PowerPC clang and lld (macOS)
         if: runner.os == 'macOS'
         run: brew install llvm lld
+      - name: PowerPC clang and lld (Windows)
+        if: runner.os == 'Windows'
+        run: choco install llvm --yes --no-progress
       - name: Build and test guest modules with setup toolchain
         run: python tools/guestmod/ci_guestmods.py
