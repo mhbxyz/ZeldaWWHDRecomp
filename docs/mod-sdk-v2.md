@@ -460,7 +460,7 @@ python3 tools/guestmod/build_guest_mod.py <ModManager>/Mods/<id> --out <ModManag
 
 Guest mods currently target desktop builds. Android still builds, but guest packages are
 unsupported there. A player's build needs game code translated with `--mod-hooks`;
-this flag remains opt-in while the phase 1 performance gate is pending.
+this flag remains opt-in pending a quiet-window performance rerun.
 
 ### Install the modder toolchain
 
@@ -618,8 +618,11 @@ Guest-module, Linux, Windows and Android CI passed for that commit.
 
 The changed-version test loaded both states after changing only the installed example's
 manifest version from `0.1.0` to `0.1.1`; each showed a warning and gameplay continued.
-These are functional tests, not the performance gate. The fifteen-pair interleaved no-mod comparison against
-devel `872f17e` remains pending on both renderers; checks remain opt-in until it passes.
+The fifteen-pair interleaved no-mod comparison against devel `872f17e` is complete
+on both renderers. All measured median costs are below 2%, but IQR exceeds the
+effect for frame and logic CPU time. Checks remain opt-in pending a quiet-window
+rerun. The [phase 1 report](mod-sdk-v2-phase1-report.md) contains medians, IQRs,
+all per-pair differences, test results and the collection conditions.
 The commands and acceptance criteria for that comparison follow the historical table.
 
 ## Historical prototype measurements

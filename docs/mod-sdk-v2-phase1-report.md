@@ -1,8 +1,9 @@
-# Mod SDK v2 phase 1 report (in progress)
+# Mod SDK v2 phase 1 report
 
-Phase 1 implementation and functional validation are complete. The required performance
-comparison and final cleanup are pending; this is not a completion report. Hook checks
-remain opt-in until the performance decision is supported by the required measurements.
+Phase 1 is delivered with hook checks opt-in. Implementation, functional validation,
+the maintainer-authorized 15-pair comparison on both renderers, and own-output cleanup
+are complete. All four measured median costs are below 2%, but IQR exceeds the effect
+for every metric. Default enabling is deferred to the maintainer's quiet-window rerun.
 
 ## Changes from the prototype
 
@@ -70,9 +71,9 @@ All CI workflows passed for `414dac6`:
 [Windows](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371856),
 [Android](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371930).
 
-## Performance gate: pending
+## Performance: collection complete; checks remain opt-in
 
-The queued comparison uses Windfall, 60 fps interpolation with uncapped rendering,
+The completed comparison used Windfall, 60 fps interpolation with uncapped rendering,
 60 game seconds per run, fifteen interleaved pairs per renderer, and a discarded warm-up.
 The maintainer removed the load1-below-16 requirement on 2026-10-09. Collection
 retains the machine load1-30 pause rule and exclusion of other workers' builds,
@@ -189,17 +190,26 @@ Work is isolated in the fresh GitHub clone `cx-sdk2`, branch `sdk2-phase1`; only
 that branch was pushed. Commits use `Lukas S <lukasschaupp@gmail.com>` and the push
 guard remains intact. There are no merges, GitHub posts or mods-repository edits.
 
-Own redundant generated sources, baseline object files and completed functional-run
-saves, states and caches have been removed. The functional cleanup reclaimed about
-322 MB while retaining aggregate validation evidence. A further 232 MB of unused
-objects, obsolete benchmark attempts and completed fixtures were removed; both
-comparison executable hashes are unchanged. Comparison executables and
-their isolated inputs remain until the gate finishes. Final cleanup must remove
-remaining own build/game-test outputs while retaining aggregate statistics. Nothing
-outside the task clone has been deleted.
+Own redundant generated sources, object files and completed functional-run saves,
+states and caches were removed during validation (about 554 MB in the recorded
+cleanup passes). An obsolete save copy/cache was then removed (17 MB). Final
+cleanup removed the comparison executables, detached baseline worktree, shader
+caches and remaining run directories (214 MB), after rechecking both binary hashes
+and all 60 measured completion markers. Only aggregate runtime, CI and benchmark
+evidence remains under ignored `build/sdk2-evidence`; the performance tables above
+are committed. No files outside the task clone were deleted. Free disk after cleanup
+was 23.15 GB. The user monitored disk and authorized removing its automatic gate.
 
-Remaining: collect and audit both performance tables, make the default-check decision,
-finish this report and the README/docs status, verify final CI, and clean own outputs.
+The maintainer's quiet-window rerun is the remaining prerequisite for any future
+change to the default. It is not scheduled by this task. Rebuild the two recorded
+source revisions using the same compiler/options and repeat the documented A/B
+protocol in new output directories. HUD, audio, catalogue integration and Android
+support remain phase 2 as described above. No minimap or dragon port is claimed.
+
+Performance/report checkpoints: `f50ae3a`, `bbc407b`, `752d5f5` record authorized
+protocol changes; `4434667` and `072f791` record both complete datasets. All four
+workflows also passed on report checkpoint `4434667`; implementation test evidence
+is linked above at `414dac6`. Final documentation CI is checked before handoff.
 
 ## Implementation commits
 
