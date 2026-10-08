@@ -42,6 +42,7 @@ def main():
     if not test_guestmod.ppc_ok():
         for name in ("WWHD_PPC_CLANG", "WWHD_PPC_LLD"):
             print(name, os.environ[name], "exists:", Path(os.environ[name]).exists(), flush=True)
+        subprocess.run([os.environ["WWHD_PPC_CLANG"], "--print-targets"], check=False)
         raise SystemExit("PowerPC clang/lld unavailable: refusing to skip module compile tests in CI")
     print("Host module compiler:", tc.desc, flush=True)
     subprocess.run([sys.executable, str(REPO / "tools" / "guestmod" / "test_guestmod.py"), "-v"], check=True)

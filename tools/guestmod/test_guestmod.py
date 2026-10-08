@@ -33,6 +33,8 @@ def ppc_ok():
         return False
     p = subprocess.run([CLANG, "--target=powerpc-unknown-eabi", "-x", "c", "-c", "-o", os.devnull, "-"],
                        input="int x;", capture_output=True, text=True)
+    if p.returncode:
+        print("PowerPC compiler probe failed:", p.stderr, file=sys.stderr)
     return p.returncode == 0
 
 
