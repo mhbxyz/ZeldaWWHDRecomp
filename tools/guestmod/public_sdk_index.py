@@ -40,7 +40,11 @@ def inventory(root):
         for match in DECL.finditer(masked):
             declarations.setdefault(match[2], []).append(match)
         for match in VERIFY.finditer(text):
-            candidates = [d for d in declarations.get(match[2].lstrip('&'), []) if d.start() < match.start()]
+            target = match[2]
+            alias = re.search(r'\b' + re.escape(target) + r'\s*=\s*(&[\w:]+)\s*;', masked[:match.start()])
+            if alias:
+                target = alias[1]
+            candidates = [d for d in declarations.get(target.lstrip('&'), []) if d.start() < match.start()]
             if not candidates and '::' in match[2] and not match[2].startswith('&'):
                 candidates = [d for d in declarations.get(match[2].split('::')[-1], []) if d.start() < match.start()]
             if not candidates:
@@ -48,8 +52,8 @@ def inventory(root):
                 continue
             decl = candidates[-1]
             parameters = ' '.join(decl[3].split())
-            if match[2].startswith('&'):
-                owner = match[2][1:].rsplit('::', 1)[0]
+            if target.startswith('&'):
+                owner = target[1:].rsplit('::', 1)[0]
                 parameters = owner + '* self' + (', ' + parameters if parameters else '')
             functions.append({'address': int(match[1], 16), 'name': match[2],
                               'return': ' '.join(decl[1].split()),
@@ -87,6 +91,7 @@ def main():
     parser.add_argument('public_clone', type=Path)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--symbols-header', type=Path)
+    parser.add_argument('--layouts-dir', type=Path)
     args = parser.parse_args()
     try:
         result = inventory(args.public_clone)
@@ -94,6 +99,14 @@ def main():
         parser.error(str(exc))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2) + '\n')
+    if args.layouts_dir:
+        from public_sdk_layouts import generate
+        generate(args.public_clone, args.layouts_dir, result['revision'])
+        from public_sdk_bindings import bindings, save_view
+        declarations, skipped = bindings(result)
+        (args.layouts_dir / 'bindings.h').write_text(declarations)
+        (args.layouts_dir / 'save.h').write_text(save_view(args.public_clone, result['revision']))
+        print(f'Typed declarations: {len(result["functions"])-len(skipped)}; unsupported signatures: {len(skipped)}')
     if args.symbols_header:
         args.symbols_header.parent.mkdir(parents=True, exist_ok=True)
         args.symbols_header.write_text(symbols_header(result))

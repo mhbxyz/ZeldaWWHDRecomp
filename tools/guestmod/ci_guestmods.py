@@ -44,6 +44,13 @@ def main():
             print(name, os.environ[name], "exists:", Path(os.environ[name]).exists(), flush=True)
         subprocess.run([os.environ["WWHD_PPC_CLANG"], "--print-targets"], check=False)
         raise SystemExit("PowerPC clang/lld unavailable: refusing to skip module compile tests in CI")
+    subprocess.run([sys.executable, str(REPO / "tools/guestmod/test_public_sdk_index.py")], check=True)
+    headers = ["bindings", "actor", "link", "camera", "items", "messages", "save"]
+    command = [os.environ["WWHD_PPC_CLANG"], "--target=powerpc-unknown-eabi",
+               "-ffreestanding", "-fsyntax-only", "-x", "c", "-"]
+    for header in headers:
+        command += ["-include", str(REPO / f"runtime/guest/include/game/{header}.h")]
+    subprocess.run(command, input="", text=True, check=True)
     print("Host module compiler:", tc.desc, flush=True)
     subprocess.run([sys.executable, str(REPO / "tools" / "guestmod" / "test_guestmod.py"), "-v"], check=True)
 

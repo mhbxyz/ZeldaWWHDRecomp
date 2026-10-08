@@ -144,8 +144,7 @@ function runs, and mods hook the game's code below them.
 
 - **Compiler**: clang with the PowerPC target and ld.lld, free on all three platforms
   (LLVM releases; Homebrew `llvm` + `lld` on macOS; Apple's clang has no PowerPC target). Tested:
-  Homebrew clang 20.1.8 and ld.lld 21. `powerpc-eabi-gcc` (devkitPPC) would work as well
-  since the output is a standard ELF, but is not needed.
+  Homebrew clang 20.1.8 and ld.lld 21. Only clang/lld is supported for mod authors.
 - **Flags** (see `runtime/guest/include/wwhd_guest.h`, `examples/guest-mods/Makefile`):
   `--target=powerpc-unknown-eabi -mcpu=750 -O2 -ffreestanding -fno-builtin -nostdlib
   -fno-jump-tables -ffunction-sections -fdata-sections`. `-mcpu=750` keeps to instructions
@@ -255,32 +254,37 @@ supports 1", "the local compiler could not build the mod (see …/build.log)". L
 errors (hook target is not a game function, function already replaced by another mod, a
 host service missing in this version, memory overlap) leave the mod unloaded and are logged.
 
-## Headers for modders (legal)
+## Headers for modders (public sources)
 
-What a modder needs, and where it can come from:
+The SDK generator reads a fresh, clean HTTPS clone of the public
+[HD decompilation](https://github.com/ZeldaWWHDDecomp/wwhd). It never executes code
+from that checkout. The generated files retain its CC0 notice and source revision.
+Private decompilation branches and recompiled game output are not inputs.
+[The public GameCube decompilation](https://github.com/zeldaret/tww) remains useful
+for names and semantics; its layouts must not be substituted for HD layouts.
 
-| Part | Source | Public? |
-| --- | --- | --- |
-| SDK header (`wwhd_guest.h`): types, hook macros, host services | written for the port | yes (in this branch) |
-| Engine semantics: what functions do, struct and class layouts of the GameCube game | [zeldaret/tww](https://github.com/zeldaret/tww) (CC0) | yes |
-| HD addresses already used by the public port (≈ 100 named functions in `tools/recomp/hooks*.txt`, save-data address in `cheats.cpp`, `dComIfG_gameInfo.play` in `savestate.cpp`) | this repository | yes |
-| HD addresses of the remaining functions, with names (the HD ↔ GameCube function mapping) | **our private decomp (`wwhd_src`)** | **no** |
-| HD struct layouts (fields moved or added in HD; e.g. actor fields sit at different offsets than on GameCube) | **our private decomp** (verified there) | **no** |
-| Declarations generated from the decomp's verified source | **our private decomp** | **no** |
+```sh
+git clone --depth 1 https://github.com/ZeldaWWHDDecomp/wwhd.git build/public-wwhd
+python3 tools/guestmod/public_sdk_index.py build/public-wwhd \
+  --out build/public-sdk-index.json \
+  --symbols-header runtime/guest/include/game/functions.h \
+  --layouts-dir runtime/guest/include/game
+```
 
-Nothing of the private decomp is in this branch. A usable header set for more than the few
-public addresses depends on it. Options for the maintainer:
+`game/functions.h` gives every public verified function a named hook address.
+Ambiguous names retain an address suffix. `game/bindings.h` declares callable
+functions with supported signatures; object pointers are opaque `void*`, and
+names use a `wwhd_` prefix. Unsupported signatures are reported rather than guessed.
+The JSON inventory retains their original public declarations for further curation.
+These addresses target USA version 0. Functions absent from the public decomp
+remain hookable by address when hook checks are compiled in.
 
-1. **Address-only SDK** (prototype state): modders find addresses themselves (Cemu debugger,
-   Ghidra on their own dump) and use GameCube names/layouts from zeldaret/tww. Legal and
-   public now; poor usability.
-2. **Publish a symbol table** (`address → GameCube decomp name`, plus HD-specific names) as a
-   generated data file, and let the SDK declare functions by name. Exposes the result of the
-   private matching work, not its code. Needs the maintainer's OK.
-3. **Publish curated headers** for the common game systems (player, actors, save data, HUD,
-   camera) with HD layouts, written fresh from the GameCube headers plus verified HD offsets.
-   Needs the maintainer's OK for the offsets taken from the private decomp.
-4. **Publish the decomp** later (when it is ready), and generate the SDK headers from it.
+Curated `actor.h`, `link.h`, `camera.h`, `items.h` and `messages.h` provide partial
+HD views. Named scalar fields have compile-time offset checks; unknown compound
+fields remain accessible through the byte view. Source qualifications about
+inferred fields still apply. `save.h` exposes the documented status prefix and
+save-info pointer rather than assuming a fixed live save address. The views require
+a 32-bit guest target, and compile as C or C++ with clang.
 
 ## Host services
 
@@ -345,6 +349,96 @@ python3 tools/guestmod/build_guest_mod.py <ModManager>/Mods/<id> --out <ModManag
 - Requires game code built with `--mod-hooks`; setup passes it by default once the decision is
   made. Without it the runtime logs that guest mods are unavailable.
 
+## Writing and installing a mod
+
+Guest mods currently target desktop builds. Android still builds, but guest packages are
+unsupported there. A player's build needs game code translated with `--mod-hooks`;
+this flag remains opt-in while the phase 1 performance gate is pending.
+
+### Install the modder toolchain
+
+Use clang with the PowerPC backend and lld. The player's host compiler is separate:
+setup already installs or selects Apple CLT, llvm-mingw or zig for module compilation.
+Modders do not need devkitPPC, and this SDK does not bundle a modder compiler.
+
+- macOS: `brew install llvm lld`. Use `$(brew --prefix llvm)/bin/clang` and
+  `$(brew --prefix lld)/bin/ld.lld`; Apple's system clang lacks the required target.
+- Windows: install MSYS2, open its CLANG64 shell, then run
+  `pacman -S mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lld make`.
+  Use that shell's `clang` and `ld.lld`. The official Windows LLVM and llvm-mingw
+  packages may omit the PowerPC backend; llvm-mingw is the player's host compiler.
+- Debian/Ubuntu Linux: `sudo apt install clang lld make`. Other distributions provide
+  equivalent LLVM packages. Check that `clang --print-targets` lists PowerPC.
+
+### Write and build
+
+Include `wwhd_guest.h` and the generated `game` headers. Hook targets use
+`WWHD_ADDR_<public_name>`; callable declarations use `wwhd_<public_name>` where the
+name is unique. Ambiguous names have an address suffix. Entry hooks receive the game's
+arguments. Return hooks receive those arguments again and preserve the game result.
+Only one replacement may own a target; a conflict reports both package IDs.
+
+```c
+#include "wwhd_guest.h"
+#include "game/functions.h"
+
+WWHD_HOOK(WWHD_ADDR_daPy_Execute, on_link_step, (void* link)) {
+    static u32 steps;
+    if (++steps == 1) wwhd_log("Link's first logic step");
+}
+```
+
+Compile from the repository root (substitute your LLVM executable paths):
+
+```sh
+clang --target=powerpc-unknown-eabi -mcpu=750 -O2 -ffreestanding \
+  -fno-builtin -nostdlib -fno-jump-tables -ffunction-sections -fdata-sections \
+  -Iruntime/guest/include -c mod.c -o mod.o
+ld.lld -m elf32ppc -r mod.o -o mod.elf
+```
+
+A release SDK ships modder headers in `sdk/guest/include`; use that directory instead
+of `runtime/guest/include` when compiling outside a source checkout.
+
+The relocatable ELF is identical across desktop platforms. Do not link it to a fixed
+address. Use `WWHD_GAME_ORIGINAL` with the generated target address to call below all
+mod hooks. The port's own interpolation and true-60 hooks remain outside mod hooks.
+Use `wwhd_logic_dt()` for time-based behavior, and avoid interpreting rendered frames
+as logic steps. The examples demonstrate entry/return hooks and original calls.
+
+### Package and install
+
+Place this manifest beside `mod.elf` (replace the metadata for your mod):
+
+```json
+{
+  "format_version": 1,
+  "game_id": "wwhd-usa",
+  "id": "hello-link",
+  "name": "Hello Link",
+  "version": "1.0.0",
+  "kind": "guest",
+  "guest": {"api_version": 1, "elf": "mod.elf", "heap_size": 262144}
+}
+```
+
+Choose the folder in **Mods → Installed packages → Choose folder → Install package**.
+Alternatively, from inside the package folder run
+`python3 -m zipfile -c hello-link.wwhdmod manifest.json mod.elf` and choose that package.
+Distribute only the manifest, your ELF and your own permitted resources.
+
+Enable the installed package, accept the same trust confirmation used for native mods,
+and restart. Confirmation is tied to the ELF hash; changing the ELF asks again.
+The manager assigns memory, translates the ELF and builds a cached native module at
+startup. Build/load failures appear in the Mods tab and leave that package unloaded.
+Changing enabled mods or options takes effect on the next restart. Typed options use
+the normal manager manifest schema; read them with `wwhd_config_*` rather than environment
+variables. Files are restricted to flat names in the package's own data directory.
+
+For updates, disable the package, restart, then reinstall the same ID. Configurations
+remain associated with that ID. A translator, ABI or compiler change invalidates the
+module cache automatically; it does not require redistributing the ELF.
+
 ## Save states
 
 Full states capture the complete guest mod region (`0x7F000000`–`0x80000000`),
@@ -378,10 +472,12 @@ cmake --build build/cmake                                   # as usual
 make -C examples/guest-mods CLANG=/opt/homebrew/opt/llvm/bin/clang LLD=/opt/homebrew/opt/lld/bin/ld.lld
 python3 tools/guestmod/build_guest_mod.py examples/guest-mods/heart-ticker --out build/guestcache --base 0x7F000000
 python3 tools/guestmod/build_guest_mod.py examples/guest-mods/addcalc-replace --out build/guestcache --base 0x7F100000
-WWHD_GUEST_MODS=build/guestcache/<key>/heart-ticker.dylib,build/guestcache/<key>/addcalc-replace.dylib ./build/cmake/wwhd
 ```
 
-Verified end to end on macOS arm64 (headless scripted run, copy of a save): both modules
+These commands describe the prototype build. Install the packages through the manager
+as described above; direct `WWHD_GUEST_MODS` loading has been retired.
+
+Historically verified end to end on macOS arm64 (headless scripted run, copy of a save): both modules
 load, the heart display changes by quarter hearts during gameplay, the replacement handles
 half of the ≈ 600,000 `cLib_addCalc2` calls of the run with no visible difference, the mod's
 call of a game function goes through the other mod's replacement, and the return hook sees
@@ -420,18 +516,14 @@ Cheaper variants if needed: a thin wrapper per function (`f_X`: check, tail call
 body; one extra branch per call but ~30 bytes per function), or no check in a list of hot
 leaf functions (option (c) for those only).
 
-## Open decisions
+## Fixed phase 1 decisions
 
-1. **Headers and symbols**: which of the options in [Headers for modders](#headers-for-modders-legal)
-   (they decide how usable the SDK is).
-2. **Hookable set**: all functions (recommended, measured cost below) or a list.
-3. **Toolchain**: clang/lld (recommended; same family as the game toolchain on every
-   platform) or also devkitPPC gcc; whether the SDK ships a pinned clang for modders.
-4. **Trust wording**: same dialog as native mods, or a softer one for guest mods.
-5. **Save states**: include the guest mod region in save states (needs the set of active mods
-   in the state header) or forbid loading states across a different mod set.
-6. **Runtime enable/disable**: restart-only (prototype) or live (needs a quiescent point and
-   atomic chain updates).
+Headers use public sources only. Every game function is hookable. Modders use clang
+and lld; no compiler is bundled for them. Guest packages use the native trust dialog,
+bound to the ELF hash. Full states include mod memory, and both state formats warn
+without blocking when mod IDs or versions differ. Enabling and disabling takes effect
+only after restart. Hook checks remain off by default until the quiet-machine
+Metal and Vulkan A/B gate demonstrates at most 2% median overhead.
 
 ## Road to a production version
 

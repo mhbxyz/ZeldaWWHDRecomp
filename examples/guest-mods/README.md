@@ -15,11 +15,11 @@ Build (needs clang with the PowerPC target and ld.lld; on macOS `brew install ll
 make CLANG=/opt/homebrew/opt/llvm/bin/clang LLD=/opt/homebrew/opt/lld/bin/ld.lld
 ```
 
-Each folder is then a package (`manifest.json` + `mod.elf`). Install-time build and a test run
-with game code translated with `--mod-hooks`:
+Each folder is then a package (`manifest.json` + `mod.elf`). The source uses generated
+public HD function names and layouts from `runtime/guest/include/game`.
 
-```sh
-python3 tools/guestmod/build_guest_mod.py examples/guest-mods/heart-ticker --out build/guestcache --base 0x7F000000
-python3 tools/guestmod/build_guest_mod.py examples/guest-mods/addcalc-replace --out build/guestcache --base 0x7F100000
-WWHD_GUEST_MODS=<module 1>,<module 2> WWHD_GUEST_OPT_every=15 ./build/cmake/wwhd
-```
+Install each folder through **Mods → Installed packages → Choose folder → Install package**,
+enable it, accept the ELF trust confirmation, and restart. Set heart-ticker's `every` option
+in the Mods tab. The manager builds and caches the translated modules on startup.
+Game code must have been translated with `--mod-hooks`; this remains opt-in until the
+phase 1 performance gate passes. Android guest modules are currently unsupported.

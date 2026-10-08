@@ -12,6 +12,11 @@ How it works and how it differs from running the game in Cemu: [docs/how-it-work
 
 ### Next update
 
+- **Guest mod SDK v2 (phase 1, opt-in):** portable PowerPC ELF packages, restart-only
+  mod-manager integration, typed options, per-mod memory and files, and save-state mod
+  warnings. Generated public HD headers and examples are described in
+  [the SDK guide](docs/mod-sdk-v2.md). Hook checks remain opt-in pending performance validation.
+
 - **Screenshot key:** **F10** saves the TV picture as a PNG in a `screenshots` folder next to the save
   states (`~/Library/Application Support/wwhd/screenshots`, `%APPDATA%\WWHD\screenshots`,
   `~/.config/wwhd/screenshots`; `data/user/screenshots` in a release folder), named

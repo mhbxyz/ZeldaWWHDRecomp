@@ -348,6 +348,8 @@ def main():
     driver, link, nobj, nlib = build_link_recipe(build, pkg, a.linkonly_lib)
     cflags = gamecode_flags(build)
     shutil.copytree(os.path.join(ROOT, "runtime", "include"), os.path.join(pkg, "sdk", "include"))
+    shutil.copytree(os.path.join(ROOT, "runtime", "guest", "include"),
+                    os.path.join(pkg, "sdk", "guest", "include"))
     runtime_files = []
     for f in a.runtime_file:
         copy(f, os.path.join(pkg, "sdk", "runtime", os.path.basename(f)))

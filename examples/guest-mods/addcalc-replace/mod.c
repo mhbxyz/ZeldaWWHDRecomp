@@ -5,7 +5,9 @@
  * src/SSystem/SComponent/c_lib.cpp); this file is written for the example. */
 #include "wwhd_guest.h"
 
-#define ADDCALC2 0x0200ED84
+#include "game/functions.h"
+
+#define ADDCALC2 WWHD_ADDR_cLib_addCalc2_hd
 
 WWHD_GAME_ORIGINAL(ADDCALC2, void, addcalc2_original, (f32* value, f32 target, f32 scale, f32 max_step));
 
