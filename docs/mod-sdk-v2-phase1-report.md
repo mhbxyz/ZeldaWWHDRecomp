@@ -58,17 +58,17 @@ its regression test and subsequent game runs pass.
 | Guest-module Python | 11 tests; actual translated native module execution and example builds |
 | Public generator | 10 tests |
 | Installer guest-build configuration | 2 tests, including moving a portable release |
-| Benchmark helper | 10 tests locally for the revised gate (previous implementation CI: 8); the executable fixture runs on POSIX hosts |
+| Benchmark helper | 10-test suite passed on all desktop CI hosts; Windows skips the POSIX executable fixture |
 
 The module matrix uses setup's Apple CLT, pinned llvm-mingw and pinned Zig host
 toolchains, with clang/lld for PowerPC inputs. It also checks the generated SDK as
 PowerPC C and C++. Android builds, but guest mods remain unsupported there.
 
-All CI workflows passed for `eb7b0ce`:
-[guest modules](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37836483802),
-[Linux](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37836483929),
-[Windows](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37836483732),
-[Android](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37836483762).
+All CI workflows passed for `414dac6`:
+[guest modules](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371696),
+[Linux](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371631),
+[Windows](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371856),
+[Android](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37839371930).
 
 ## Performance gate: pending
 
@@ -125,7 +125,9 @@ guard remains intact. There are no merges, GitHub posts or mods-repository edits
 
 Own redundant generated sources, baseline object files and completed functional-run
 saves, states and caches have been removed. The functional cleanup reclaimed about
-322 MB while retaining aggregate validation evidence. Comparison executables and
+322 MB while retaining aggregate validation evidence. A further 232 MB of unused
+objects, obsolete benchmark attempts and completed fixtures were removed; both
+comparison executable hashes are unchanged. Comparison executables and
 their isolated inputs remain until the gate finishes. Final cleanup must remove
 remaining own build/game-test outputs while retaining aggregate statistics. Nothing
 outside the task clone has been deleted.
@@ -162,3 +164,4 @@ The following history is based on authoritative GitHub devel `872f17e`.
 - `f1cf6fa` Detect macOS Python processes in benchmark exclusion gate
 - `7728bc2` Retry disturbed benchmark samples without losing the interleaved gate
 - `eb7b0ce` Identify guest packages and show their trust status in Mods
+- `414dac6` Gate fifteen-pair benchmarks against other worker activity and report paired effects
