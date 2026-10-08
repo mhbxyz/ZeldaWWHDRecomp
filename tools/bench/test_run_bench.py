@@ -50,7 +50,10 @@ class BenchmarkStatistics(unittest.TestCase):
                 log = '[fixture] Loaded slot 1\n'
                 log += f'[prof] frame 120: 120 frames (0 hold), {frame}.00 ms/frame, 150.0 swaps/s, 150.0 logic steps/s; render thread CPU 3.00 ms/frame, in ops 2.00 ms/frame, idle (waiting for commands) 1.00 ms/frame\n'
                 log += (f'[interp] main thread CPU per pass: logic {cpu}.00 ms\n' * 3)
-                executable.write_text('#!' + sys.executable + '\nprint(' + repr(log) + ')\n')
+                executable.write_text('#!' + sys.executable + '\nimport os\n'
+                                      'assert os.environ["WWHD_UNCAPPED"] == "1"\n'
+                                      'assert os.environ["WWHD_RENDERER_RUNTIME"] == "metal"\n'
+                                      'print(' + repr(log) + ')\n')
                 executable.chmod(0o755)
                 executables.append(executable)
             command = [sys.executable, str(repo / 'tools/bench/run_bench.py'),
@@ -58,6 +61,7 @@ class BenchmarkStatistics(unittest.TestCase):
                        '--variant-binary', 'b=' + str(executables[1]),
                        '--save', str(root / 'save'), '--state-dir', str(root / 'states'),
                        '--game', str(root / 'game'), '--scene', 'still', '--runs', '1',
+                       '--renderer', 'metal', '--uncapped',
                        '--out', str(root / 'out'), '--skip-windows', '0', '--no-wait', '--no-watch']
             result = subprocess.run(command, capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)

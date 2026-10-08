@@ -607,6 +607,7 @@ packages in an isolated manager directory and built through the startup build br
 | Portable state restores with the same mod set | Passed | Passed |
 | Same mod set loads without a mismatch warning | Passed | Passed |
 | Older full state with no mod metadata warns and continues | Passed | Not run |
+| Changed mod version warns and continues for full and portable loads | Passed | Not run |
 
 A full state saved on Metal contains the complete 16 MiB mod region. Its example
 counters show 14,749 replacement calls, 7,374 handled by the mod, and 382 heart entry
@@ -615,8 +616,9 @@ The first game run exposed a recursive package-manager mutex acquisition during
 build-tool initialization; `e7fcd27` fixes it and adds a startup regression check.
 Guest-module, Linux, Windows and Android CI passed for that commit.
 
-These are functional tests, not the performance gate. The changed-mod portable-state
-warning still needs an in-game check. The ten-run interleaved no-mod comparison against
+The changed-version test loaded both states after changing only the installed example's
+manifest version from `0.1.0` to `0.1.1`; each showed a warning and gameplay continued.
+These are functional tests, not the performance gate. The ten-run interleaved no-mod comparison against
 devel `872f17e` remains pending on both renderers; checks remain opt-in until it passes.
 The commands and acceptance criteria for that comparison follow the historical table.
 

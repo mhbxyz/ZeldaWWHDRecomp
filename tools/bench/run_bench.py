@@ -257,6 +257,7 @@ def run_once(args, variant, env_extra, index, out_dir):
     elif args.fps == "true60":
         env["WWHD_TRUE60_AT_STEP"] = str(load_at + 60)
     if args.uncapped:
+        env["WWHD_UNCAPPED"] = "1"
         env["WWHD_VK_UNCAPPED"] = "1"
     env.update(env_extra)
     if args.gate:
