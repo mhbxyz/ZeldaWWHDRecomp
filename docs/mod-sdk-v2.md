@@ -197,6 +197,25 @@ translator or the ABI changes the key and the module is rebuilt on the next star
 hundred milliseconds per mod). A game rebuild alone does not invalidate modules; the runtime
 re-validates hook targets on load (every target must be a function entry of this build).
 
+### Build-step contract additions (phase 1)
+
+`build_guest_mod.py PACKAGE --inspect --base ADDR --json` reports the relocated
+`memory_size`, the 64 KiB rounded `allocation_size`, `base`, package `id` and
+`elf_sha256` without invoking a compiler. The manager uses this to allocate the
+mod region before building. Bases must be 64 KiB aligned in the mod region.
+The existing build command and last-line JSON contract remain supported; successful
+build and cache-hit responses now also contain these memory and ELF metadata fields.
+
+Cache keys include the actual guest translator, `ppc2c.py`, build script and runtime
+ABI/header bytes, in addition to their version strings, ELF, base, package ID,
+compiler command/version and flags. This also invalidates development caches when
+the translator or CPU layout changes without a release version bump. ELF paths are
+relative to the package; parent paths, absolute paths and symlinks are rejected.
+
+The `guestmods` CI workflow compiles the examples with Apple CLT, pinned llvm-mingw
+and pinned zig selected by setup. The modder-side PowerPC compiler remains clang
+with lld. These tests use synthetic mod code and require no game files.
+
 Errors for the player are short (`--json`: `{"ok": false, "error": "..."}`), for example
 "instructions the translator does not support: …", "the mod needs guest API 2; this game
 supports 1", "the local compiler could not build the mod (see …/build.log)". Load-time

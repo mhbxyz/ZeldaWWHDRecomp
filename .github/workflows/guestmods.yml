@@ -1,0 +1,25 @@
+# Mod packages contain synthetic PowerPC code only; compile with setup's actual host toolchains.
+name: guestmods
+on:
+  push:
+  pull_request:
+jobs:
+  modules:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: PowerPC clang and lld (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang lld
+      - name: PowerPC clang and lld (macOS)
+        if: runner.os == 'macOS'
+        run: brew install llvm lld
+      - name: Build and test guest modules with setup toolchain
+        run: python tools/guestmod/ci_guestmods.py

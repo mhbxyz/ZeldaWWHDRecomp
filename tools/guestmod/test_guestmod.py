@@ -12,11 +12,14 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 import guestmod  # noqa: E402
+import build_guest_mod as builder  # noqa: E402
 
 CLANG = os.environ.get("WWHD_PPC_CLANG") or shutil.which("clang")
 LLD = os.environ.get("WWHD_PPC_LLD") or shutil.which("ld.lld")
@@ -26,7 +29,7 @@ FLAGS = ["--target=powerpc-unknown-eabi", "-mcpu=750", "-O2", "-ffreestanding", 
 
 
 def ppc_ok():
-    if not CLANG or not LLD:
+    if not CLANG or not LLD or not shutil.which(CLANG) or not shutil.which(LLD):
         return False
     p = subprocess.run([CLANG, "--target=powerpc-unknown-eabi", "-x", "c", "-c", "-o", os.devnull, "-"],
                        input="int x;", capture_output=True, text=True)
@@ -60,6 +63,18 @@ class GuestModTest(unittest.TestCase):
                                         os.path.join(d, "cache"), "--json"], capture_output=True, text=True)
                 self.assertTrue(json.loads(again.stdout.strip().splitlines()[-1])["cached"])
 
+    def test_inspect_without_compiler(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "manifest.json").write_text(json.dumps({"id": "inspect-test", "kind": "guest",
+                                                          "guest": {"api_version": 1}}))
+            self.build_elf("int value = 3; int f(void) { return value; }", d)
+            with mock.patch.object(builder.subprocess, "run", side_effect=AssertionError("compiler invoked")):
+                result = builder.inspect_package(d, 0x7F100000)
+            self.assertEqual(result["base"], 0x7F100000)
+            self.assertGreater(result["memory_size"], 0)
+            self.assertEqual(result["allocation_size"] % 65536, 0)
+            self.assertEqual(len(result["elf_sha256"]), 64)
+
     def test_relocations_and_imports(self):
         src = r'''
 #include "wwhd_guest.h"
@@ -71,7 +86,7 @@ __attribute__((noinline)) static int helper(int x) { return table[x & 3] + game_
 WWHD_REPLACE(0x02005678, void, repl, (void)) { ptr = helper; orig_fn(); wwhd_log_int("v", ptr(2)); }
 '''
         with tempfile.TemporaryDirectory() as d:
-            t = guestmod.Translator(guestmod.Elf(open(self.build_elf(src, d), "rb").read()), 0x7F200000)
+            t = guestmod.Translator(guestmod.Elf(Path(self.build_elf(src, d)).read_bytes()), 0x7F200000)
             c = t.emit("test")
             self.assertEqual([(k, tg) for k, tg, _, _ in t.hooks], [(1, 0x02005678)])
             self.assertIn("c->pc = 0x02001234u; ppc_dispatch(c);", c)
@@ -83,6 +98,76 @@ WWHD_REPLACE(0x02005678, void, repl, (void)) { ptr = helper; orig_fn(); wwhd_log
     def test_errors(self):
         with self.assertRaises(guestmod.ModError):
             guestmod.Elf(b"not an elf at all" * 4)
+
+
+class BuildInterfaceTest(unittest.TestCase):
+    def test_package_paths_and_ids(self):
+        with tempfile.TemporaryDirectory() as d:
+            pkg = Path(d, "pkg"); pkg.mkdir()
+            (pkg / "mod.elf").write_bytes(b"test-elf")
+            man = {"id": "valid-id", "kind": "guest", "guest": {"api_version": 1}}
+            def write():
+                (pkg / "manifest.json").write_text(json.dumps(man))
+            write()
+            self.assertEqual(builder.package_elf(pkg)[1], b"test-elf")
+            for name in ("../mod.elf", "/mod.elf", "C:/mod.elf", "a\\b", "a//b", "./mod.elf"):
+                man["guest"]["elf"] = name; write()
+                with self.subTest(path=name), self.assertRaises(guestmod.ModError):
+                    builder.package_elf(pkg)
+            man["guest"]["elf"] = "mod.elf"
+            for mod_id in ("../bad", "", ".bad", "bad/id", 1):
+                man["id"] = mod_id; write()
+                with self.subTest(id=mod_id), self.assertRaises(guestmod.ModError):
+                    builder.package_elf(pkg)
+            man["id"] = "valid-id"; write()
+            (pkg / "mod.elf").unlink()
+            Path(d, "outside.elf").write_bytes(b"outside")
+            try:
+                (pkg / "mod.elf").symlink_to(Path(d, "outside.elf"))
+            except OSError:
+                return # Windows runners without symlink privileges still exercise path validation.
+            with self.assertRaises(guestmod.ModError):
+                builder.package_elf(pkg)
+
+    def test_cache_invalidation(self):
+        with tempfile.TemporaryDirectory() as d:
+            for name in ("ppc.h", "wwhd_guest_abi.h"):
+                shutil.copy(Path(REPO, "runtime", "include", name), d)
+            with mock.patch.object(builder.subprocess, "run", return_value=mock.Mock(returncode=0, stdout="clang test")):
+                def key(elf=b"elf", mod_id="mod", base=0x7F000000, cc=None):
+                    return builder.cache_key(elf, mod_id, base, cc or ["clang"], d)
+                initial = key()
+                self.assertEqual(initial, key())
+                self.assertNotEqual(initial, key(elf=b"changed"))
+                self.assertNotEqual(initial, key(mod_id="other"))
+                self.assertNotEqual(initial, key(base=0x7F100000))
+                self.assertNotEqual(initial, key(cc=["zig", "cc"]))
+                for name in ("ppc.h", "wwhd_guest_abi.h"):
+                    p = Path(d, name); before = p.read_bytes()
+                    p.write_bytes(before + b"\n/* changed ABI source */\n")
+                    self.assertNotEqual(initial, key())
+                    p.write_bytes(before)
+                with mock.patch.object(guestmod, "TRANSLATOR_VERSION", "new-version"):
+                    self.assertNotEqual(initial, key())
+                read_bytes = Path.read_bytes
+                def changed_source(path):
+                    data = read_bytes(path)
+                    return data + b"changed" if path.name == "ppc2c.py" else data
+                with mock.patch.object(Path, "read_bytes", changed_source):
+                    self.assertNotEqual(initial, key())
+                with mock.patch.object(builder.subprocess, "run", return_value=mock.Mock(returncode=0, stdout="clang newer")):
+                    self.assertNotEqual(initial, key())
+
+    def test_truncated_elf_errors(self):
+        for length in range(52):
+            data = (b"\x7fELF\x01\x02" + bytes(52))[:length]
+            with self.subTest(length=length), self.assertRaises(guestmod.ModError):
+                builder.translator_for(data, 0x7F000000)
+
+    def test_invalid_base(self):
+        for base in (0, 0x7F000001, 0x80000000, -1):
+            with self.subTest(base=base), self.assertRaises(guestmod.ModError):
+                builder.translator_for(b"unused", base)
 
 
 if __name__ == "__main__":
