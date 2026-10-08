@@ -96,8 +96,8 @@ and the first measured sample, then verifies fifteen accepted samples per execut
 | --- | --- | --- | --- | --- |
 | Metal | Frame ms | 6.0650 / 0.1033 | 6.0894 / 0.1191 | +0.40% |
 | Metal | Logic CPU ms | 3.8680 / 0.0520 | 3.9360 / 0.1170 | +1.76% |
-| Vulkan | Frame ms | Pending | Pending | Pending |
-| Vulkan | Logic CPU ms | Pending | Pending | Pending |
+| Vulkan | Frame ms | 4.6961 / 0.0740 | 4.6824 / 0.1454 | -0.29% |
+| Vulkan | Logic CPU ms | 3.8300 / 0.0950 | 3.8860 / 0.1060 | +1.46% |
 
 Metal completed all 15 interleaved pairs; all 30 accepted measured runs have
 completion markers. The larger variant IQR exceeds the absolute difference of
@@ -106,7 +106,7 @@ frame effect 0.0244 ms versus IQRs 0.1033/0.1191 ms, and logic effect 0.0680 ms
 versus maximum IQR 0.1170 ms. Paired-difference IQR also exceeds its median:
 frame +0.0288 ms / IQR 0.1497 ms; logic +0.0640 ms / IQR 0.0970 ms.
 The measured costs are below 2%, but the spread is larger than the effect.
-Keep checks opt-in pending Vulkan and the maintainer's quiet-window rerun;
+Keep checks opt-in pending the maintainer's quiet-window rerun;
 this shared-machine dataset does not prove a quiet-machine performance gate.
 
 Metal per-pair differences (hooks minus baseline; positive means slower):
@@ -128,6 +128,35 @@ Metal per-pair differences (hooks minus baseline; positive means slower):
 | 13 | -0.1009 | -1.64% | +0.0280 | +0.70% |
 | 14 | -0.1237 | -2.05% | +0.0120 | +0.31% |
 | 15 | +0.1754 | +2.99% | +0.0720 | +1.88% |
+
+Vulkan also completed all 15 pairs, with all 30 completion markers verified.
+Frame medians differ by -0.0136 ms, smaller than run IQRs 0.0740/0.1454 ms.
+Logic medians differ by +0.0560 ms, smaller than run IQRs 0.0950/0.1060 ms.
+Paired frame differences have median +0.0084 ms / IQR 0.1333 ms; paired logic
+differences have median +0.0340 ms / IQR 0.1018 ms. Both spread checks flag noise.
+The difference of medians and median of paired differences are distinct statistics;
+their frame-time signs differ here. No speedup or sub-2% guarantee is established.
+The collection is complete; default enabling remains deferred to a quiet-window rerun.
+
+Vulkan per-pair differences (hooks minus baseline):
+
+| Pair | Frame difference ms | Frame difference % | Logic CPU difference ms | Logic CPU difference % |
+| --- | --- | --- | --- | --- |
+| 1 | -0.2254 | -4.69% | -0.1550 | -3.92% |
+| 2 | -0.0513 | -1.10% | -0.0240 | -0.62% |
+| 3 | +0.0336 | +0.72% | +0.0560 | +1.46% |
+| 4 | +0.0084 | +0.18% | +0.0340 | +0.87% |
+| 5 | +0.0757 | +1.64% | +0.1017 | +2.68% |
+| 6 | +0.1310 | +2.85% | +0.1240 | +3.28% |
+| 7 | -0.0030 | -0.07% | +0.0100 | +0.26% |
+| 8 | +0.1786 | +3.80% | +0.2500 | +6.53% |
+| 9 | +0.0852 | +1.81% | +0.0660 | +1.71% |
+| 10 | +0.1171 | +2.49% | +0.1360 | +3.55% |
+| 11 | +0.0224 | +0.49% | +0.0100 | +0.27% |
+| 12 | -0.0624 | -1.32% | -0.0820 | -2.09% |
+| 13 | +0.0006 | +0.01% | +0.0880 | +2.32% |
+| 14 | -0.0682 | -1.44% | -0.0360 | -0.93% |
+| 15 | -0.0544 | -1.12% | +0.0250 | +0.63% |
 
 The initial capped Metal warm-up is excluded. `e008152` makes `--uncapped` set
 the renderer-independent flag. `f1cf6fa` detects macOS's capitalized `Python`
