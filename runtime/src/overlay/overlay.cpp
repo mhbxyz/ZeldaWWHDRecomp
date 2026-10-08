@@ -895,9 +895,9 @@ void package_controls() {
         if (installed.size() == 1) ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         bool expanded = ImGui::TreeNode("details", "%s · %s", mod.name.c_str(), mod.version.c_str());
         if (expanded) {
-            note("%s · %s", mod.kind == "native" ? "Native mod" : mod.kind == "cemu" ? "Cemu graphics / shader pack" : mod.kind == "content" ? "Model / texture / UI replacement" : "Built-in settings preset",
+            note("%s · %s", mod.kind == "native" ? "Native mod" : mod.kind == "guest" ? "Guest mod" : mod.kind == "cemu" ? "Cemu graphics / shader pack" : mod.kind == "content" ? "Model / texture / UI replacement" : "Built-in settings preset",
                  mod.pending_restart ? "Restart required" : mod.active ? "Active" : mod.enabled ? "Waiting for game update" : "Disabled");
-            if (mod.kind == "native" && mod.compatible)
+            if ((mod.kind == "native" || mod.kind == "guest") && mod.compatible)
                 note(mod.native_confirmed ? "Runs native code with the game's permissions (you confirmed this version)."
                                           : "Runs native code with the game's permissions. Enabling it asks you to confirm first.");
             if (!mod.author.empty()) note("By %s", mod.author.c_str());
