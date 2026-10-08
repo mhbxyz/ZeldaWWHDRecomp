@@ -220,13 +220,15 @@ struct Args {
 
 void init() {
     namespace packages=mods::packages;
+    // start_guests invokes callbacks under the package-manager mutex. Resolve its
+    // directory before entering those callbacks to avoid recursively locking it.
+    const auto cache=(std::filesystem::path(packages::directory()).parent_path()/"GuestBuild").string();
     std::unique_ptr<BuildBridge> bridge;
     auto tools=[&]() -> BuildBridge& {
         if(!g_mod_hook_count)throw std::runtime_error("Guest mods require game code built with --mod-hooks; run setup with guest hooks enabled");
         if(!bridge){
             const char* path=std::getenv("WWHD_GUEST_BUILD_CONFIG");
-            auto candidate=std::make_unique<BuildBridge>(BuildBridge::read(path?path:"guest-sdk.json",
-                (std::filesystem::path(packages::directory()).parent_path()/"GuestBuild").string()));
+            auto candidate=std::make_unique<BuildBridge>(BuildBridge::read(path?path:"guest-sdk.json",cache));
             if(!std::filesystem::is_regular_file(candidate->builder)||!std::filesystem::is_directory(candidate->include))
                 throw std::runtime_error("Guest mod build tools are missing; run setup again from a complete release folder");
             for(const auto* command:{&candidate->python,&candidate->compiler}) {

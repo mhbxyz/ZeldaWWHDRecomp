@@ -46,12 +46,32 @@ namespace true60 {float dt() {return 0.5f;}}
 namespace mem { std::string read_cstr(uint32_t) { return "option"; } }
 namespace dispatch { void set(uint32_t, PpcFunc) {} }
 namespace mods::packages {
-std::string directory() { return {}; }
-void start_guests(const GuestInspect&, const GuestLoad&) {}
+static bool in_startup_callback=false, inspected=false;
+std::string directory() { assert(!in_startup_callback); return {}; }
+void start_guests(const GuestInspect& inspect, const GuestLoad&) {
+    // Real start_guests holds the manager mutex while invoking callbacks. Its
+    // directory accessor cannot be called recursively from the build bridge.
+    in_startup_callback=true;
+    try { inspect(GuestPackage{}); assert(false); }
+    catch(const std::runtime_error& e) {
+        assert(std::string(e.what()).find("build tools are unavailable")!=std::string::npos);
+        inspected=true;
+    }
+    in_startup_callback=false;
+}
 }
 void log_msg(const char*, ...) {}
 [[noreturn]] void fatal(const char*, ...) { std::abort(); }
 int main() {
+    const char* missing="__wwhd_nonexistent_guest_build_config_for_test__.json";
+    assert(!std::filesystem::exists(missing));
+#ifdef _WIN32
+    _putenv_s("WWHD_GUEST_BUILD_CONFIG",missing);
+#else
+    setenv("WWHD_GUEST_BUILD_CONFIG",missing,1);
+#endif
+    guestmods::init();
+    assert(mods::packages::inspected);
     Cpu c{};
     c.r[3] = 5; port(&c);
     assert((calls == std::vector<int>{1, 3, 6})); assert(c.r[3] == 11);
