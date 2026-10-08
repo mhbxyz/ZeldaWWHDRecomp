@@ -515,6 +515,28 @@ estimate from the call count is the upper bound to keep in mind. A quiet-machine
 Hooked functions cost one hash lookup plus the hook calls (`ppc_mod_run`); the example replacement took ≈ 600,000 calls in a three-minute run
 without a visible effect.
 
+For the phase 1 gate, `run_bench.py` supports separate compiled executables:
+
+```sh
+python3 tools/bench/run_bench.py --binary build/baseline/wwhd \
+  --variant baseline:WWHD_INTERP_PASS_STATS=1 \
+  --variant hooks:WWHD_INTERP_PASS_STATS=1 \
+  --variant-binary hooks=build/hooked/wwhd \
+  --game /path/to/your/game --save /path/to/save-copy --state-dir /path/to/state-copy \
+  --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 10 \
+  --out build/hook-bench-metal
+```
+
+Repeat for Vulkan with its own output/cache directory. Runs alternate A/B then B/A.
+Before each run, require load1 below 12 and no other `run_bench.py`; defer otherwise.
+The script copies saves and runs headless without audio. Its no-host-input environment
+also keeps the package manager inactive unless explicitly overridden, so this comparison
+loads no mods. Record the exact baseline and hook-build revisions and compiler flags.
+JSON reports include median, inclusive Q1/Q3 and IQR across runs. `logic_cpu_ms` uses
+actual main-thread logic-pass CPU samples, excluding renderer/vsync waits and the first
+300-step window after loading. Both variants must produce this metric and ten successful
+runs before comparing overhead. Historical prototype timings do not satisfy this gate.
+
 Cheaper variants if needed: a thin wrapper per function (`f_X`: check, tail call to the
 body; one extra branch per call but ~30 bytes per function), or no check in a list of hot
 leaf functions (option (c) for those only).

@@ -130,7 +130,7 @@ def parse_prof(lines):
                 cur["copied_" + name + "_mib"] = float(c)
         elif body.startswith("draw classes"):
             m = re.match(r"draw classes: " + NUM + r"% same registers, " + NUM + r"% only buffer pointers/ALU constants, " +
-                         NUM + r"% other \(" + NUM + " draws/frame\)", body)
+                         NUM + r"% other \(" + NUM + r" draws/frame\)", body)
             if m:
                 cur["draws_same_pct"], cur["draws_fast_pct"] = float(m.group(1)), float(m.group(2))
                 cur["draws_other_pct"], cur["draws_per_frame"] = float(m.group(3)), float(m.group(4))
@@ -144,6 +144,21 @@ def summarize(windows):
     """Mean of every numeric field over the measured windows."""
     keys = sorted({k for w in windows for k, v in w.items() if isinstance(v, float)})
     return {k: statistics.fmean([w[k] for w in windows if k in w]) for k in keys}
+
+
+
+def run_statistics(values):
+    """Statistics over runs; inclusive quartiles are defined for small samples too."""
+    q1, _, q3 = statistics.quantiles(values, n=4, method="inclusive") if len(values) > 1 else [values[0]] * 3
+    return {"median": statistics.median(values), "mean": statistics.fmean(values),
+            "min": min(values), "max": max(values), "q1": q1, "q3": q3, "iqr": q3 - q1,
+            "stdev": statistics.stdev(values) if len(values) > 1 else 0.0, "n": len(values)}
+
+
+def logic_cpu_samples(lines):
+    """Actual main-thread logic pass CPU time, with renderer/vsync waits excluded."""
+    return [float(match[1]) for line in lines
+            for match in [re.search(r"main thread CPU per pass: logic " + NUM + r" ms", line)] if match]
 
 
 def run_once(args, variant, env_extra, index, out_dir):
@@ -197,10 +212,11 @@ def run_once(args, variant, env_extra, index, out_dir):
     while args.wait_for_others and other_games():
         print("  waiting: another game process is running", file=sys.stderr)
         time.sleep(30)
+    binary = args.variant_binaries.get(variant, args.binary)
     load_before = load1()
     started = time.time()
     with open(os.path.join(run_dir, "log"), "w") as log:
-        proc = subprocess.Popen([os.path.abspath(args.binary), "--game", os.path.abspath(args.game), "--save", "save"],
+        proc = subprocess.Popen([os.path.abspath(binary), "--game", os.path.abspath(args.game), "--save", "save"],
                                 cwd=run_dir, env=env, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
         status = "ok"
         try:
@@ -233,8 +249,11 @@ def run_once(args, variant, env_extra, index, out_dir):
              for m in [re.search(r"\[interp\] " + NUM + r" logic steps/s \([^,]*, " + NUM + " frames per step", l)] if m]
     pacing = [float(m.group(1)) for l in lines[loaded or 0:] for m in [re.search(r"\[vulkan pacing\].*p95 " + NUM, l)] if m]
     result = {"variant": variant, "run": index, "status": status, "env": env_extra, "load_before": load_before,
-              "load_after": load_after, "seconds": round(time.time() - started, 1), "windows": len(windows),
+              "load_after": load_after, "binary": os.path.abspath(binary), "seconds": round(time.time() - started, 1), "windows": len(windows),
               "summary": summarize(windows) if windows else {}}
+    logic_cpu = logic_cpu_samples(lines[loaded or 0:])
+    if len(logic_cpu) > 1:  # discard the first 300-step window, which can straddle the state load
+        result["summary"]["logic_cpu_ms"] = statistics.fmean(logic_cpu[1:])
     if pacing:
         result["summary"]["vulkan_pacing_p95_ms"] = statistics.fmean(pacing[args.skip_windows:] or pacing)
     if paced:  # paced interpolation: share of in-between frames drawn, per 300 steps
@@ -273,6 +292,8 @@ def main():
     p.add_argument("--skip-windows", type=int, default=2, help="120-frame reports after the load to ignore (warm-up)")
     p.add_argument("--variant", action="append", default=[], metavar="NAME:K=V,K=V",
                    help="a configuration (environment); repeat for A/B runs, run interleaved")
+    p.add_argument("--variant-binary", action="append", default=[], metavar="NAME=PATH",
+                   help="use a separately compiled binary for this named variant")
     p.add_argument("--runs", type=int, default=1, help="runs per variant")
     p.add_argument("--warmup", action="store_true", help="one discarded run first (warms the shader caches)")
     p.add_argument("--cache-dir", help="shader/pipeline caches shared by the runs (default: <out>/cache)")
@@ -289,9 +310,18 @@ def main():
         name, _, envs = v.partition(":")
         env = dict(kv.split("=", 1) for kv in envs.split(",") if kv)
         variants.append((name, env))
+    args.variant_binaries = {}
+    for spec in args.variant_binary:
+        name, separator, binary = spec.partition("=")
+        if not separator or not binary or name not in {n for n, _ in variants} or name in args.variant_binaries:
+            p.error("--variant-binary needs one NAME=PATH for an existing, unique variant")
+        if not os.path.isfile(binary):
+            p.error("variant binary does not exist: " + binary)
+        args.variant_binaries[name] = os.path.abspath(binary)
     os.makedirs(args.out, exist_ok=True)
     results = []
     if args.warmup:
+        args.variant_binaries["warmup"] = args.variant_binaries.get(variants[0][0], args.binary)
         run_once(args, "warmup", variants[0][1], 0, args.out)
     for i in range(args.runs):
         order = variants if i % 2 == 0 else list(reversed(variants))  # A B, B A, ...
@@ -313,11 +343,11 @@ def main():
         stats = {}
         for k in keys:
             vals = [s[k] for s in runs if k in s]
-            stats[k] = {"median": statistics.median(vals), "mean": statistics.fmean(vals), "min": min(vals), "max": max(vals),
-                        "stdev": statistics.stdev(vals) if len(vals) > 1 else 0.0, "n": len(vals)}
+            stats[k] = run_statistics(vals)
         table[name] = stats
     meta = {k: getattr(args, k) for k in ("scene", "fps", "renderer", "uncapped", "visible", "seconds", "runs", "display_hz")}
     meta["binary"] = os.path.basename(args.binary)
+    meta["variant_binaries"] = {name: os.path.basename(path) for name, path in args.variant_binaries.items() if name != "warmup"}
     with open(os.path.join(args.out, "summary.json"), "w") as f:
         json.dump({"meta": meta, "variants": table, "runs": results}, f, indent=1)
     keys = sorted({k for t in table.values() for k in t})
