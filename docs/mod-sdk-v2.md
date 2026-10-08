@@ -645,9 +645,10 @@ actual main-thread logic-pass CPU samples, excluding renderer/vsync waits and th
 300-step window after loading. Both variants must produce this metric and ten successful
 runs before comparing overhead. Historical prototype timings do not satisfy this gate.
 
-Cheaper variants if needed: a thin wrapper per function (`f_X`: check, tail call to the
-body; one extra branch per call but ~30 bytes per function), or no check in a list of hot
-leaf functions (option (c) for those only).
+If the gate exceeds 2%, keep checks opt-in and investigate a thin wrapper per function
+(`f_X`: check, tail call to the body; one extra branch per call but ~30 bytes per function),
+or compiler code-layout and flag-table locality improvements. Each alternative must keep
+every game function hookable and pass the same A/B gate before becoming the default.
 
 ## Fixed phase 1 decisions
 
