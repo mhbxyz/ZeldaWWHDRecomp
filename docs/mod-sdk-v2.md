@@ -593,7 +593,34 @@ half of the ≈ 600,000 `cLib_addCalc2` calls of the run with no visible differe
 call of a game function goes through the other mod's replacement, and the return hook sees
 Link's actor pointer.
 
-## Measurements
+## Phase 1 runtime validation (2026-10-08)
+
+The runtime at `e7fcd27` was built with AppleClang 17.0.0, Release configuration and
+both renderers on macOS 26.6.2. Scripted headless runs used copies of saves, audio
+disabled and private shader caches. Both examples were installed as trusted guest
+packages in an isolated manager directory and built through the startup build bridge.
+
+| Check | Metal | Vulkan |
+| --- | --- | --- |
+| Both example modules load; heart entry and return hooks run | Passed | Passed |
+| Full state restores with the same mod set | Passed | Passed |
+| Portable state restores with the same mod set | Passed | Passed |
+| Same mod set loads without a mismatch warning | Passed | Passed |
+| Older full state with no mod metadata warns and continues | Passed | Not run |
+
+A full state saved on Metal contains the complete 16 MiB mod region. Its example
+counters show 14,749 replacement calls, 7,374 handled by the mod, and 382 heart entry
+and return calls. The portable state records both example IDs and version `0.1.0`.
+The first game run exposed a recursive package-manager mutex acquisition during
+build-tool initialization; `e7fcd27` fixes it and adds a startup regression check.
+Guest-module, Linux, Windows and Android CI passed for that commit.
+
+These are functional tests, not the performance gate. The changed-mod portable-state
+warning still needs an in-game check. The ten-run interleaved no-mod comparison against
+devel `872f17e` remains pending on both renderers; checks remain opt-in until it passes.
+The commands and acceptance criteria for that comparison follow the historical table.
+
+## Historical prototype measurements
 
 Machine: Apple M-series Mac (macOS 26.6), shared with other jobs (load average 9–25 during
 the runs, so absolute numbers are noisy). devel = `cf6b8c9`; prototype = this branch with
