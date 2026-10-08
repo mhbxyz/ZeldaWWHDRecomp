@@ -40,6 +40,14 @@ def ppc_ok():
 
 @unittest.skipUnless(ppc_ok(), "no clang with the PowerPC target / ld.lld")
 class GuestModTest(unittest.TestCase):
+    def test_public_headers_c_and_cpp(self):
+        headers = ("bindings", "actor", "link", "camera", "items", "save", "messages", "data")
+        source = "".join('#include "game/%s.h"\n' % name for name in headers)
+        for language, standard in (("c", "c11"), ("c++", "c++17")):
+            with self.subTest(language=language):
+                subprocess.run([CLANG] + FLAGS + ["-x", language, "-std=" + standard,
+                               "-fsyntax-only", "-"], input=source, text=True, check=True)
+
     def build_elf(self, src_text, d):
         src = os.path.join(d, "mod.c")
         with open(src, "w") as f:
