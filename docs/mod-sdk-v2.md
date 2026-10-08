@@ -318,6 +318,102 @@ host would copy pixels/text before returning and render the lists through Metal/
 at the overlay stage. No guest pointers would be retained by a renderer. Audio streams,
 events and additional compiler helpers also remain future work.
 
+## Phase 2 interfaces and integration
+
+The following HUD interface is a proposal, not an available phase 1 import:
+
+```c
+typedef u32 wwhd_hud_list;
+typedef u32 wwhd_hud_image;
+wwhd_hud_list wwhd_hud_begin(u32 screen); /* TV or GamePad; zero on failure */
+void wwhd_hud_rect(wwhd_hud_list list, f32 x, f32 y, f32 w, f32 h, u32 rgba);
+void wwhd_hud_text(wwhd_hud_list list, f32 x, f32 y, f32 size,
+                   u32 rgba, const char* utf8, u32 bytes);
+wwhd_hud_image wwhd_hud_image_rgba(const void* pixels, u32 width, u32 height, u32 stride);
+void wwhd_hud_image_draw(wwhd_hud_list list, wwhd_hud_image image,
+                        f32 x, f32 y, f32 w, f32 h, u32 rgba);
+void wwhd_hud_commit(wwhd_hud_list list);
+void wwhd_hud_image_release(wwhd_hud_image image);
+```
+
+Coordinates use a documented 1280×720 logical canvas with an aspect-preserving safe
+rectangle; the runtime supplies the actual screen rectangle. Commands draw in submission
+order. Text uses a runtime font, bounded UTF-8 lengths and explicit sizes. Images are
+uncompressed RGBA8 with checked stride, dimensions and byte length; resource and draw-list
+quotas are per mod. Handles are owned by the calling mod and cannot name another mod's
+resources. Calls synchronously copy guest data; no guest pointers cross to renderer threads.
+
+A commit atomically publishes an immutable list for subsequent rendered frames. A logic
+hook can update it once per step while interpolation reuses it between steps. Publishing
+an empty list hides the panel. Released images remain alive until queued render work has
+finished. Metal and Vulkan draw at the same overlay stage; GamePad drawing is explicit.
+Host resources are not guest memory: state-load notification must let mods rebuild handles
+and publish a fresh list after a full-state restore. Shutdown releases every owned handle.
+These rules also resolve the minimap/dragon panel overlap through configurable placement,
+rather than hard-coded renderer patches.
+
+Audio streams should follow the same ownership and bounded-copy model: open a stream with
+an explicit sample rate/channel count, queue bounded interleaved PCM buffers, query queue
+space, and close it. A runtime mixer resamples as needed, obeys mute/volume settings and
+rejects invalid handles or oversized queues. It must support cancellation and state-load
+reset without retaining guest buffers. This supplies synthesized mod music; access to the
+game's own effects remains through game functions. No HUD or audio-stream code is built in
+phase 1.
+
+Catalogue integration can already call `build_guest_mod.py` through its documented
+inspect/build JSON contract. Follow-up work is to connect catalogue progress/errors and
+use the manager's persisted allocation, selected host compiler, trust fingerprint and
+cache directory. The catalogue must not allocate independently or trust a previously built
+native module without checking its ELF. Dependency resolution remains the manager's job.
+
+Android needs a separate plan for host module compilation, executable code loading,
+package storage/document URIs and lifecycle handling. Desktop compile-test results do not
+prove Android support. Until that work and device tests are complete, Android guest mods
+remain unsupported. Further compiler helpers, events and cross-mod exports should have
+versioned contracts and focused tests before being added.
+
+## Porting the existing minimap and dragon prototypes
+
+These are porting plans, not completed ports. Keep their existing gameplay limitations
+visible and preserve local asset preparation: no maps, models or game sounds belong in
+distributed mod packages.
+
+For **gc-minimap**, replace the built-in switch with a guest package and manager options.
+A return hook on the public Link execute target captures position, heading and stage/event
+visibility once per logic step. The generated actor views and public game accessors replace
+host `ppc_ptr` reads. Keep sector/map-coordinate math in guest code; host mutexes disappear
+when state stays in guest globals. Move the renderer-specific panel to the phase 2 HUD
+interface, including the frame, heading marker and arrows. Preserve the existing rule of
+hiding sectors without verified bounds. Stage/event fields not yet curated into the SDK
+need public-source declarations and offset checks before the port uses them.
+
+The cache builder still runs locally against the player's own files. Put its results in the
+mod's own data folder, with flat filenames; split files larger than the phase 1 1 MiB
+per-call limit. A future catalogue preparation step can manage this. A guest package cannot
+read the prototype's arbitrary external cache path through the phase 1 file service.
+Verify no state reads or resource uploads when disabled, and compare the panel on both
+renderers once the HUD interface exists. Full visual parity is therefore phase 2 work.
+
+For **dragon**, rewrite `Cpu*`/host-memory wrappers as typed PowerPC hooks and replacements.
+Use public names for Link execute, camera follow, Valoo lifecycle, resources, song handling
+and save-slot operations. Preserve the port's outer climb/true-60 hooks. Entry/return hooks
+cannot change argument registers or the result, so operations that redirect arguments or
+suppress the original need a replacement plus `WWHD_GAME_ORIGINAL`, scoped to the mod's own
+actors. Replacement conflicts must remain explicit. Generic public audio trampolines need
+signature curation before using them as semantic song APIs.
+
+Move ride/quest state and tagged actor bookkeeping into guest globals or the mod heap;
+use `wwhd_logic_dt()` rather than assuming 30 steps/s. Use the input service and typed
+options. Store per-slot quest progress with flat per-mod filenames, retaining explicit
+new-game/reset behavior. Full states restore guest quest/heap state, but external progress
+files are not rewound: do not immediately overwrite restored state by rereading a newer
+file. Save-slot copy behavior and state-load notification need explicit follow-up tests.
+Use game resource/effect functions for locally available models, animations and effects.
+The letter/flight panels await HUD support, and synthesized melody mixing awaits the audio
+stream interface. Test cancellation, ordinary story actors, boat/leaf recovery, save slots,
+true-60 timing and simultaneous minimap placement before claiming parity. Existing route,
+collision and presentation limitations remain separate from the SDK port.
+
 ## Trust
 
 A translated guest mod is compiled to native code in the game process. Two properties limit
@@ -524,6 +620,7 @@ python3 tools/bench/run_bench.py --binary build/baseline/wwhd \
   --variant-binary hooks=build/hooked/wwhd \
   --game /path/to/your/game --save /path/to/save-copy --state-dir /path/to/state-copy \
   --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 10 \
+  --quiet-load-max 12 --exclusive-bench --min-free-gb 15 \
   --out build/hook-bench-metal
 ```
 

@@ -23,6 +23,7 @@ import json
 import os
 import re
 import shutil
+import shlex
 import signal
 import statistics
 import subprocess
@@ -57,8 +58,58 @@ def other_games(own_pid=None):
 def load1():
     try:
         return os.getloadavg()[0]
-    except OSError:
+    except (OSError, AttributeError):
         return -1.0
+
+
+
+def benchmark_pids(process_listing, own_pid):
+    found = []
+    for line in process_listing.splitlines():
+        pid, _, command = line.strip().partition(" ")
+        if not pid.isdigit() or int(pid) == own_pid:
+            continue
+        try:
+            argv = shlex.split(command.strip())
+        except ValueError:
+            continue
+        if argv and os.path.basename(argv[0]).startswith("python") and any(
+                os.path.basename(arg) == "run_bench.py" for arg in argv[1:]):
+            found.append(int(pid))
+    return found
+
+
+def other_benchmarks():
+    result = subprocess.run(["ps", "-Ao", "pid=,args="], capture_output=True, text=True, check=True)
+    return benchmark_pids(result.stdout, os.getpid())
+
+
+def quiet_reasons(args):
+    reasons = []
+    if args.quiet_load_max is not None:
+        load = load1()
+        if load < 0:
+            raise RuntimeError("cannot read load average for quiet-machine gate")
+        if load >= args.quiet_load_max:
+            reasons.append("load1 %.2f is not below %.2f" % (load, args.quiet_load_max))
+    if args.exclusive_bench:
+        others = other_benchmarks()
+        if others:
+            reasons.append("another run_bench.py is running: " + ", ".join(map(str, others)))
+    if args.min_free_gb:
+        free = shutil.disk_usage(args.out).free / 1e9
+        if free < args.min_free_gb:
+            reasons.append("free disk %.2f GB is below %.2f GB" % (free, args.min_free_gb))
+    return reasons
+
+
+def wait_for_quiet(args):
+    while True:
+        reasons = quiet_reasons(args)
+        if not reasons:
+            return
+        print("  waiting: " + "; ".join(reasons), file=sys.stderr, flush=True)
+        time.sleep(30)
 
 
 def stop(proc):
@@ -162,6 +213,7 @@ def logic_cpu_samples(lines):
 
 
 def run_once(args, variant, env_extra, index, out_dir):
+    wait_for_quiet(args)
     run_dir = os.path.join(out_dir, "%s_%02d" % (variant, index))
     shutil.rmtree(run_dir, ignore_errors=True)
     os.makedirs(run_dir)
@@ -213,6 +265,7 @@ def run_once(args, variant, env_extra, index, out_dir):
         print("  waiting: another game process is running", file=sys.stderr)
         time.sleep(30)
     binary = args.variant_binaries.get(variant, args.binary)
+    wait_for_quiet(args)
     load_before = load1()
     started = time.time()
     with open(os.path.join(run_dir, "log"), "w") as log:
@@ -227,6 +280,9 @@ def run_once(args, variant, env_extra, index, out_dir):
                 if time.time() - started > args.timeout:
                     status = "timeout"
                     break
+                if quiet_reasons(args):
+                    status = "disturbed"
+                    break
                 if args.watch_others and other_games(proc.pid):
                     status = "disturbed"  # another game started meanwhile: the timings are not usable
                     break
@@ -236,6 +292,8 @@ def run_once(args, variant, env_extra, index, out_dir):
     if proc.poll() is None:
         raise RuntimeError("game process %d is still running" % proc.pid)
     load_after = load1()
+    if args.quiet_load_max is not None and load_after >= args.quiet_load_max:
+        status = "disturbed"
     shutil.rmtree(os.path.join(run_dir, "save"), ignore_errors=True)
     with open(os.path.join(run_dir, "log"), errors="replace") as f:
         lines = f.read().splitlines()
@@ -298,11 +356,18 @@ def main():
     p.add_argument("--warmup", action="store_true", help="one discarded run first (warms the shader caches)")
     p.add_argument("--cache-dir", help="shader/pipeline caches shared by the runs (default: <out>/cache)")
     p.add_argument("--timeout", type=float, default=600)
+    p.add_argument("--quiet-load-max", type=float, help="wait until load1 is below this value; discard disturbed runs")
+    p.add_argument("--exclusive-bench", action="store_true", help="wait while any other run_bench.py is running")
+    p.add_argument("--min-free-gb", type=float, default=0, help="minimum free decimal GB before/during each run")
     p.add_argument("--gate", help="shell command run (and waited for) before every run")
     p.add_argument("--out", default=os.path.join(REPO, "build", "bench"))
     p.add_argument("--no-wait", dest="wait_for_others", action="store_false", help="don't wait for other game processes")
     p.add_argument("--no-watch", dest="watch_others", action="store_false", help="don't discard runs disturbed by another game")
     args = p.parse_args()
+    if args.quiet_load_max is not None and args.quiet_load_max <= 0:
+        p.error("--quiet-load-max must be positive")
+    if args.min_free_gb < 0:
+        p.error("--min-free-gb must be nonnegative")
     if not os.path.exists(os.path.join(args.state_dir, "slot%d.bin" % (args.slot or SCENES[args.scene][0]))):
         p.error("no slot%d.bin in %s" % (args.slot or SCENES[args.scene][0], args.state_dir))
     variants = []
@@ -345,7 +410,8 @@ def main():
             vals = [s[k] for s in runs if k in s]
             stats[k] = run_statistics(vals)
         table[name] = stats
-    meta = {k: getattr(args, k) for k in ("scene", "fps", "renderer", "uncapped", "visible", "seconds", "runs", "display_hz")}
+    meta = {k: getattr(args, k) for k in ("scene", "fps", "renderer", "uncapped", "visible", "seconds", "runs", "display_hz",
+                                                   "quiet_load_max", "exclusive_bench", "min_free_gb")}
     meta["binary"] = os.path.basename(args.binary)
     meta["variant_binaries"] = {name: os.path.basename(path) for name, path in args.variant_binaries.items() if name != "warmup"}
     with open(os.path.join(args.out, "summary.json"), "w") as f:
