@@ -9,7 +9,7 @@
 namespace guestmods {
 struct BuildBridge {
     std::vector<std::string> python, compiler;
-    std::string builder, include, cache;
+    std::string builder, include, cache, zig_cache;
     static std::vector<std::string> arguments(const mods::json::Value& value) {
         if(value.type!=mods::json::Value::Array||value.array.empty())throw std::runtime_error("Invalid guest build tool command");
         std::vector<std::string> out;
@@ -22,8 +22,21 @@ struct BuildBridge {
             throw std::runtime_error("Guest mod build tools are unavailable; run setup again");
         std::ifstream input(path);std::string text{std::istreambuf_iterator<char>(input),{}};
         auto config=mods::json::parse(text);
+        const auto& version=config.get("format_version");
+        if(version.type!=mods::json::Value::Number||(version.number!=1&&version.number!=2))
+            throw std::runtime_error("Unsupported guest build configuration; run setup again");
         BuildBridge b;b.python=arguments(config.get("python"));b.compiler=arguments(config.get("compiler"));
         b.builder=config.get("builder").string();b.include=config.get("include").string();b.cache=cache;
+        b.zig_cache=config.get("zig_cache").string();
+        if(version.number==2) {
+            const auto base=std::filesystem::absolute(path).parent_path();
+            auto resolve=[&](std::string& value,bool command=false){
+                std::filesystem::path p(value);
+                if(!value.empty()&&p.is_relative()&&(!command||p.has_parent_path()))value=(base/p).lexically_normal().string();
+            };
+            resolve(b.python[0],true);resolve(b.compiler[0],true);
+            resolve(b.builder);resolve(b.include);resolve(b.zig_cache);
+        }
         if(b.builder.empty()||b.include.empty())throw std::runtime_error("Incomplete guest build configuration; run setup again");
         return b;
     }
@@ -32,6 +45,7 @@ struct BuildBridge {
         command.insert(command.end(),{"--base",std::to_string(base),"--json"});
         if(inspect)command.push_back("--inspect");
         else {
+            if(!zig_cache.empty())command.insert(command.end(),{"--zig-cache",zig_cache});
             mods::json::Value cc;cc.type=mods::json::Value::Array;for(const auto& a:compiler)cc.array.emplace_back(a);
             command.insert(command.end(),{"--out",cache,"--include",include,"--cc-json",mods::json::dump(cc)});
         }

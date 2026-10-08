@@ -458,6 +458,9 @@ this flag remains opt-in while the phase 1 performance gate is pending.
 
 Use clang with the PowerPC backend and lld. The player's host compiler is separate:
 setup already installs or selects Apple CLT, llvm-mingw or zig for module compilation.
+Keep the downloaded host compiler for guest builds. If removed, run setup again to
+restore it. Portable releases store guest-build paths relative to `guest-sdk.json` so
+the release folder can move; system tools keep their external paths.
 Modders do not need devkitPPC, and this SDK does not bundle a modder compiler.
 
 - macOS: `brew install llvm lld`. Use `$(brew --prefix llvm)/bin/clang` and

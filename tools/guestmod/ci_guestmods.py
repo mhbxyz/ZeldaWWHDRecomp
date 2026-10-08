@@ -44,6 +44,7 @@ def main():
             print(name, os.environ[name], "exists:", Path(os.environ[name]).exists(), flush=True)
         subprocess.run([os.environ["WWHD_PPC_CLANG"], "--print-targets"], check=False)
         raise SystemExit("PowerPC clang/lld unavailable: refusing to skip module compile tests in CI")
+    subprocess.run([sys.executable, str(REPO / "tools/installer/test_setup.py"), "GuestBuildConfig"], check=True)
     subprocess.run([sys.executable, str(REPO / "tools/guestmod/test_public_sdk_index.py")], check=True)
     subprocess.run([sys.executable, str(REPO / "tools/bench/test_run_bench.py")], check=True)
     headers = ["bindings", "actor", "link", "camera", "items", "messages", "save", "data"]

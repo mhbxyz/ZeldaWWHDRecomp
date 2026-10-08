@@ -1333,9 +1333,24 @@ def mac_app(app_path, exe_src, data_dir, version):
 
 def write_guest_build_config(data_dir, tc):
     """Remember setup's real local toolchain for runtime guest builds (no shell command strings)."""
-    config = {"format_version": 1, "python": [sys.executable], "compiler": tc.cc,
-              "builder": os.path.join(PKG, "tools", "guestmod", "build_guest_mod.py"),
-              "include": os.path.join(PKG, "sdk", "include")}
+    def stored_path(path):
+        if PORTABLE and os.path.isabs(path):
+            for root in (PKG, data_dir):
+                try:
+                    inside = os.path.commonpath([os.path.abspath(root), path]) == os.path.abspath(root)
+                except ValueError:  # another Windows drive
+                    inside = False
+                if inside:
+                    relative = os.path.relpath(path, data_dir)
+                    return relative if relative.startswith(".") else "." + os.sep + relative
+        return path
+
+    config = {"format_version": 2, "python": [stored_path(sys.executable)],
+              "compiler": [stored_path(tc.cc[0])] + tc.cc[1:],
+              "builder": stored_path(os.path.join(PKG, "tools", "guestmod", "build_guest_mod.py")),
+              "include": stored_path(os.path.join(PKG, "sdk", "include"))}
+    if tc.env and tc.env.get("ZIG_GLOBAL_CACHE_DIR"):
+        config["zig_cache"] = stored_path(tc.env["ZIG_GLOBAL_CACHE_DIR"])
     path = os.path.join(data_dir, "guest-sdk.json")
     with open(path + ".tmp", "w", encoding="utf-8") as f:
         json.dump(config, f)
@@ -1468,7 +1483,7 @@ def toolchain_dir(data_dir):
 
 
 def remove_toolchain(data_dir):
-    """Deletes the downloaded compiler (it is needed again only to repair; then it is downloaded again)."""
+    """Deletes the downloaded compiler (repair and guest mod builds need setup to restore it)."""
     d = toolchain_dir(data_dir)
     n = folder_size(d) if os.path.isdir(d) else 0
     shutil.rmtree(d, ignore_errors=True)
@@ -2067,8 +2082,8 @@ def run(args, ui):
             state["shortcut"] = create_shortcut()
             write_state(data_dir, state)
         tdir = toolchain_dir(data_dir)
-        if os.path.isdir(tdir) and ui.yesno("Remove the downloaded compiler (%s)? It is only needed to repair the game "
-                                            "and is downloaded again then." % human(folder_size(tdir)), True):
+        if os.path.isdir(tdir) and ui.yesno("Remove the downloaded compiler (%s)? Repair and guest mod builds need it; "
+                                            "run setup again to restore it." % human(folder_size(tdir)), False):
             remove_toolchain(data_dir)
     say("")
     say("Done. Saves are in %s" % os.path.join(data_dir, "save"))

@@ -158,9 +158,12 @@ def main():
     compiler_args.add_argument("--cc", help="compiler command (default: $CC, xcrun clang on macOS, clang)")
     ap.add_argument("--include", default=os.path.join(REPO, "runtime", "include"),
                     help="runtime headers (ppc.h, wwhd_guest_abi.h); sdk/include in a release")
+    ap.add_argument("--zig-cache", help="setup-selected Zig global cache directory")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
     try:
+        if a.zig_cache:
+            os.environ["ZIG_GLOBAL_CACHE_DIR"] = os.path.abspath(a.zig_cache)
         if a.inspect:
             r = inspect_package(a.package, a.base)
         elif not a.out:

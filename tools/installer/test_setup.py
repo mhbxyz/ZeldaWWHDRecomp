@@ -6,6 +6,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import setup  # noqa: E402
@@ -24,6 +25,40 @@ class GuestBuildConfig(unittest.TestCase):
             self.assertEqual(config["python"], [sys.executable])
             self.assertTrue(config["builder"].endswith("build_guest_mod.py"))
             self.assertFalse(os.path.exists(os.path.join(d, "guest-sdk.json.tmp")))
+
+
+    def test_portable_paths_survive_release_move(self):
+        with tempfile.TemporaryDirectory() as directory:
+            release = os.path.join(directory, "release")
+            data = os.path.join(release, "data")
+            paths = {"python": os.path.join(release, "tools", "python", "python.exe"),
+                     "compiler": os.path.join(data, "toolchain", "bin", "zig"),
+                     "builder": os.path.join(release, "tools", "guestmod", "build_guest_mod.py")}
+            for path in paths.values():
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w") as f:
+                    f.write("")  # fixture paths only
+            os.makedirs(os.path.join(release, "sdk", "include"))
+            cache = os.path.join(data, "toolchain", "zig-cache")
+            tc = setup.Toolchain([paths["compiler"], "cc", "-target", "x86_64-linux-gnu.2.35"], [], [],
+                                 env={"ZIG_GLOBAL_CACHE_DIR": cache, "UNRELATED_ENV": "not-persisted"})
+            with mock.patch.multiple(setup, PKG=release, PORTABLE=True), mock.patch.object(setup.sys, "executable", paths["python"]):
+                setup.write_guest_build_config(data, tc)
+            moved = os.path.join(directory, "moved-release")
+            os.rename(release, moved)
+            moved_data = os.path.join(moved, "data")
+            with open(os.path.join(moved_data, "guest-sdk.json")) as f:
+                config = json.load(f)
+            self.assertEqual(config["format_version"], 2)
+            for key in ("python", "compiler"):
+                self.assertFalse(os.path.isabs(config[key][0]))
+                self.assertTrue(os.path.isfile(os.path.join(moved_data, config[key][0])))
+            self.assertTrue(os.path.isfile(os.path.join(moved_data, config["builder"])))
+            self.assertTrue(os.path.isdir(os.path.join(moved_data, config["include"])))
+            self.assertEqual(os.path.normpath(os.path.join(moved_data, config["zig_cache"])),
+                             os.path.join(moved_data, "toolchain", "zig-cache"))
+            self.assertNotIn("UNRELATED_ENV", config)
+
 
 
 class Keys(unittest.TestCase):

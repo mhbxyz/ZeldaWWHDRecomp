@@ -225,8 +225,16 @@ void init() {
         if(!g_mod_hook_count)throw std::runtime_error("Guest mods require game code built with --mod-hooks; run setup with guest hooks enabled");
         if(!bridge){
             const char* path=std::getenv("WWHD_GUEST_BUILD_CONFIG");
-            bridge=std::make_unique<BuildBridge>(BuildBridge::read(path?path:"guest-sdk.json",
+            auto candidate=std::make_unique<BuildBridge>(BuildBridge::read(path?path:"guest-sdk.json",
                 (std::filesystem::path(packages::directory()).parent_path()/"GuestBuild").string()));
+            if(!std::filesystem::is_regular_file(candidate->builder)||!std::filesystem::is_directory(candidate->include))
+                throw std::runtime_error("Guest mod build tools are missing; run setup again from a complete release folder");
+            for(const auto* command:{&candidate->python,&candidate->compiler}) {
+                const std::filesystem::path executable(command->front());
+                if(executable.has_parent_path()&&!std::filesystem::is_regular_file(executable))
+                    throw std::runtime_error("Guest mod compiler or Python is missing; run setup again and keep the downloaded compiler");
+            }
+            bridge=std::move(candidate);
         }
         return *bridge;
     };
