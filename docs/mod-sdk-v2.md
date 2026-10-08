@@ -660,12 +660,15 @@ python3 tools/bench/run_bench.py --binary build/baseline/wwhd \
   --variant-binary hooks=build/hooked/wwhd \
   --game /path/to/your/game --save /path/to/save-copy --state-dir /path/to/state-copy \
   --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 10 \
-  --quiet-load-max 12 --exclusive-bench --min-free-gb 15 \
+  --quiet-load-max 12 --exclusive-bench --min-free-gb 15 --retry-disturbed \
   --out build/hook-bench-metal
 ```
 
 Repeat for Vulkan with its own output/cache directory. Runs alternate A/B then B/A.
 Before each run, require load1 below 12 and no other `run_bench.py`; defer otherwise.
+`--retry-disturbed` repeats interrupted samples in the same A/B position until quiet;
+it also retries an interrupted warm-up. Timeouts and other failures remain limited
+to three attempts, and an incomplete comparison must not pass the gate.
 The script copies saves and runs headless without audio. Its no-host-input environment
 also keeps the package manager inactive unless explicitly overridden, so this comparison
 loads no mods. Record the exact baseline and hook-build revisions and compiler flags.

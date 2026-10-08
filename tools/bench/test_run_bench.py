@@ -1,5 +1,7 @@
 """Benchmark statistics and profiler extraction tests; no game input."""
 import unittest
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -9,6 +11,7 @@ import tempfile
 from types import SimpleNamespace
 from unittest import mock
 from run_bench import benchmark_pids, logic_cpu_samples, quiet_reasons, run_statistics
+import run_bench
 
 
 class BenchmarkStatistics(unittest.TestCase):
@@ -82,6 +85,46 @@ class BenchmarkStatistics(unittest.TestCase):
                  '[prof] frame 120: 120 frames, 6.00 ms/frame',
                  '[interp] 140.0 logic steps/s; main thread CPU per pass: logic 5.75 ms, blended hold 1.00 ms']
         self.assertEqual(logic_cpu_samples(lines), [5.25, 5.75])
+
+    def test_disturbed_retries_preserve_all_ten_interleaved_samples(self):
+        repo = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(prefix='bench-retry-', dir=repo / 'build') as directory:
+            root = Path(directory)
+            (root / 'slot1.bin').touch()  # synthetic fixture
+            attempts, accepted = {}, []
+
+            def sample(args, name, env, index, out):
+                key = name, index
+                attempts[key] = attempts.get(key, 0) + 1
+                disturbed = key in [('warmup', 0), ('a', 1)] and attempts[key] <= 4
+                if not disturbed:
+                    accepted.append(key)
+                return {'variant': name, 'run': index, 'status': 'disturbed' if disturbed else 'ok',
+                        'windows': 3, 'load_before': 11, 'load_after': 13 if disturbed else 11,
+                        'summary': {'frame_ms': 6, 'logic_cpu_ms': 4}}
+
+            argv = ['run_bench.py', '--binary', 'fixture', '--state-dir', str(root),
+                    '--scene', 'still', '--variant', 'a:', '--variant', 'b:', '--runs', '10',
+                    '--warmup', '--retry-disturbed', '--out', str(root / 'out')]
+            with mock.patch.object(sys, 'argv', argv), mock.patch('run_bench.run_once', side_effect=sample), contextlib.redirect_stdout(io.StringIO()):
+                run_bench.main()
+            report = json.loads((root / 'out/summary.json').read_text())
+            expected = [('warmup', 0)]
+            for i in range(1, 11):
+                expected.extend((name, i) for name in (('a', 'b') if i % 2 else ('b', 'a')))
+            self.assertEqual(accepted, expected)
+            self.assertEqual(len(report['runs']), 20)
+            self.assertTrue(all(r['status'] == 'ok' for r in report['runs']))
+            for name in ('a', 'b'):
+                for metric in ('frame_ms', 'logic_cpu_ms'):
+                    self.assertEqual(report['variants'][name][metric]['n'], 10)
+
+    def test_other_failures_and_default_retries_remain_bounded(self):
+        for retry_disturbed, status in [(False, 'disturbed'), (True, 'timeout')]:
+            result = {'status': status, 'windows': 0, 'load_before': 11, 'load_after': 11, 'summary': {}}
+            with mock.patch('run_bench.run_once', return_value=result) as sample, contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(run_bench.run_with_retries(SimpleNamespace(retry_disturbed=retry_disturbed), 'a', {}, 1, 'fixture'), result)
+                self.assertEqual(sample.call_count, 3)
 
 
 if __name__ == '__main__':

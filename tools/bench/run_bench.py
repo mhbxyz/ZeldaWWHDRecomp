@@ -324,6 +324,23 @@ def run_once(args, variant, env_extra, index, out_dir):
     return result
 
 
+def run_with_retries(args, name, env, index, out_dir):
+    failures = 0
+    while failures < 3:
+        r = run_once(args, name, env, index, out_dir)
+        print("%s run %d: %s, %d windows, load %.1f -> %.1f, %s" % (
+            name, index, r["status"], r["windows"], r["load_before"], r["load_after"],
+            ", ".join("%s %.2f" % (k, r["summary"][k]) for k in ("frame_ms", "swaps_per_s", "render_cpu_ms",
+                                                                  "wait_gpu_ms") if k in r["summary"])), flush=True)
+        if r["status"] == "ok":
+            return r
+        # A shared-machine interruption must not consume a required sample. run_once
+        # waits for the same quiet gates before retrying this position in the A/B order.
+        if not args.retry_disturbed or r["status"] != "disturbed":
+            failures += 1
+    return r
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--binary", required=True, help="game executable (wwhd)")
@@ -339,7 +356,7 @@ def main():
     p.add_argument("--renderer", choices=["vulkan", "metal"], default="vulkan")
     p.add_argument("--visible", action="store_true",
                    help="show the game windows (presentation, swapchain and vsync pacing are only exercised then)")
-    p.add_argument("--uncapped", action="store_true", help="WWHD_VK_UNCAPPED=1: throughput, not gameplay pacing")
+    p.add_argument("--uncapped", action="store_true", help="uncapped throughput on either renderer, not gameplay pacing")
     p.add_argument("--seconds", type=float, default=60, help="scenario length in game seconds after --origin")
     # the state load restores the whole game state, so it only needs the boot to have finished; A
     # presses from frame 120 skip the intro and title (validated 2026-10-07 at loads 360 and 600)
@@ -359,6 +376,8 @@ def main():
     p.add_argument("--timeout", type=float, default=600)
     p.add_argument("--quiet-load-max", type=float, help="wait until load1 is below this value; discard disturbed runs")
     p.add_argument("--exclusive-bench", action="store_true", help="wait while any other run_bench.py is running")
+    p.add_argument("--retry-disturbed", action="store_true",
+                   help="retry interrupted samples until quiet, preserving the interleaved order; other failures remain bounded")
     p.add_argument("--min-free-gb", type=float, default=0, help="minimum free decimal GB before/during each run")
     p.add_argument("--gate", help="shell command run (and waited for) before every run")
     p.add_argument("--out", default=os.path.join(REPO, "build", "bench"))
@@ -388,18 +407,11 @@ def main():
     results = []
     if args.warmup:
         args.variant_binaries["warmup"] = args.variant_binaries.get(variants[0][0], args.binary)
-        run_once(args, "warmup", variants[0][1], 0, args.out)
+        run_with_retries(args, "warmup", variants[0][1], 0, args.out)
     for i in range(args.runs):
         order = variants if i % 2 == 0 else list(reversed(variants))  # A B, B A, ...
         for name, env in order:
-            for attempt in range(3):
-                r = run_once(args, name, env, i + 1, args.out)
-                print("%s run %d: %s, %d windows, load %.1f -> %.1f, %s" % (
-                    name, i + 1, r["status"], r["windows"], r["load_before"], r["load_after"],
-                    ", ".join("%s %.2f" % (k, r["summary"][k]) for k in ("frame_ms", "swaps_per_s", "render_cpu_ms",
-                                                                          "wait_gpu_ms") if k in r["summary"])), flush=True)
-                if r["status"] == "ok":
-                    break
+            r = run_with_retries(args, name, env, i + 1, args.out)
             results.append(r)
     # per-variant statistics over the runs
     table = {}
@@ -412,7 +424,7 @@ def main():
             stats[k] = run_statistics(vals)
         table[name] = stats
     meta = {k: getattr(args, k) for k in ("scene", "fps", "renderer", "uncapped", "visible", "seconds", "runs", "display_hz",
-                                                   "quiet_load_max", "exclusive_bench", "min_free_gb")}
+                                                   "quiet_load_max", "exclusive_bench", "min_free_gb", "retry_disturbed")}
     meta["binary"] = os.path.basename(args.binary)
     meta["variant_binaries"] = {name: os.path.basename(path) for name, path in args.variant_binaries.items() if name != "warmup"}
     with open(os.path.join(args.out, "summary.json"), "w") as f:

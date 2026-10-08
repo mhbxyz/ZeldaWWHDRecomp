@@ -54,17 +54,17 @@ its regression test and subsequent game runs pass.
 | Guest-module Python | 11 tests; actual translated native module execution and example builds |
 | Public generator | 10 tests |
 | Installer guest-build configuration | 2 tests, including moving a portable release |
-| Benchmark helper | 6 tests; the executable fixture runs on POSIX hosts |
+| Benchmark helper | 8 tests locally; the executable fixture runs on POSIX hosts (previous CI revision: 6 tests) |
 
 The module matrix uses setup's Apple CLT, pinned llvm-mingw and pinned Zig host
 toolchains, with clang/lld for PowerPC inputs. It also checks the generated SDK as
 PowerPC C and C++. Android builds, but guest mods remain unsupported there.
 
-All CI workflows passed for `f1cf6fa`:
-[guest modules](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37832729578),
-[Linux](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37832729350),
-[Windows](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37832729560),
-[Android](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37832729398).
+All CI workflows passed for `e210fd5`:
+[guest modules](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37833479825),
+[Linux](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37833479793),
+[Windows](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37833479696),
+[Android](https://github.com/ZeldaWWHDRecomp/ZeldaWWHDRecomp/actions/runs/37833479761).
 
 ## Performance gate: pending
 
@@ -73,6 +73,9 @@ The queued comparison uses Windfall, 60 fps interpolation with uncapped renderin
 It requires load1 below 12, no other `run_bench.py`, and more than 15 GB free disk.
 Both executables load no mods. Frame time and actual logic-pass CPU time must each
 have ten valid samples; reports use inclusive quartiles and IQR.
+Interrupted samples are retried in place with `--retry-disturbed`, preserving A/B
+order. A new regression simulates four consecutive disturbances in both warm-up
+and the first measured sample, then verifies ten accepted samples per executable.
 
 | Renderer | Metric | Devel median / IQR | Hooks median / IQR | Median cost |
 | --- | --- | --- | --- | --- |
