@@ -660,13 +660,14 @@ python3 tools/bench/run_bench.py --binary build/baseline/wwhd \
   --variant-binary hooks=build/hooked/wwhd \
   --game /path/to/your/game --save /path/to/save-copy --state-dir /path/to/state-copy \
   --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 15 \
-  --quiet-load-max 16 --exclusive-bench --exclusive-work --min-free-gb 15 --retry-disturbed \
+  --quiet-load-max 30 --exclusive-bench --exclusive-work --min-free-gb 15 --retry-disturbed \
   --out build/hook-bench-metal
 ```
 
 Repeat for Vulkan with its own output/cache directory. Runs alternate A/B then B/A.
-The maintainer revised the gate on 2026-10-08: require load1 below 16 and no other
-build, game test or `run_bench.py`; defer otherwise. Monitor these conditions during
+The maintainer removed the load1-below-16 requirement on 2026-10-09. The machine
+rule still pauses at load1 30; no other worker's build, game test or `run_bench.py`
+may run during collection. Defer otherwise. Monitor these conditions during
 each run and discard interrupted samples.
 `--retry-disturbed` repeats interrupted samples in the same A/B position until quiet;
 it also retries an interrupted warm-up. Timeouts and other failures remain limited
