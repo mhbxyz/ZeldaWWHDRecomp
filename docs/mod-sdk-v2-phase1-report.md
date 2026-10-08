@@ -75,8 +75,10 @@ All CI workflows passed for `414dac6`:
 The queued comparison uses Windfall, 60 fps interpolation with uncapped rendering,
 60 game seconds per run, fifteen interleaved pairs per renderer, and a discarded warm-up.
 The maintainer removed the load1-below-16 requirement on 2026-10-09. Collection
-retains the machine load1-30 pause rule, exclusion of other workers' builds, game
-tests and `run_bench.py`. The maintainer also removed the 15 GB disk gate and
+retains the machine load1-30 pause rule and exclusion of other workers' builds,
+test drivers and `run_bench.py`. The maintainer explicitly permits concurrent game
+processes (`--no-wait --no-watch`), so this comparison spans both exclusive-game
+and shared-game conditions; it cannot establish quiet-machine performance. The maintainer also removed the 15 GB disk gate and
 is monitoring space directly. Eight completed Metal pairs were retained when
 resuming with that change; only successful samples with completion markers and
 matching variant, ordinal, environment and executable are reused. The revised comparison
