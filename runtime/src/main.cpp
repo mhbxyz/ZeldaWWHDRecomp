@@ -12,6 +12,7 @@
 #endif
 #include <ctime>
 #include <filesystem>
+#include "mods/guest_mods.h"
 #include "platform/host.h"
 #ifdef _WIN32
 #include <timeapi.h>
@@ -361,6 +362,7 @@ int main(int argc, char** argv) {
         m.data_end);
 
     dispatch::init();
+    guestmods::init();  // prototype: WWHD_GUEST_MODS (docs/mod-sdk-v2.md)
     init_data_imports();
     mem_setup_heaps(m.data_end);
     threads::init(m);

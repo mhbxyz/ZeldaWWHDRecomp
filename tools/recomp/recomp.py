@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Statically recompile a Wii U RPX into C.
 
-usage: recomp.py game/code/cking.rpx OUTDIR [--insns-per-file N]
+usage: recomp.py game/code/cking.rpx OUTDIR [--insns-per-file N] [--mod-hooks]
+
+--mod-hooks (or WWHD_RECOMP_MOD_HOOKS=1): every function body starts with a check of its byte in
+g_mod_hook_flags (runtime/src/mods/guest_mods.cpp), so guest mods (docs/mod-sdk-v2.md) can hook or
+replace any game function at runtime without rebuilding the game code.
 
 Output:
   OUTDIR/funcs.h         prototypes of every recompiled function and import
@@ -44,7 +48,8 @@ DATA_IMPORT_STRIDE = 0x1000
 
 
 class Recompiler:
-    def __init__(self, path):
+    def __init__(self, path, mod_hooks=False):
+        self.mod_hooks = mod_hooks
         self.p = Program(path)
         self.p.discover()
         self.entries = set(self.p.entries)
@@ -189,6 +194,10 @@ class Recompiler:
             # runtime hook: callers reach hook_X, which may call the original code (f_X_orig)
             out.append("void f_%08X(Cpu* __restrict c) { hook_%08X(c); }\n" % (start, start))
         out += ["void %s(Cpu* __restrict c) {" % fname, "    PPC_ENTER(0x%08Xu);" % start]
+        if self.mod_hooks:
+            # guest mods: the check sits in the game's code (f_X, or f_X_orig behind a port hook), so the
+            # port's own hooks (interpolation, true 60) stay outermost and mods hook the game's code
+            out.append("    PPC_MOD_HOOK(%d, 0x%08Xu);" % (self.ordinal[start], start))
         for a, w, s in body:
             if a in self.labels:
                 out.append("L_%08X: ;" % a)
@@ -211,6 +220,7 @@ class Recompiler:
         self.used_imports = set()
         self.imm_override = self.imm_override
         files, cur, n = [], [], 0
+        self.ordinal = {e: i for i, e in enumerate(self.sorted_entries)}
         for start in self.sorted_entries:
             src, count = self.emit_function(start)
             cur.append(src)
@@ -256,6 +266,19 @@ class Recompiler:
                 f.write('    {0x%08Xu, 0x%08Xu, "%s", "%s", %d, %s},\n' % (s, addr, lib, name, kind == "f", fn))
             f.write("};\nconst unsigned g_recomp_import_count = %d;\n" % len(self.imports))
             f.write("const uint32_t g_recomp_entry_point = 0x%08Xu;\n" % self.p.entry)
+            # guest mod hooks (--mod-hooks): one flag byte per function (same order as g_recomp_funcs) and
+            # the function holding the game's code (f_X_orig behind a port hook), for calls to the original
+            n = len(self.sorted_entries)
+            f.write("\n/* guest mod hooks: %s */\n" % ("on" if self.mod_hooks else "off"))
+            f.write("const unsigned g_mod_hook_count = %d;\n" % (n if self.mod_hooks else 0))
+            f.write("uint8_t g_mod_hook_flags[%d] = {0};  /* initialized: not a common symbol */\n" % (n if self.mod_hooks else 1))
+            f.write("const PpcFunc g_mod_bodies[] = {\n")
+            if self.mod_hooks:
+                for e in self.sorted_entries:
+                    f.write("    f_%08X%s,\n" % (e, "_orig" if e in self.hooks else ""))
+            else:
+                f.write("    0,\n")
+            f.write("};\n")
         with open(os.path.join(outdir, "imports.c"), "w") as f:
             f.write('#include "funcs.h"\n\nvoid hle_unimplemented(Cpu* c, const char* lib, const char* name);\n\n')
             for s in func_slots:
@@ -279,4 +302,5 @@ if __name__ == "__main__":
     per = 30000
     if "--insns-per-file" in sys.argv:
         per = int(sys.argv[sys.argv.index("--insns-per-file") + 1])
-    Recompiler(sys.argv[1]).run(sys.argv[2], per)
+    mod_hooks = "--mod-hooks" in sys.argv or os.environ.get("WWHD_RECOMP_MOD_HOOKS") == "1"
+    Recompiler(sys.argv[1], mod_hooks).run(sys.argv[2], per)
