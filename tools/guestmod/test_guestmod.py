@@ -97,6 +97,33 @@ WWHD_REPLACE(0x02005678, void, repl, (void)) { ptr = helper; orig_fn(); wwhd_log
             self.assertTrue(all(0x7F200000 <= e < t.end for e in t.entries))
             self.assertGreaterEqual(len(t.entries), 2)  # helper is address-taken: its own function
 
+    def test_host_services_compile(self):
+        src = r''' 
+#include "wwhd_guest.h"
+WWHD_HOOK(0x02000000, all_services, (void)) {
+    char* p = wwhd_malloc(64);
+    wwhd_input_state pad;
+    wwhd_input_read(&pad);
+    wwhd_config_string("choice", p, 64);
+    if (wwhd_config_bool("on", 0)) wwhd_log_float("dt", wwhd_logic_dt());
+    wwhd_log_float("amount", wwhd_config_float("amount", 1.5));
+    wwhd_log_int("step", (int)wwhd_logic_step());
+    wwhd_file_write("progress.bin", p, 64);
+    wwhd_file_read("progress.bin", p, 64);
+    wwhd_free(p);
+}
+'''
+        with tempfile.TemporaryDirectory() as d:
+            t = guestmod.Translator(guestmod.Elf(Path(self.build_elf(src, d)).read_bytes()), 0x7F000000)
+            translated = t.emit("services")
+            for address, (kind, name) in t.imports.items():
+                if kind == "svc":
+                    self.assertIn("c->pc = 0x%08Xu;" % address, translated, name)
+            self.assertIn("wwhd_file_write", t.services)
+            Path(d, "manifest.json").write_text(json.dumps({"kind": "guest", "id": "services", "guest": {"api_version": 1}}))
+            result = builder.build(d, str(Path(d, "cache")), 0x7F000000, builder.default_cc(), str(Path(REPO, "runtime/include")))
+            self.assertTrue(result["ok"])
+
     def test_errors(self):
         with self.assertRaises(guestmod.ModError):
             guestmod.Elf(b"not an elf at all" * 4)

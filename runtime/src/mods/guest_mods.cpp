@@ -3,12 +3,17 @@
 // functions at runtime through the per-function flag check that recomp.py --mod-hooks puts at the
 // start of every game function body (PPC_MOD_HOOK in ppc.h).
 //
-// Prototype switch: WWHD_GUEST_MODS=<module>[,<module>...] loads translated modules at start, before
-// any guest code runs. Without it (or with game code built without --mod-hooks) nothing changes.
+// The mod manager builds and loads its frozen, trusted guest set before guest code runs.
 #include "guest_mods.h"
 #include "guest_validation.h"
 #include "guest_build.h"
 #include "packages.h"
+#include "guest_heap.h"
+#include "guest_files.h"
+#include "input.h"
+#include "true60.h"
+#include <atomic>
+#include <limits>
 
 #include <algorithm>
 #include <cstdio>
@@ -50,8 +55,21 @@ struct Chain {
     std::vector<PpcFunc> entry, ret;
 };
 std::unordered_map<uint32_t, Chain> g_chains;  // built before the game starts, read-only afterwards
-struct Loaded { std::string path; const WWHDGuestModuleV1* m; };
+struct Loaded {
+    std::string path,id,version;
+    const WWHDGuestModuleV1* m=nullptr;
+    uint32_t region_size=0;
+    mods::json::Value options;
+    std::unique_ptr<Heap> heap;
+    std::unique_ptr<Files> files;
+};
 std::vector<Loaded> g_loaded;
+std::atomic<uint64_t> g_logic_step{0};
+Loaded& owner(Cpu* c) {
+    for(auto& mod:g_loaded)
+        if(c->pc>=mod.m->mem_base&&c->pc-mod.m->mem_base<mod.m->mem_size)return mod;
+    fatal("[guestmods] host service called outside a loaded mod: %08X",c->pc);
+}
 
 int ordinal_of(uint32_t addr) {
     const RecompEntry* b = g_recomp_funcs;
@@ -69,21 +87,45 @@ void call_original(Cpu* c, uint32_t func) {
 
 // ---- host services (imports of guest mods by name; arguments in r3..r10 / f1..f8, result in r3 / f1)
 std::string cstr(uint32_t a) { return a ? mem::read_cstr(a) : std::string("(null)"); }
-void svc_log(Cpu* c) { LOG("[guestmod] %s", cstr(c->r[3]).c_str()); }
-void svc_log_int(Cpu* c) { LOG("[guestmod] %s %d", cstr(c->r[3]).c_str(), (int32_t)c->r[4]); }
-void svc_log_hex(Cpu* c) { LOG("[guestmod] %s %08X", cstr(c->r[3]).c_str(), c->r[4]); }
-void svc_log_float(Cpu* c) { LOG("[guestmod] %s %g", cstr(c->r[3]).c_str(), c->f[1].ps0); }
-void svc_memcpy(Cpu* c) { memmove(mem::ptr(c->r[3]), mem::ptr(c->r[4]), c->r[5]); }  // r3 (dst) stays the result
+void svc_log(Cpu* c) { LOG("[guestmod:%s] %s",owner(c).id.c_str(),cstr(c->r[3]).c_str()); }
+void svc_log_int(Cpu* c) { LOG("[guestmod:%s] %s %d",owner(c).id.c_str(),cstr(c->r[3]).c_str(),(int32_t)c->r[4]); }
+void svc_log_hex(Cpu* c) { LOG("[guestmod:%s] %s %08X",owner(c).id.c_str(),cstr(c->r[3]).c_str(),c->r[4]); }
+void svc_log_float(Cpu* c) { LOG("[guestmod:%s] %s %g",owner(c).id.c_str(),cstr(c->r[3]).c_str(),c->f[1].ps0); }
+void svc_memcpy(Cpu* c) { memmove(mem::ptr(c->r[3]), mem::ptr(c->r[4]), c->r[5]); }
 void svc_memset(Cpu* c) { memset(mem::ptr(c->r[3]), (int)(c->r[4] & 0xFF), c->r[5]); }
-// prototype options: WWHD_GUEST_OPT_<id>=<integer> (production: the mod manager's typed options)
+const mods::json::Value& option(Cpu* c) {return owner(c).options.get(cstr(c->r[3]));}
 void svc_config_int(Cpu* c) {
-    std::string id = "WWHD_GUEST_OPT_" + cstr(c->r[3]);
-    const char* v = getenv(id.c_str());
-    c->r[3] = v ? (uint32_t)strtol(v, nullptr, 0) : c->r[4];  // r4: default
+    const auto& v=option(c);
+    if(v.type==mods::json::Value::Number&&v.number>=INT32_MIN&&v.number<=INT32_MAX&&std::floor(v.number)==v.number)c->r[3]=uint32_t(int32_t(v.number));
+    else c->r[3]=c->r[4];
 }
+void svc_config_bool(Cpu* c) {const auto& v=option(c);c->r[3]=v.type==mods::json::Value::Bool?v.boolean:!!c->r[4];}
+void svc_config_float(Cpu* c) {const auto& v=option(c);if(v.type==mods::json::Value::Number)c->f[1].ps0=v.number;}
+void svc_config_string(Cpu* c) {
+    const auto& v=option(c);uint32_t dst=c->r[4],size=c->r[5];
+    if(v.type!=mods::json::Value::String||!dst||!size||size>1024*1024){c->r[3]=0;return;}
+    uint32_t n=uint32_t(std::min<size_t>(v.text.size(),size-1));
+    memcpy(mem::ptr(dst),v.text.data(),n);mem::ptr(dst)[n]=0;c->r[3]=n;
+}
+void svc_malloc(Cpu* c) {c->r[3]=owner(c).heap->allocate(c->r[3]);}
+void svc_free(Cpu* c) {if(!owner(c).heap->release(c->r[3]))LOG("[guestmod:%s] invalid heap free",owner(c).id.c_str());}
+void svc_file_read(Cpu* c) {if((!c->r[4]&&c->r[5])||uint64_t(c->r[4])+c->r[5]>0x100000000ull){c->r[3]=UINT32_MAX;return;}c->r[3]=uint32_t(owner(c).files->read(cstr(c->r[3]),mem::ptr(c->r[4]),c->r[5]));}
+void svc_file_write(Cpu* c) {if((!c->r[4]&&c->r[5])||uint64_t(c->r[4])+c->r[5]>0x100000000ull){c->r[3]=UINT32_MAX;return;}c->r[3]=uint32_t(owner(c).files->write(cstr(c->r[3]),mem::ptr(c->r[4]),c->r[5]));}
+void svc_input(Cpu* c) {
+    if(!c->r[3])return;
+    const auto p=input::read();uint32_t a=c->r[3];
+    st32(a,p.buttons);stf32(a+4,p.lx);stf32(a+8,p.ly);stf32(a+12,p.rx);stf32(a+16,p.ry);
+    st32(a+20,p.touch);stf32(a+24,p.tx);stf32(a+28,p.ty);
+}
+void svc_logic_dt(Cpu* c) {c->f[1].ps0=double(true60::dt())/30.0;}
+void svc_logic_step(Cpu* c) {uint64_t step=g_logic_step.load(std::memory_order_relaxed);c->r[3]=uint32_t(step>>32);c->r[4]=uint32_t(step);}
 const std::unordered_map<std::string, PpcFunc> kServices = {
     {"wwhd_log", svc_log},       {"wwhd_log_int", svc_log_int}, {"wwhd_log_hex", svc_log_hex},
     {"wwhd_log_float", svc_log_float}, {"wwhd_config_int", svc_config_int},
+    {"wwhd_config_bool",svc_config_bool},{"wwhd_config_float",svc_config_float},{"wwhd_config_string",svc_config_string},
+    {"wwhd_malloc",svc_malloc},{"wwhd_free",svc_free},{"wwhd_input_read",svc_input},
+    {"wwhd_file_read",svc_file_read},{"wwhd_file_write",svc_file_write},
+    {"wwhd_logic_dt",svc_logic_dt},{"wwhd_logic_step",svc_logic_step},
     {"memcpy", svc_memcpy},      {"memmove", svc_memcpy},       {"memset", svc_memset},
 };
 PpcFunc service(const char* name) {
@@ -97,7 +139,7 @@ const WWHDGuestHostV1 kHost = {
     g_core_preempt, call_original, service,
 };
 
-bool load_one(const std::string& path, std::string& err) {
+bool load_one(const std::string& path, std::string& err,const mods::packages::GuestPackage& pkg,uint32_t base,uint32_t reserved) {
 #ifdef _WIN32
     void* lib = (void*)LoadLibraryA(path.c_str());
     auto init = lib ? (WWHDGuestInitV1)(void*)GetProcAddress((HMODULE)lib, WWHD_GUEST_INIT_SYMBOL) : nullptr;
@@ -123,18 +165,25 @@ bool load_one(const std::string& path, std::string& err) {
         err = "module ABI does not match this game version: rebuild the mod";
         return false;
     }
-    if (!validate_module(*m, path,
+    if(base<0x7F000000||base>=0x80000000||reserved>0x80000000-base||m->mem_base!=base||m->mem_size>reserved||pkg.heap_size>reserved-m->mem_size){err="module does not fit its assigned guest region";return false;}
+    if (!validate_module(*m, pkg.id,
             [](uint32_t addr) { return ordinal_of(addr) >= 0; },
             [](uint32_t addr) {
                 auto it = g_chains.find(addr);
                 return it == g_chains.end() ? std::string() : it->second.replace_mod;
             }, err)) return false;
     for (auto& o : g_loaded)
-        if (m->mem_base < o.m->mem_base + o.m->mem_size && o.m->mem_base < m->mem_base + m->mem_size) {
+        if (m->mem_base < o.m->mem_base + o.region_size && o.m->mem_base < m->mem_base + reserved) {
             err = "module memory overlaps " + o.path;
             return false;
         }
-    memset(mem::ptr(m->mem_base), 0, m->mem_size);
+    Loaded loaded;
+    loaded.path=path;loaded.id=pkg.id;loaded.version=pkg.version;loaded.m=m;loaded.region_size=reserved;loaded.options=pkg.options;
+    loaded.files=std::make_unique<Files>(pkg.data_path);
+    uint32_t heap_base=(m->mem_base+m->mem_size+15)&~15u;
+    loaded.heap=std::make_unique<Heap>(mem::ptr(heap_base),heap_base,pkg.heap_size);
+    memset(mem::ptr(m->mem_base), 0, reserved);
+    loaded.heap->initialize();
     if (m->image_size) memcpy(mem::ptr(m->mem_base), m->image, m->image_size);
     for (uint32_t i = 0; i < m->func_count; i++) dispatch::set(m->funcs[i].addr, m->funcs[i].fn);
     for (uint32_t i = 0; i < m->hook_count; i++) {
@@ -142,14 +191,14 @@ bool load_one(const std::string& path, std::string& err) {
         Chain& ch = g_chains[h.target];
         ch.addr = h.target;
         ch.ordinal = (uint32_t)ordinal_of(h.target);
-        if (h.kind == WWHD_GUEST_REPLACE) { ch.replace = h.fn; ch.replace_mod = path; }
+        if (h.kind == WWHD_GUEST_REPLACE) { ch.replace = h.fn; ch.replace_mod = pkg.id; }
         else if (h.kind == WWHD_GUEST_HOOK_ENTRY) ch.entry.push_back(h.fn);
         else ch.ret.insert(ch.ret.begin(), h.fn);  // return hooks run in reverse load order
         g_mod_hook_flags[ch.ordinal] = 1;
         LOG("[guestmods] %s %08X", h.kind == WWHD_GUEST_REPLACE ? "replace" : h.kind == WWHD_GUEST_HOOK_ENTRY ? "entry hook" : "return hook",
             h.target);
     }
-    g_loaded.push_back({path, m});
+    g_loaded.push_back(std::move(loaded));
     guard.handle = nullptr; // module functions remain resident for the process lifetime
     LOG("[guestmods] loaded %s (translator %s): %u functions, %u hooks, guest memory %08X-%08X", path.c_str(),
         m->translator, m->func_count, m->hook_count, m->mem_base, m->mem_base + m->mem_size);
@@ -187,30 +236,23 @@ void init() {
         const auto& size=result.get("allocation_size");
         if(size.type!=mods::json::Value::Number||size.number<=0||size.number>0x1000000||std::floor(size.number)!=size.number)
             throw std::runtime_error("Invalid guest module memory requirement");
-        return uint32_t(size.number);
+        uint32_t module_bytes=uint32_t(size.number);
+        if(pkg.heap_size>0x1000000-module_bytes)throw std::runtime_error("Guest module and heap exceed the mod region");
+        return (module_bytes+pkg.heap_size+0xFFFF)&~0xFFFFu;
     },[&](const packages::GuestPackage& pkg,uint32_t base) {
         auto result=tools().run(pkg.path,base,false);
         if(result.get("elf_sha256").string()!=pkg.fingerprint)throw std::runtime_error("Guest ELF changed; review its trust confirmation again");
         auto module=result.get("module").string();std::string error;
-        if(module.empty()||!load_one(module,error))throw std::runtime_error(error.empty()?"Guest builder returned no module":error);
+        const auto& memory=result.get("allocation_size");
+        if(memory.type!=mods::json::Value::Number||memory.number<=0||memory.number>0x1000000||std::floor(memory.number)!=memory.number||pkg.heap_size>0x1000000-uint32_t(memory.number))
+            throw std::runtime_error("Invalid guest module allocation size");
+        uint32_t reserved=(uint32_t(memory.number)+pkg.heap_size+0xFFFF)&~0xFFFFu;
+        if(module.empty()||!load_one(module,error,pkg,base,reserved))throw std::runtime_error(error.empty()?"Guest builder returned no module":error);
     });
-    const char* list = getenv("WWHD_GUEST_MODS");
-    if (!list || !*list) return;
-    if (g_mod_hook_count == 0) {
-        LOG("[guestmods] WWHD_GUEST_MODS ignored: the game code was built without --mod-hooks");
-        return;
-    }
-    std::string s = list;
-    size_t p = 0;
-    while (p <= s.size()) {
-        size_t q = s.find(',', p);
-        if (q == std::string::npos) q = s.size();
-        std::string path = s.substr(p, q - p);
-        std::string err;
-        if (!path.empty() && !load_one(path, err)) LOG("[guestmods] %s not loaded: %s", path.c_str(), err.c_str());
-        p = q + 1;
-    }
+    if(getenv("WWHD_GUEST_MODS"))LOG("[guestmods] WWHD_GUEST_MODS is retired; install and trust guest packages in the mod manager");
 }
+
+void frame(uint64_t step) {g_logic_step.store(step,std::memory_order_relaxed);}
 
 }  // namespace guestmods
 

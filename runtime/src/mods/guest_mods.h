@@ -1,7 +1,7 @@
-// Guest mods (Mod SDK v2 prototype): see guest_mods.cpp and docs/mod-sdk-v2.md.
+// Mod SDK v2 runtime. Guest modules load only at startup, through the mod manager's trust flow.
 #pragma once
-
+#include <cstdint>
 namespace guestmods {
-// loads the modules named in WWHD_GUEST_MODS; call after dispatch::init, before guest code runs
-void init();
-}  // namespace guestmods
+void init(); // after dispatch::init, before guest threads start
+void frame(uint64_t step); // logic-step clock exposed to guest mods
+}

@@ -71,6 +71,31 @@ void wwhd_log_hex(const char* label, u32 value);
 void wwhd_log_float(const char* label, double value);
 /* integer option `id` of this mod, or `fallback` */
 int wwhd_config_int(const char* id, int fallback);
+/* Other typed manager options (values are frozen until restart). Strings include enum options.
+ * config_string copies at most capacity-1 bytes, terminates them and returns bytes copied;
+ * a missing/wrong-type option returns zero without modifying the buffer. */
+int wwhd_config_bool(const char* id, int fallback);
+double wwhd_config_float(const char* id, double fallback);
+u32 wwhd_config_string(const char* id, char* buffer, u32 capacity);
+/* Per-mod heap: 16-byte aligned, default 256 KiB (manifest guest.heap_size changes it).
+ * malloc returns null on exhaustion; free accepts null. Heap/data are part of full states. */
+void* wwhd_malloc(u32 size);
+void wwhd_free(void* pointer);
+/* Current input, in VPAD button bits and normalized sticks/touch coordinates. */
+typedef struct {
+    u32 buttons;
+    f32 lx, ly, rx, ry;
+    u32 touch;
+    f32 tx, ty;
+} wwhd_input_state;
+void wwhd_input_read(wwhd_input_state* state);
+/* Flat filenames in this mod's Data/<id> folder; no paths or symlinks. At most 1 MiB per call.
+ * read returns bytes read (zero at EOF), write replaces the file; -1 indicates failure. */
+s32 wwhd_file_read(const char* filename, void* buffer, u32 size);
+s32 wwhd_file_write(const char* filename, const void* buffer, u32 size);
+/* Seconds in the current logic step (including true-60 scaling), and full-step count. */
+double wwhd_logic_dt(void);
+unsigned long long wwhd_logic_step(void);
 void* memcpy(void* dst, const void* src, unsigned long n);
 void* memmove(void* dst, const void* src, unsigned long n);
 void* memset(void* dst, int v, unsigned long n);

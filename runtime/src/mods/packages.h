@@ -49,6 +49,7 @@ void set_memory_access(ReadMemory read,WriteMemory write);
 struct GuestPackage {
     std::string id, version, path, data_path, fingerprint;
     json::Value options;
+    uint32_t heap_size=256*1024;
 };
 using GuestInspect = std::function<uint32_t(const GuestPackage&)>; // reserved bytes, 64 KiB aligned
 using GuestLoad = std::function<void(const GuestPackage&, uint32_t base)>;

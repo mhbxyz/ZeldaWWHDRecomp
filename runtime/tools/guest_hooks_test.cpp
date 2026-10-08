@@ -2,6 +2,9 @@
 #include "mods/guest_mods.cpp"
 #include <cassert>
 #include <vector>
+#ifndef _WIN32
+#include <sys/mman.h>
+#endif
 
 static std::vector<int> calls;
 static void body(Cpu* c) {
@@ -38,7 +41,9 @@ double ppc_fres(double x) { return x; }
 double ppc_frsqrte(double x) { return x; }
 void ppc_preempt(Cpu*) {}
 }
-namespace mem { std::string read_cstr(uint32_t) { return {}; } }
+namespace input {PadState read() {return {};}}
+namespace true60 {float dt() {return 0.5f;}}
+namespace mem { std::string read_cstr(uint32_t) { return "option"; } }
 namespace dispatch { void set(uint32_t, PpcFunc) {} }
 namespace mods::packages {
 std::string directory() { return {}; }
@@ -62,5 +67,44 @@ int main() {
     // ORIGINAL bypasses both mods and the port wrapper, and consumes the skip token.
     calls.clear(); c.r[3] = 20; guestmods::call_original(&c, 0x02000000);
     assert((calls == std::vector<int>{3})); assert(c.r[3] == 21); assert(c.mod_skip == 0);
+    // Map only synthetic mod data for string/input/heap service checks.
+    constexpr uint32_t data_base=0x7F000000;
+#ifdef _WIN32
+    void* data=VirtualAlloc(mem::ptr(data_base),0x20000,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
+#else
+    void* data=mmap(mem::ptr(data_base),0x20000,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+#endif
+    assert(data==mem::ptr(data_base));
+    // Typed services select the owning mod by its translated import callsite.
+    WWHDGuestModuleV1 module{};module.mem_base=0x7F000000;module.mem_size=4096;
+    guestmods::Loaded mod;mod.id="first";mod.m=&module;mod.options["option"]=42;
+    guestmods::g_loaded.push_back(std::move(mod));c.pc=0x7F000100;c.r[3]=1;c.r[4]=9;
+    guestmods::svc_config_int(&c);assert(c.r[3]==42);
+    guestmods::g_loaded[0].options["option"]=true;c.r[3]=1;
+    guestmods::svc_config_bool(&c);assert(c.r[3]==1);
+    c.r[3]=1;c.r[4]=9;guestmods::svc_config_int(&c);assert(c.r[3]==9); // wrong type uses fallback
+    guestmods::g_loaded[0].options["option"]=2.5;c.r[3]=1;c.f[1].ps0=8;
+    guestmods::svc_config_float(&c);assert(c.f[1].ps0==2.5);
+    c.r[3]=1;c.r[4]=9;guestmods::svc_config_int(&c);assert(c.r[3]==9); // non-integral numeric option
+    guestmods::svc_logic_dt(&c);assert(c.f[1].ps0==1.0/60.0);
+    guestmods::frame(0x100000002ull);guestmods::svc_logic_step(&c);assert(c.r[3]==1&&c.r[4]==2);
+    WWHDGuestModuleV1 second{};second.mem_base=0x7F010000;second.mem_size=4096;
+    guestmods::Loaded another;another.id="second";another.m=&second;another.options["option"]=84;
+    guestmods::g_loaded.push_back(std::move(another));c.pc=0x7F010100;c.r[3]=1;
+    guestmods::svc_config_int(&c);assert(c.r[3]==84);
+    c.pc=0x7F000100;c.r[3]=1;c.f[1].ps0=9;
+    guestmods::g_loaded[0].options["option"]="text";
+    guestmods::svc_config_float(&c);assert(c.f[1].ps0==9);
+    c.r[3]=1;c.r[4]=data_base+0x200;c.r[5]=3;
+    guestmods::svc_config_string(&c);assert(c.r[3]==2);assert(std::string(reinterpret_cast<char*>(mem::ptr(data_base+0x200)))=="te");
+    guestmods::g_loaded[0].heap=std::make_unique<guestmods::Heap>(mem::ptr(data_base+0x1000),data_base+0x1000,4096);
+    guestmods::g_loaded[0].heap->initialize();c.r[3]=32;guestmods::svc_malloc(&c);
+    assert(c.r[3]==data_base+0x1010);guestmods::svc_free(&c);
+    c.r[3]=data_base+0x300;guestmods::svc_input(&c);assert(ld32(data_base+0x300)==0);
+#ifdef _WIN32
+    VirtualFree(data,0,MEM_RELEASE);
+#else
+    munmap(data,0x20000);
+#endif
     std::puts("guest hook ordering and original passed");
 }

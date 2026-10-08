@@ -28,7 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "recomp"))
 from ppc2c import translate, Unhandled  # noqa: E402
 
-TRANSLATOR_VERSION = "guestmod-0.1"
+TRANSLATOR_VERSION = "guestmod-0.2"
 
 SHT_PROGBITS, SHT_SYMTAB, SHT_RELA, SHT_NOBITS = 1, 2, 4, 8
 SHF_ALLOC, SHF_EXECINSTR = 2, 4
@@ -100,6 +100,8 @@ class Translator:
         addr = self.base
         self.sec_addr = {}
         for s in sorted(alloc, key=lambda s: (rank(s), s["idx"])):
+            if s["align"] > 65536 or s["align"] & (s["align"] - 1):
+                raise ModError("mod sections require power-of-two alignment no larger than 64 KiB")
             addr = (addr + s["align"] - 1) & ~(s["align"] - 1)
             self.sec_addr[s["idx"]] = addr
             addr += s["size"]
@@ -262,7 +264,7 @@ class Translator:
         if kind == "orig":
             return ("g_host->call_original(c, 0x%08Xu); return;" if tail else "g_host->call_original(c, 0x%08Xu);") % val
         fn = "svc_%d" % self.services.index(val)
-        return ("MUSTTAIL return %s(c);" if tail else "%s(c);") % fn
+        return "c->pc = 0x%08Xu; " % addr + (("MUSTTAIL return %s(c);" if tail else "%s(c);") % fn)
 
     def branch(self, addr, tgt):
         if addr in self.imports:

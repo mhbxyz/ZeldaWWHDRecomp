@@ -34,6 +34,7 @@ struct Manifest {
     std::map<std::string,bool> settings;
     content::Files files;
     std::shared_ptr<cemu::Pack> graphics;
+    uint32_t heap_size=256*1024;
 };
 struct Record {Manifest manifest;fs::path path;bool active=false,loading=false;std::string status,error;Value startup_config;};
 std::mutex mutex;
@@ -109,6 +110,8 @@ Manifest manifest(const fs::path& path){
         const auto& guest=v.get("guest");
         require(guest.type==Value::Object&&guest.get("api_version").type==Value::Number&&
                 guest.get("api_version").number==1,"Unsupported guest mod API");
+        const auto& heap=guest.get("heap_size");
+        if(heap.type!=Value::Null){require(heap.type==Value::Number&&heap.number>=0&&heap.number<=8*1024*1024&&std::floor(heap.number)==heap.number,"Invalid guest heap size");m.heap_size=(uint32_t(heap.number)+15)&~15u;}
         m.binary=guest.get("elf").type==Value::Null?"mod.elf":string_field(guest,"elf",false,512);
         require(archive::relative_path(m.binary),"Invalid guest ELF path");
         auto checked=path;
@@ -336,7 +339,7 @@ void start_guests(const GuestInspect& inspect,const GuestLoad& load) {
                 require(dependency.active||dependency.manifest.kind=="settings",
                         "Startup dependency is unavailable: "+dep.id);
             }
-            GuestPackage pkg{id,r.manifest.version,r.path.string(),(root/"Data"/id).string(),r.manifest.fingerprint,r.startup_config};
+            GuestPackage pkg{id,r.manifest.version,r.path.string(),(root/"Data"/id).string(),r.manifest.fingerprint,r.startup_config,r.manifest.heap_size};
             uint32_t bytes=inspect(pkg);
             require(bytes&&!(bytes&0xFFFF)&&bytes<=end-start,"Invalid guest mod allocation size");
             auto found=reservations.find(id);

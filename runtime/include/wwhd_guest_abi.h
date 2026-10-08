@@ -15,7 +15,8 @@
 extern "C" {
 #endif
 
-#define WWHD_GUEST_ABI_VERSION 1
+#define WWHD_GUEST_ABI_VERSION 2
+/* ABI 2: imported service calls set Cpu::pc to their originating mod instruction. */
 
 enum { WWHD_GUEST_REPLACE = 1, WWHD_GUEST_HOOK_ENTRY = 2, WWHD_GUEST_HOOK_RETURN = 3 };
 

@@ -284,20 +284,32 @@ public addresses depends on it. Options for the maintainer:
 
 ## Host services
 
-Imports by name, resolved on load (a missing one is an error), called with the game ABI:
+Services use the game ABI and resolve by name when the module loads. ABI 2 marks each
+imported service call with its originating mod instruction address in `Cpu::pc`.
+This identifies the owning package even for mod functions called through game function
+pointers or nested cross-mod calls. Old modules must rebuild; the cache hashes the ABI
+header and translator sources, so this happens automatically.
 
-| Service | Prototype | Purpose |
-| --- | --- | --- |
-| `wwhd_log`, `wwhd_log_int`, `wwhd_log_hex`, `wwhd_log_float` | yes | log lines tagged `[guestmod]` |
-| `wwhd_config_int(id, fallback)` | yes (from `WWHD_GUEST_OPT_<id>`) | typed options from the manifest (production: the mod manager's values, plus `_bool`, `_float`, `_string`) |
-| `memcpy`, `memmove`, `memset` | yes | clang emits these for struct copies |
-| `wwhd_logic_dt`, `wwhd_logic_step` | planned | step length (true 60) and counter |
-| `wwhd_malloc`, `wwhd_free` | planned | mod heap in the guest mod region |
-| `wwhd_input_*` | planned | buttons and sticks as the game sees them, plus host keys |
-| `wwhd_hud_*` | planned | renderer-independent panels: text, rectangles, an RGBA image from the mod's data; drawn by the runtime on Metal and Vulkan |
-| `wwhd_file_*` | planned | files in the mod's own data folder (per-save progress, locally built caches) |
-| events | planned | `on_frame`, `on_scene_change`, `on_save_load` as hook-like callbacks (`.wwhd_events`), mod-to-mod events/exports like N64Recomp |
-| `__udivdi3` and other compiler helpers | planned | 64-bit division etc. that clang calls on 32-bit PowerPC |
+| Service | Phase 1 behavior |
+| --- | --- |
+| `wwhd_log`, `_int`, `_hex`, `_float` | Log lines tagged with the calling mod ID. |
+| `wwhd_config_int`, `_bool`, `_float`, `_string` | Typed values from the manager's startup snapshot; numeric/bool calls use their fallback on missing or wrong-type values. `_float` returns a double. Strings include enum options and copy into a caller-owned guest buffer. |
+| `wwhd_malloc`, `wwhd_free` | Per-mod 16-byte-aligned guest heap. `guest.heap_size` chooses bytes (default 256 KiB, maximum 8 MiB); null on exhaustion. Metadata stays in guest memory, so restoring it restores allocation state. |
+| `wwhd_input_read` | Read-only VPAD-style buttons, sticks and touch in `wwhd_input_state`. |
+| `wwhd_file_read`, `wwhd_file_write` | Flat filenames in `ModManager/Data/<id>`, at most 1 MiB per call. No directory components, symlinks, hardlinks or Windows device names. Write replaces the file. Both return bytes transferred, or -1 on failure. |
+| `wwhd_logic_dt`, `wwhd_logic_step` | Seconds in the current logic step (true-60 scaling included), and the full logic-step counter. |
+| `memcpy`, `memmove`, `memset` | Compiler-generated struct copies and explicit guest-memory operations. |
+
+Option and enabled-set changes take effect on restart. `WWHD_GUEST_OPT_*` and the
+prototype's unchecked `WWHD_GUEST_MODS` direct-library loading are retired; install
+packages through the mod manager and its code trust dialog.
+
+The HUD service is phase 2. Its proposed interface is renderer-independent submission
+of text, rectangles and mod-owned RGBA images, with opaque per-mod resource handles,
+explicit guest buffer lengths, frame-scoped draw lists and cleanup at shutdown. The
+host would copy pixels/text before returning and render the lists through Metal/Vulkan
+at the overlay stage. No guest pointers would be retained by a renderer. Audio streams,
+events and additional compiler helpers also remain future work.
 
 ## Trust
 

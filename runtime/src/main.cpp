@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
         m.data_end);
 
     dispatch::init();
-    guestmods::init();  // prototype: WWHD_GUEST_MODS (docs/mod-sdk-v2.md)
+    guestmods::init();  // trusted manager packages, before guest threads start
     init_data_imports();
     mem_setup_heaps(m.data_end);
     threads::init(m);
