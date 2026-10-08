@@ -76,7 +76,10 @@ The queued comparison uses Windfall, 60 fps interpolation with uncapped renderin
 60 game seconds per run, fifteen interleaved pairs per renderer, and a discarded warm-up.
 The maintainer removed the load1-below-16 requirement on 2026-10-09. Collection
 retains the machine load1-30 pause rule, exclusion of other workers' builds, game
-tests and `run_bench.py`, and more than 15 GB free disk. The revised comparison
+tests and `run_bench.py`. The maintainer also removed the 15 GB disk gate and
+is monitoring space directly. Eight completed Metal pairs were retained when
+resuming with that change; only successful samples with completion markers and
+matching variant, ordinal, environment and executable are reused. The revised comparison
 uses fresh output directories; the earlier partial baseline is excluded.
 Both executables load no mods. Frame time and actual logic-pass CPU time must each
 have fifteen valid samples; reports use inclusive quartiles and IQR. Report all
