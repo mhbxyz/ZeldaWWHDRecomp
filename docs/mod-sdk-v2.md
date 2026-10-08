@@ -618,7 +618,7 @@ Guest-module, Linux, Windows and Android CI passed for that commit.
 
 The changed-version test loaded both states after changing only the installed example's
 manifest version from `0.1.0` to `0.1.1`; each showed a warning and gameplay continued.
-These are functional tests, not the performance gate. The ten-run interleaved no-mod comparison against
+These are functional tests, not the performance gate. The fifteen-pair interleaved no-mod comparison against
 devel `872f17e` remains pending on both renderers; checks remain opt-in until it passes.
 The commands and acceptance criteria for that comparison follow the historical table.
 
@@ -647,7 +647,7 @@ the runs, so absolute numbers are noisy). devel = `cf6b8c9`; prototype = this br
 
 The cost of the check is below what the benchmark can resolve on a shared machine; the
 estimate from the call count is the upper bound to keep in mind. A quiet-machine A/B
-(`run_bench.py` with `--runs 10`, nothing else running) is the check before a release.
+using the current interleaved protocol below is the check before a release.
 Hooked functions cost one hash lookup plus the hook calls (`ppc_mod_run`); the example replacement took ≈ 600,000 calls in a three-minute run
 without a visible effect.
 
@@ -659,13 +659,15 @@ python3 tools/bench/run_bench.py --binary build/baseline/wwhd \
   --variant hooks:WWHD_INTERP_PASS_STATS=1 \
   --variant-binary hooks=build/hooked/wwhd \
   --game /path/to/your/game --save /path/to/save-copy --state-dir /path/to/state-copy \
-  --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 10 \
-  --quiet-load-max 12 --exclusive-bench --min-free-gb 15 --retry-disturbed \
+  --scene outset --fps 60 --renderer metal --uncapped --seconds 60 --runs 15 \
+  --quiet-load-max 16 --exclusive-bench --exclusive-work --min-free-gb 15 --retry-disturbed \
   --out build/hook-bench-metal
 ```
 
 Repeat for Vulkan with its own output/cache directory. Runs alternate A/B then B/A.
-Before each run, require load1 below 12 and no other `run_bench.py`; defer otherwise.
+The maintainer revised the gate on 2026-10-08: require load1 below 16 and no other
+build, game test or `run_bench.py`; defer otherwise. Monitor these conditions during
+each run and discard interrupted samples.
 `--retry-disturbed` repeats interrupted samples in the same A/B position until quiet;
 it also retries an interrupted warm-up. Timeouts and other failures remain limited
 to three attempts, and an incomplete comparison must not pass the gate.
@@ -674,8 +676,11 @@ also keeps the package manager inactive unless explicitly overridden, so this co
 loads no mods. Record the exact baseline and hook-build revisions and compiler flags.
 JSON reports include median, inclusive Q1/Q3 and IQR across runs. `logic_cpu_ms` uses
 actual main-thread logic-pass CPU samples, excluding renderer/vsync waits and the first
-300-step window after loading. Both variants must produce this metric and ten successful
-runs before comparing overhead. Historical prototype timings do not satisfy this gate.
+300-step window after loading. Both variants must produce this metric and fifteen successful
+runs before comparing overhead. JSON also records per-pair hooks-minus-baseline
+differences in milliseconds and percent, plus their median and IQR. Report explicitly
+when run IQR exceeds the difference of medians, or paired-difference IQR exceeds its
+median effect; that spread calls for the maintainer's quiet-window rerun tonight. Historical prototype timings do not satisfy this gate.
 
 If the gate exceeds 2%, keep checks opt-in and investigate a thin wrapper per function
 (`f_X`: check, tail call to the body; one extra branch per call but ~30 bytes per function),

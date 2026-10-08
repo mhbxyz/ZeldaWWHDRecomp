@@ -58,7 +58,7 @@ its regression test and subsequent game runs pass.
 | Guest-module Python | 11 tests; actual translated native module execution and example builds |
 | Public generator | 10 tests |
 | Installer guest-build configuration | 2 tests, including moving a portable release |
-| Benchmark helper | 8 tests on all desktop CI hosts; the executable fixture runs on POSIX hosts |
+| Benchmark helper | 10 tests locally for the revised gate (previous implementation CI: 8); the executable fixture runs on POSIX hosts |
 
 The module matrix uses setup's Apple CLT, pinned llvm-mingw and pinned Zig host
 toolchains, with clang/lld for PowerPC inputs. It also checks the generated SDK as
@@ -73,13 +73,17 @@ All CI workflows passed for `eb7b0ce`:
 ## Performance gate: pending
 
 The queued comparison uses Windfall, 60 fps interpolation with uncapped rendering,
-60 game seconds per run, ten interleaved runs per executable, and a discarded warm-up.
-It requires load1 below 12, no other `run_bench.py`, and more than 15 GB free disk.
+60 game seconds per run, fifteen interleaved pairs per renderer, and a discarded warm-up.
+The maintainer revised the gate on 2026-10-08: load1 below 16, no other worker's
+build, game test or `run_bench.py`, and more than 15 GB free disk.
 Both executables load no mods. Frame time and actual logic-pass CPU time must each
-have ten valid samples; reports use inclusive quartiles and IQR.
+have fifteen valid samples; reports use inclusive quartiles and IQR. Report all
+per-pair hooks-minus-baseline differences (ms and percent). Explicitly flag run IQR
+larger than the difference of medians, and paired-difference IQR larger than the
+paired median effect; the maintainer will arrange a quiet-window rerun tonight if so.
 Interrupted samples are retried in place with `--retry-disturbed`, preserving A/B
 order. A new regression simulates four consecutive disturbances in both warm-up
-and the first measured sample, then verifies ten accepted samples per executable.
+and the first measured sample, then verifies fifteen accepted samples per executable.
 
 | Renderer | Metric | Devel median / IQR | Hooks median / IQR | Median cost |
 | --- | --- | --- | --- | --- |

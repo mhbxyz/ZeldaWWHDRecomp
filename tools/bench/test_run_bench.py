@@ -10,11 +10,41 @@ import sys
 import tempfile
 from types import SimpleNamespace
 from unittest import mock
-from run_bench import benchmark_pids, logic_cpu_samples, quiet_reasons, run_statistics
+from run_bench import benchmark_pids, logic_cpu_samples, quiet_reasons, run_statistics, worker_pids
 import run_bench
 
 
 class BenchmarkStatistics(unittest.TestCase):
+    def test_pair_differences_match_pair_numbers_in_ab_ba_order(self):
+        def sample(name, pair, value, status='ok'):
+            return {'variant': name, 'run': pair, 'status': status,
+                    'summary': {'frame_ms': value, 'logic_cpu_ms': value / 2}}
+        results = [sample('base', 1, 10), sample('hooks', 1, 12),
+                   sample('hooks', 2, 8), sample('base', 2, 10),
+                   sample('base', 3, 10), sample('hooks', 3, 14),
+                   sample('base', 4, 10), sample('hooks', 4, 99, 'disturbed')]
+        report = run_bench.paired_statistics(results, ['base', 'hooks'])['metrics']['frame_ms']
+        self.assertEqual([p['difference_ms'] for p in report['pairs']], [2, -2, 4])
+        self.assertEqual(report['difference_ms']['median'], 2)
+        self.assertEqual(report['difference_ms']['iqr'], 3)
+        self.assertEqual(report['difference_ms']['n'], 3)
+        self.assertTrue(report['run_iqr_exceeds_median_difference'])
+        self.assertTrue(report['paired_iqr_exceeds_paired_median'])
+
+    def test_worker_detection_checks_programs_not_shell_command_text(self):
+        listing = '''101 /usr/bin/python3 /repo/tools/bench/run_bench.py
+102 /usr/bin/ninja -j 2
+103 /usr/bin/clang++ -c file.cpp
+104 /usr/bin/cmake --build build
+105 /usr/bin/cmake --version
+106 /usr/bin/clangd --background-index
+107 /bin/zsh -c 'ninja -j 2; python smoke.py'
+108 /Applications/Python.app/Contents/MacOS/Python -u /other/run_smoke.py
+109 /usr/bin/python3 -m unittest
+110 /usr/bin/python3 /repo/build/sdk2-perf/wait_and_run.py
+'''
+        self.assertEqual(worker_pids(listing, 101), [102, 103, 104, 108, 109])
+
     def test_ten_run_inclusive_quartiles(self):
         result = run_statistics(list(range(1, 11)))
         self.assertEqual(result['median'], 5.5)
@@ -86,7 +116,7 @@ class BenchmarkStatistics(unittest.TestCase):
                  '[interp] 140.0 logic steps/s; main thread CPU per pass: logic 5.75 ms, blended hold 1.00 ms']
         self.assertEqual(logic_cpu_samples(lines), [5.25, 5.75])
 
-    def test_disturbed_retries_preserve_all_ten_interleaved_samples(self):
+    def test_disturbed_retries_preserve_all_fifteen_interleaved_samples(self):
         repo = Path(__file__).resolve().parents[2]
         with tempfile.TemporaryDirectory(prefix='bench-retry-', dir=repo / 'build') as directory:
             root = Path(directory)
@@ -104,20 +134,20 @@ class BenchmarkStatistics(unittest.TestCase):
                         'summary': {'frame_ms': 6, 'logic_cpu_ms': 4}}
 
             argv = ['run_bench.py', '--binary', 'fixture', '--state-dir', str(root),
-                    '--scene', 'still', '--variant', 'a:', '--variant', 'b:', '--runs', '10',
+                    '--scene', 'still', '--variant', 'a:', '--variant', 'b:', '--runs', '15',
                     '--warmup', '--retry-disturbed', '--out', str(root / 'out')]
             with mock.patch.object(sys, 'argv', argv), mock.patch('run_bench.run_once', side_effect=sample), contextlib.redirect_stdout(io.StringIO()):
                 run_bench.main()
             report = json.loads((root / 'out/summary.json').read_text())
             expected = [('warmup', 0)]
-            for i in range(1, 11):
+            for i in range(1, 16):
                 expected.extend((name, i) for name in (('a', 'b') if i % 2 else ('b', 'a')))
             self.assertEqual(accepted, expected)
-            self.assertEqual(len(report['runs']), 20)
+            self.assertEqual(len(report['runs']), 30)
             self.assertTrue(all(r['status'] == 'ok' for r in report['runs']))
             for name in ('a', 'b'):
                 for metric in ('frame_ms', 'logic_cpu_ms'):
-                    self.assertEqual(report['variants'][name][metric]['n'], 10)
+                    self.assertEqual(report['variants'][name][metric]['n'], 15)
 
     def test_other_failures_and_default_retries_remain_bounded(self):
         for retry_disturbed, status in [(False, 'disturbed'), (True, 'timeout')]:

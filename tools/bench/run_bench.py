@@ -84,6 +84,38 @@ def other_benchmarks():
     return benchmark_pids(result.stdout, os.getpid())
 
 
+def worker_pids(process_listing, own_pid):
+    """Builds and test drivers; inspect executable/script names, never shell text."""
+    found = []
+    builds = {"ninja", "make", "gmake", "clang", "clang++", "gcc", "g++", "cc", "c++",
+              "ld", "ld.lld", "lld", "xcodebuild", "cargo", "rustc", "swiftc", "ctest", "pytest"}
+    for line in process_listing.splitlines():
+        pid, _, command = line.strip().partition(" ")
+        if not pid.isdigit() or int(pid) == own_pid:
+            continue
+        try:
+            argv = shlex.split(command)
+        except ValueError:
+            continue
+        if not argv:
+            continue
+        executable = os.path.basename(argv[0]).casefold()
+        busy = executable in builds or (executable == "cmake" and "--build" in argv)
+        if executable.startswith("python"):
+            script = next((a for a in argv[1:] if not a.startswith('-')), '')
+            name = os.path.basename(script).casefold()
+            busy = busy or any(word in name for word in ("test", "smoke", "bench")) or name in {
+                "recomp.py", "build_guest_mod.py", "guestmod.py", "setup.py", "ppc2c.py"}
+        if busy:
+            found.append(int(pid))
+    return found
+
+
+def other_workers():
+    result = subprocess.run(["ps", "-Ao", "pid=,args="], capture_output=True, text=True, check=True)
+    return worker_pids(result.stdout, os.getpid())
+
+
 def quiet_reasons(args):
     reasons = []
     if args.quiet_load_max is not None:
@@ -96,6 +128,10 @@ def quiet_reasons(args):
         others = other_benchmarks()
         if others:
             reasons.append("another run_bench.py is running: " + ", ".join(map(str, others)))
+    if getattr(args, "exclusive_work", False):
+        others = other_workers()
+        if others:
+            reasons.append("another build/test driver is running: " + ", ".join(map(str, others)))
     if args.min_free_gb:
         free = shutil.disk_usage(args.out).free / 1e9
         if free < args.min_free_gb:
@@ -204,6 +240,34 @@ def run_statistics(values):
     return {"median": statistics.median(values), "mean": statistics.fmean(values),
             "min": min(values), "max": max(values), "q1": q1, "q3": q3, "iqr": q3 - q1,
             "stdev": statistics.stdev(values) if len(values) > 1 else 0.0, "n": len(values)}
+
+
+def paired_statistics(results, names):
+    if len(names) != 2:
+        return {}
+    reference, comparison = names
+    paired = {}
+    for metric in ("frame_ms", "logic_cpu_ms"):
+        groups = {}
+        for run in results:
+            if run["status"] == "ok" and metric in run["summary"]:
+                groups.setdefault(run["run"], {})[run["variant"]] = run["summary"][metric]
+        pairs = []
+        for index, values in sorted(groups.items()):
+            if reference not in values or comparison not in values:
+                continue
+            a, b = values[reference], values[comparison]
+            pairs.append({"pair": index, "reference": a, "comparison": b,
+                          "difference_ms": b - a, "difference_pct": (b / a - 1) * 100 if a else None})
+        if pairs:
+            a = run_statistics([p["reference"] for p in pairs])
+            b = run_statistics([p["comparison"] for p in pairs])
+            differences = run_statistics([p["difference_ms"] for p in pairs])
+            paired[metric] = {"pairs": pairs, "difference_ms": differences,
+                              "difference_pct": run_statistics([p["difference_pct"] for p in pairs if p["difference_pct"] is not None]),
+                              "run_iqr_exceeds_median_difference": max(a["iqr"], b["iqr"]) > abs(b["median"] - a["median"]),
+                              "paired_iqr_exceeds_paired_median": differences["iqr"] > abs(differences["median"])}
+    return {"reference": reference, "comparison": comparison, "metrics": paired}
 
 
 def logic_cpu_samples(lines):
@@ -376,6 +440,7 @@ def main():
     p.add_argument("--timeout", type=float, default=600)
     p.add_argument("--quiet-load-max", type=float, help="wait until load1 is below this value; discard disturbed runs")
     p.add_argument("--exclusive-bench", action="store_true", help="wait while any other run_bench.py is running")
+    p.add_argument("--exclusive-work", action="store_true", help="wait for other builds/test drivers; discard runs if they start")
     p.add_argument("--retry-disturbed", action="store_true",
                    help="retry interrupted samples until quiet, preserving the interleaved order; other failures remain bounded")
     p.add_argument("--min-free-gb", type=float, default=0, help="minimum free decimal GB before/during each run")
@@ -424,11 +489,12 @@ def main():
             stats[k] = run_statistics(vals)
         table[name] = stats
     meta = {k: getattr(args, k) for k in ("scene", "fps", "renderer", "uncapped", "visible", "seconds", "runs", "display_hz",
-                                                   "quiet_load_max", "exclusive_bench", "min_free_gb", "retry_disturbed")}
+                                                   "quiet_load_max", "exclusive_bench", "exclusive_work", "min_free_gb", "retry_disturbed")}
     meta["binary"] = os.path.basename(args.binary)
     meta["variant_binaries"] = {name: os.path.basename(path) for name, path in args.variant_binaries.items() if name != "warmup"}
     with open(os.path.join(args.out, "summary.json"), "w") as f:
-        json.dump({"meta": meta, "variants": table, "runs": results}, f, indent=1)
+        json.dump({"meta": meta, "variants": table, "runs": results,
+                   "paired_differences": paired_statistics(results, [name for name, _ in variants])}, f, indent=1)
     keys = sorted({k for t in table.values() for k in t})
     with open(os.path.join(args.out, "summary.csv"), "w", newline="") as f:
         w = csv.writer(f)
