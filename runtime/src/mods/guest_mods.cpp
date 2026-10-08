@@ -6,6 +6,7 @@
 // Prototype switch: WWHD_GUEST_MODS=<module>[,<module>...] loads translated modules at start, before
 // any guest code runs. Without it (or with game code built without --mod-hooks) nothing changes.
 #include "guest_mods.h"
+#include "guest_validation.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -39,13 +40,10 @@ static_assert(sizeof(void*) != 8 || sizeof(Cpu) == 752, "Cpu layout changed");
 namespace guestmods {
 namespace {
 
-// guest memory for mod code and data (unused by the game and the runtime; not part of save states yet)
-constexpr uint32_t kRegionStart = 0x7F000000, kRegionEnd = 0x80000000;
-
 struct Chain {
     uint32_t addr = 0, ordinal = 0;
     PpcFunc replace = nullptr;
-    const char* replace_mod = nullptr;
+    std::string replace_mod;
     std::vector<PpcFunc> entry, ret;
 };
 std::unordered_map<uint32_t, Chain> g_chains;  // built before the game starts, read-only afterwards
@@ -105,41 +103,43 @@ bool load_one(const std::string& path, std::string& err) {
     auto init = lib ? (WWHDGuestInitV1)dlsym(lib, WWHD_GUEST_INIT_SYMBOL) : nullptr;
 #endif
     if (!lib) { err = "cannot load the module"; return false; }
+    struct LibraryGuard {
+        void* handle;
+        ~LibraryGuard() {
+            if (!handle) return;
+#ifdef _WIN32
+            FreeLibrary((HMODULE)handle);
+#else
+            dlclose(handle);
+#endif
+        }
+    } guard{lib};
     if (!init) { err = "not a guest mod module (no " WWHD_GUEST_INIT_SYMBOL ")"; return false; }
     const WWHDGuestModuleV1* m = init(&kHost);
     if (!m || m->size < sizeof(WWHDGuestModuleV1) || m->abi_version != WWHD_GUEST_ABI_VERSION) {
         err = "module ABI does not match this game version: rebuild the mod";
         return false;
     }
-    if (m->mem_base < kRegionStart || m->mem_size > kRegionEnd - m->mem_base || m->image_size > m->mem_size) {
-        err = "module memory outside the guest mod region";
-        return false;
-    }
+    if (!validate_module(*m, path,
+            [](uint32_t addr) { return ordinal_of(addr) >= 0; },
+            [](uint32_t addr) {
+                auto it = g_chains.find(addr);
+                return it == g_chains.end() ? std::string() : it->second.replace_mod;
+            }, err)) return false;
     for (auto& o : g_loaded)
         if (m->mem_base < o.m->mem_base + o.m->mem_size && o.m->mem_base < m->mem_base + m->mem_size) {
             err = "module memory overlaps " + o.path;
             return false;
         }
-    // validate every hook before changing anything
-    for (uint32_t i = 0; i < m->hook_count; i++) {
-        const WWHDGuestHook& h = m->hooks[i];
-        if (ordinal_of(h.target) < 0) { char b[96]; snprintf(b, sizeof b, "hook target %08X is not a game function", h.target); err = b; return false; }
-        if (h.kind == WWHD_GUEST_REPLACE) {
-            auto it = g_chains.find(h.target);
-            if (it != g_chains.end() && it->second.replace) {
-                char b[96]; snprintf(b, sizeof b, "%08X is already replaced by another mod", h.target); err = b; return false;
-            }
-        }
-    }
     memset(mem::ptr(m->mem_base), 0, m->mem_size);
-    memcpy(mem::ptr(m->mem_base), m->image, m->image_size);
+    if (m->image_size) memcpy(mem::ptr(m->mem_base), m->image, m->image_size);
     for (uint32_t i = 0; i < m->func_count; i++) dispatch::set(m->funcs[i].addr, m->funcs[i].fn);
     for (uint32_t i = 0; i < m->hook_count; i++) {
         const WWHDGuestHook& h = m->hooks[i];
         Chain& ch = g_chains[h.target];
         ch.addr = h.target;
         ch.ordinal = (uint32_t)ordinal_of(h.target);
-        if (h.kind == WWHD_GUEST_REPLACE) ch.replace = h.fn;
+        if (h.kind == WWHD_GUEST_REPLACE) { ch.replace = h.fn; ch.replace_mod = path; }
         else if (h.kind == WWHD_GUEST_HOOK_ENTRY) ch.entry.push_back(h.fn);
         else ch.ret.insert(ch.ret.begin(), h.fn);  // return hooks run in reverse load order
         g_mod_hook_flags[ch.ordinal] = 1;
@@ -147,6 +147,7 @@ bool load_one(const std::string& path, std::string& err) {
             h.target);
     }
     g_loaded.push_back({path, m});
+    guard.handle = nullptr; // module functions remain resident for the process lifetime
     LOG("[guestmods] loaded %s (translator %s): %u functions, %u hooks, guest memory %08X-%08X", path.c_str(),
         m->translator, m->func_count, m->hook_count, m->mem_base, m->mem_base + m->mem_size);
     return true;

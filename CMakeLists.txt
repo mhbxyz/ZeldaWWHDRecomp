@@ -478,3 +478,15 @@ if(WWHD_SDL_HOST)
   add_test(NAME sdl_mouse COMMAND mouse_sdl_test)
   add_test(NAME host_sleep COMMAND sleep_test)
 endif()
+
+# Guest mod loader metadata validation; synthetic tables, no game files.
+add_executable(guest_validation_test runtime/tools/guest_validation_test.cpp)
+target_include_directories(guest_validation_test PRIVATE runtime/include runtime/src)
+target_compile_options(guest_validation_test PRIVATE -UNDEBUG)
+add_test(NAME guest_validation COMMAND guest_validation_test)
+
+add_executable(guest_hooks_test runtime/tools/guest_hooks_test.cpp)
+target_include_directories(guest_hooks_test PRIVATE runtime/include runtime/src)
+target_compile_options(guest_hooks_test PRIVATE -UNDEBUG)
+target_link_libraries(guest_hooks_test PRIVATE ${CMAKE_DL_LIBS})
+add_test(NAME guest_hooks COMMAND guest_hooks_test)
