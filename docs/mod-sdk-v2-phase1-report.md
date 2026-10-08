@@ -94,10 +94,40 @@ and the first measured sample, then verifies fifteen accepted samples per execut
 
 | Renderer | Metric | Devel median / IQR | Hooks median / IQR | Median cost |
 | --- | --- | --- | --- | --- |
-| Metal | Frame ms | Pending | Pending | Pending |
-| Metal | Logic CPU ms | Pending | Pending | Pending |
+| Metal | Frame ms | 6.0650 / 0.1033 | 6.0894 / 0.1191 | +0.40% |
+| Metal | Logic CPU ms | 3.8680 / 0.0520 | 3.9360 / 0.1170 | +1.76% |
 | Vulkan | Frame ms | Pending | Pending | Pending |
 | Vulkan | Logic CPU ms | Pending | Pending | Pending |
+
+Metal completed all 15 interleaved pairs; all 30 accepted measured runs have
+completion markers. The larger variant IQR exceeds the absolute difference of
+medians for both metrics:
+frame effect 0.0244 ms versus IQRs 0.1033/0.1191 ms, and logic effect 0.0680 ms
+versus maximum IQR 0.1170 ms. Paired-difference IQR also exceeds its median:
+frame +0.0288 ms / IQR 0.1497 ms; logic +0.0640 ms / IQR 0.0970 ms.
+The measured costs are below 2%, but the spread is larger than the effect.
+Keep checks opt-in pending Vulkan and the maintainer's quiet-window rerun;
+this shared-machine dataset does not prove a quiet-machine performance gate.
+
+Metal per-pair differences (hooks minus baseline; positive means slower):
+
+| Pair | Frame difference ms | Frame difference % | Logic CPU difference ms | Logic CPU difference % |
+| --- | --- | --- | --- | --- |
+| 1 | +0.0469 | +0.77% | +0.1760 | +4.53% |
+| 2 | +0.0259 | +0.42% | +0.1060 | +2.72% |
+| 3 | +0.0288 | +0.47% | +0.0640 | +1.64% |
+| 4 | +0.2613 | +4.45% | +0.1120 | +2.91% |
+| 5 | +0.0822 | +1.40% | +0.0100 | +0.26% |
+| 6 | -0.0569 | -0.94% | +0.0120 | +0.31% |
+| 7 | -0.0609 | -1.01% | +0.0120 | +0.31% |
+| 8 | +0.0476 | +0.79% | +0.1000 | +2.61% |
+| 9 | +0.1932 | +3.17% | +0.1560 | +4.04% |
+| 10 | -0.2515 | -3.97% | -0.1060 | -2.63% |
+| 11 | +0.0619 | +1.01% | +0.1280 | +3.28% |
+| 12 | -0.0944 | -1.52% | -0.0360 | -0.91% |
+| 13 | -0.1009 | -1.64% | +0.0280 | +0.70% |
+| 14 | -0.1237 | -2.05% | +0.0120 | +0.31% |
+| 15 | +0.1754 | +2.99% | +0.0720 | +1.88% |
 
 The initial capped Metal warm-up is excluded. `e008152` makes `--uncapped` set
 the renderer-independent flag. `f1cf6fa` detects macOS's capitalized `Python`
